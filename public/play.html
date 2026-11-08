@@ -33,6 +33,23 @@
   .ok{background:var(--ok)} .ko{background:var(--ko)}
   .row{display:grid;grid-template-columns:2fr 1fr;gap:10px}
   .grow{flex:1}
+
+  /* ===== animaciones ===== */
+  #v > *{animation:subirM .4s cubic-bezier(.2,.9,.3,1.2) both}
+  #v > *:nth-child(2){animation-delay:.06s}#v > *:nth-child(3){animation-delay:.12s}#v > *:nth-child(4){animation-delay:.18s}#v > *:nth-child(5){animation-delay:.24s}
+  @keyframes subirM{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .buzz:not([disabled]){animation:subirM .4s both,pulsoM 1.4s ease-in-out .4s infinite}
+  @keyframes pulsoM{50%{box-shadow:0 10px 0 rgba(0,0,0,.35),0 0 0 14px color-mix(in srgb,var(--team) 35%,transparent)}}
+  .res{animation:popM .5s cubic-bezier(.2,.9,.3,1.6) both}
+  .res.ok{animation:popM .5s cubic-bezier(.2,.9,.3,1.6) both,festejo .8s .5s ease}
+  @keyframes popM{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+  @keyframes festejo{25%{transform:rotate(-4deg) scale(1.05)}50%{transform:rotate(4deg) scale(1.05)}75%{transform:rotate(-2deg)}}
+  .res.ko{animation:popM .4s both,temblorM .4s .4s}
+  @keyframes temblorM{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+  .letra{animation:popM .45s both}
+  .opts button{animation:subirM .35s both}
+  .opts button:nth-child(2){animation-delay:.07s}.opts button:nth-child(3){animation-delay:.14s}.opts button:nth-child(4){animation-delay:.21s}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
 </style>
 </head><body>
 <div id="top" class="hidden"><span>Letra<b style="color:var(--B)">manía</b></span><b id="relojM" style="font-size:22px"></b><span id="yo"></span></div>

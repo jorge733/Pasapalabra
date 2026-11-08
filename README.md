@@ -2,6 +2,18 @@
 
 Juego de fiesta por equipos para jugar en la tele. La partida se ve en la tele (a través del Chromecast) y cada jugador usa su **celular como control**: escanea un QR y listo, sin instalar nada.
 
+## Actualizar a una versión nueva
+
+En la carpeta del juego, con el juego detenido (`Ctrl + C`):
+
+```bash
+git pull
+npm install
+npm start
+```
+
+`npm install` solo hace falta cuando cambian las dependencias, pero no hace daño ejecutarlo siempre.
+
 ## Cómo se juega
 
 Dos equipos compiten en varias pruebas cortas para ganar segundos. Después viene **La Rueda Final**, donde cada equipo juega con 100 segundos más los que haya ganado.

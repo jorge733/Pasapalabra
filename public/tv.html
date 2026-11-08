@@ -86,14 +86,82 @@
 
   .pausa{position:fixed;inset:0;background:rgba(0,0,0,.7);display:grid;place-items:center;font-size:8vmin;font-weight:900;z-index:9}
   #sonido{position:fixed;bottom:2vmin;right:2vmin;background:var(--panel);padding:1.5vmin 2.5vmin;font-size:2.2vmin;z-index:10}
+
+  /* ================= ANIMACIONES ================= */
+  /* fondo animado */
+  .fondo{position:fixed;inset:-20vmax;z-index:-1;pointer-events:none;
+    background:radial-gradient(circle at 20% 30%,rgba(139,92,246,.22),transparent 28%),radial-gradient(circle at 80% 70%,rgba(245,158,11,.16),transparent 30%),radial-gradient(circle at 60% 15%,rgba(37,99,235,.14),transparent 25%);
+    animation:deriva 22s ease-in-out infinite alternate}
+  @keyframes deriva{to{transform:translate(6vmax,-4vmax) rotate(8deg)}}
+  body{background:var(--bg)}
+  /* cada pantalla nueva (pregunta, prueba, turno) entra con movimiento */
+  .vista{animation:entrar .55s cubic-bezier(.2,.9,.3,1.2) both;width:100%;display:flex;justify-content:center}
+  @keyframes entrar{from{opacity:0;transform:translateY(4vmin) scale(.97)}to{opacity:1;transform:none}}
+  .vista .pista{animation:bajar .5s both}
+  .vista .qtxt{animation:subir .55s .1s both}
+  .vista .opt{animation:subir .5s both}
+  .vista .opt:nth-child(1){animation-delay:.2s}.vista .opt:nth-child(2){animation-delay:.3s}
+  .vista .opt:nth-child(3){animation-delay:.4s}.vista .opt:nth-child(4){animation-delay:.5s}
+  .vista .estado{animation:subir .5s .5s both}
+  @keyframes subir{from{opacity:0;transform:translateY(3vmin)}to{opacity:1;transform:none}}
+  @keyframes bajar{from{opacity:0;transform:translateY(-2vmin)}to{opacity:1;transform:none}}
+  .opt.win{animation:ganadora .7s ease both}
+  @keyframes ganadora{0%{transform:scale(1)}40%{transform:scale(1.1);box-shadow:0 0 6vmin rgba(255,255,255,.6)}100%{transform:scale(1.04)}}
+  /* fichas que se dan vuelta */
+  .tile.on{animation:voltear .5s ease both}
+  @keyframes voltear{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
+  .tile:not(.on){animation:latidoSuave 2.4s ease-in-out infinite}
+  @keyframes latidoSuave{50%{border-color:var(--muted)}}
+  /* intro de cada prueba */
+  .intro-icono{font-size:16vmin;line-height:1;animation:girarEntrar .8s cubic-bezier(.2,.9,.3,1.4) both}
+  @keyframes girarEntrar{from{opacity:0;transform:scale(.2) rotate(-200deg)}to{opacity:1;transform:none}}
+  .intro-titulo{animation:zoom .6s .15s cubic-bezier(.2,.9,.3,1.3) both}
+  @keyframes zoom{from{opacity:0;transform:scale(1.6)}to{opacity:1;transform:none}}
+  .intro-texto{animation:subir .6s .45s both}
+  .intro-cuenta{animation:latido 1s infinite}
+  /* rueda */
+  .rueda .l{animation:aparecer .45s calc(var(--d) * 1ms) cubic-bezier(.2,.9,.3,1.5) both}
+  @keyframes aparecer{from{opacity:0;transform:scale(0) rotate(-90deg)}to{opacity:1;transform:none}}
+  .rueda .l.cur{animation:brillo 1.2s ease-in-out infinite}
+  @keyframes brillo{0%,100%{transform:scale(1.3);box-shadow:0 0 0 .5vmin #fff,0 0 3vmin var(--team)}50%{transform:scale(1.45);box-shadow:0 0 0 .7vmin #fff,0 0 7vmin var(--team)}}
+  .rueda .l.acierto,.rueda .l.fallo{animation:sello .6s ease both}
+  @keyframes sello{0%{transform:scale(1)}40%{transform:scale(1.6) rotate(20deg)}100%{transform:none}}
+  .centro{animation:centroEntra .6s .2s both}
+  @keyframes centroEntra{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  .centro .letra{animation:zoom .45s cubic-bezier(.2,.9,.3,1.4) both}
+  .lado.on{animation:resaltar 2s ease-in-out infinite}
+  @keyframes resaltar{50%{box-shadow:0 0 4vmin var(--team)}}
+  /* marcador */
+  .score .t.bump{animation:bump .7s ease}
+  @keyframes bump{30%{transform:scale(1.18);box-shadow:0 0 4vmin var(--team)}}
+  .flotante{position:fixed;z-index:20;font-weight:900;font-size:5vmin;color:var(--ok);text-shadow:0 .4vmin 1.5vmin rgba(0,0,0,.6);pointer-events:none;animation:flotar 1.6s ease-out forwards}
+  @keyframes flotar{from{opacity:0;transform:translateY(2vmin) scale(.6)}20%{opacity:1;transform:translateY(0) scale(1.2)}to{opacity:0;transform:translateY(-12vmin) scale(1)}}
+  /* destello de color al presionar «¡Lo sé!» y temblor al fallar */
+  .destello{position:fixed;inset:0;z-index:15;pointer-events:none;background:radial-gradient(circle,var(--c) 0%,transparent 70%);animation:destello .7s ease-out forwards}
+  @keyframes destello{from{opacity:.75}to{opacity:0}}
+  #app.temblor{animation:temblor .45s}
+  @keyframes temblor{20%{transform:translateX(-1.5vmin)}40%{transform:translateX(1.5vmin)}60%{transform:translateX(-1vmin)}80%{transform:translateX(1vmin)}}
+  /* lobby */
+  .qr{animation:flotarQR 4s ease-in-out infinite}
+  @keyframes flotarQR{50%{transform:translateY(-1.5vmin) rotate(-1deg)}}
+  .equipo li{animation:subir .4s both}
+  /* final */
+  .fin-titulo{animation:rebote 1s cubic-bezier(.2,.9,.3,1.6) both}
+  @keyframes rebote{from{opacity:0;transform:scale(.3) translateY(-10vmin)}to{opacity:1;transform:none}}
+  .trofeo{font-size:16vmin;animation:girarEntrar 1s both,flotarQR 3s 1s ease-in-out infinite}
+  #confeti{position:fixed;inset:0;z-index:30;pointer-events:none}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head><body>
+<div class="fondo"></div>
+<canvas id="confeti"></canvas>
 <div id="app">
   <header><div class="logo">Letra<span>manía</span></div><div id="reloj"></div><div class="score" id="score"></div></header>
   <main id="main"></main>
 </div>
 <button id="sonido">🔊 Presiona para activar el sonido</button>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/vendor/idiomorph.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -125,14 +193,73 @@ sock.on('state', (s, ev) => {
   if (ev && SFX[ev]) SFX[ev]();
   if (s.phase === 'rueda' && s.rueda.ultimo && ['ok', 'fail', 'paso', 'tiempo'].includes(ev)) flashHasta = Date.now() + (ev === 'ok' ? 900 : 2600);
   render();
+  efectos(ev);
 });
+
+// ---------- efectos ----------
+const COLOR = { A: '#8b5cf6', B: '#f59e0b' };
+let bonusPrevio = null;
+function animarBonus() {
+  if (!S || S.phase === 'lobby') { bonusPrevio = null; return; }
+  const ahora = { A: S.teams.A.bonus, B: S.teams.B.bonus };
+  if (bonusPrevio) for (const t of ['A', 'B']) {
+    const dif = ahora[t] - bonusPrevio[t], el = document.getElementById('sc-' + t);
+    if (dif > 0 && el) {
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+      const r = el.getBoundingClientRect(), f = document.createElement('div');
+      f.className = 'flotante'; f.textContent = `+${dif} s`;
+      f.style.left = r.left + r.width / 2 - 40 + 'px'; f.style.top = r.bottom + 10 + 'px';
+      document.body.appendChild(f); setTimeout(() => f.remove(), 1700);
+    }
+  }
+  bonusPrevio = ahora;
+}
+function destello(color) {
+  const d = document.createElement('div'); d.className = 'destello'; d.style.setProperty('--c', color);
+  document.body.appendChild(d); setTimeout(() => d.remove(), 800);
+}
+function temblor() { const a = $('#app'); a.classList.remove('temblor'); void a.offsetWidth; a.classList.add('temblor'); }
+function efectos(ev) {
+  if (!ev || !S) return;
+  const dato = S.quiz || S.oculta || S.p;
+  if (ev === 'buzz' && dato && dato.buzz) destello(COLOR[dato.buzz.team]);
+  if (ev === 'ok') confeti(S.phase === 'rueda' ? 40 : 70);
+  if (ev === 'fail' || ev === 'tiempo') temblor();
+  if (ev === 'turno' && S.rueda) destello(COLOR[S.rueda.turno]);
+  if (ev === 'fin') { confeti(250); setTimeout(() => confeti(200), 900); setTimeout(() => confeti(200), 1800); }
+}
+
+// ---------- confeti (dibujado en un canvas) ----------
+const cv = $('#confeti'), cx = cv.getContext('2d');
+let piezas = [], animando = false;
+function confeti(n) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ['#8b5cf6', '#f59e0b', '#22c55e', '#ef4444', '#2563eb', '#ffffff'];
+  for (let i = 0; i < n; i++) piezas.push({
+    x: innerWidth / 2 + (Math.random() - .5) * innerWidth * .3, y: innerHeight * .35,
+    vx: (Math.random() - .5) * 16, vy: -Math.random() * 16 - 6, g: .35 + Math.random() * .2,
+    w: 6 + Math.random() * 8, h: 8 + Math.random() * 10, r: Math.random() * 6, vr: (Math.random() - .5) * .4,
+    c: cols[Math.floor(Math.random() * cols.length)], vida: 0,
+  });
+  if (!animando) { animando = true; requestAnimationFrame(paso); }
+}
+function paso() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  piezas = piezas.filter((p) => p.y < cv.height + 40 && p.vida < 400);
+  for (const p of piezas) {
+    p.vy += p.g; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vida++;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c; cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.cos(p.vida / 6)); cx.restore();
+  }
+  if (piezas.length) requestAnimationFrame(paso); else { animando = false; cx.clearRect(0, 0, cv.width, cv.height); }
+}
 
 function score() {
   if (!S || S.phase === 'lobby') return '';
-  return ['A', 'B'].map((t) => `<div class="t ${t}"><div class="n">${esc(S.teams[t].name)}</div><div class="v">+${S.teams[t].bonus} s</div></div>`).join('');
+  return ['A', 'B'].map((t) => `<div id="sc-${t}" class="t ${t}"><div class="n">${esc(S.teams[t].name)}</div><div class="v">+${S.teams[t].bonus} s</div></div>`).join('');
 }
 
-let ultimoSeg = null;
+let ultimoSeg = null, claveAnterior = null;
 function pintarReloj() {
   const el = $('#reloj'), r = S && S.reloj;
   if (!r) { el.innerHTML = ''; el.className = ''; ultimoSeg = null; return; }
@@ -145,11 +272,12 @@ function pintarReloj() {
 }
 function render() {
   pintarReloj();
-  $('#score').innerHTML = S.phase === 'rueda' || S.phase === 'fin' ? '' : score();
+  Idiomorph.morph($('#score'), S.phase === 'rueda' || S.phase === 'fin' ? '' : score(), { morphStyle: 'innerHTML' });
+  animarBonus();
   const m = $('#main');
   let h = '';
   if (S.phase === 'lobby') {
-    const lista = (t) => S.players.filter((p) => p.team === t).map((p) => `<li>${esc(p.name)}</li>`).join('') || '<li style="color:var(--muted)">Esperando jugadores…</li>';
+    const lista = (t) => S.players.filter((p) => p.team === t).map((p) => `<li id="pl-${t}-${encodeURIComponent(p.name).replace(/%/g, '')}">${esc(p.name)}</li>`).join('') || '<li style="color:var(--muted)">Esperando jugadores…</li>';
     h = `<div class="lobby">
       <div><div class="qr"><img src="/qr.svg" alt="QR"></div><div class="url">${esc(S.base)}/play</div></div>
       <div><div class="big" style="text-align:left">Escanea el QR<br>para jugar</div>
@@ -159,8 +287,9 @@ function render() {
   } else if (S.intro) {
     const extra = S.intro.prueba === 'rueda'
       ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
-    h = `<div><div class="big">${esc(S.intro.titulo)}</div><div class="sub">${esc(S.intro.texto)}</div>${extra}
-      <div class="sub" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
+    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', rueda: '🎡' };
+    h = `<div style="text-align:center"><div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div><div class="big intro-titulo">${esc(S.intro.titulo)}</div><div class="sub intro-texto">${esc(S.intro.texto)}</div>${extra}
+      <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
   } else if (S.phase === 'quiz' && S.modo === 'presentador' && S.quiz.stage === 'ask') {
     const q = S.quiz;
     const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : q.espera > 0 ? `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(q.espera)}</span>` : '¡Ya pueden presionar «¡Lo sé!»!';
@@ -256,10 +385,10 @@ function render() {
     const n = T.letras.length, R = 44;
     const letras = T.letras.map((l, k) => {
       const a = -Math.PI / 2 + (2 * Math.PI * k) / n;
-      return `<div class="l ${l.estado} ${k === T.idx && r.stage === 'play' ? 'cur' : ''}" style="left:${50 + R * Math.cos(a)}%;top:${50 + R * Math.sin(a)}%">${l.letra}</div>`;
+      return `<div id="l-${t}-${k}" class="l ${l.estado} ${k === T.idx && r.stage === 'play' ? 'cur' : ''}" style="--d:${k * 35};left:${50 + R * Math.cos(a)}%;top:${50 + R * Math.sin(a)}%">${l.letra}</div>`;
     }).join('');
     const c = r.actual;
-    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra" style="font-size:20vmin">${c.letra}</div>`
+    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra" id="letra-${t}-${c.letra}" style="font-size:20vmin">${c.letra}</div>`
                      : `<div class="tipo">Turno de</div><div class="def" style="font-size:4vmin;color:var(--team)">${esc(S.teams[t].name)}</div>`;
     const lado = (x) => {
       const E = r.eq[x], ac = E.letras.filter((l) => l.estado === 'acierto').length, fa = E.letras.filter((l) => l.estado === 'fallo').length;
@@ -277,12 +406,18 @@ function render() {
     h = `<div class="rueda-wrap">${lado('A')}<div class="rueda ${t}">${letras}<div class="centro">${centro}</div>${flash}</div>${lado('B')}</div>`;
   } else if (S.phase === 'fin') {
     const f = S.fin;
-    h = `<div><div class="big">${f.ganador ? `<span class="${f.ganador}" style="color:var(--team)">¡Gana ${esc(S.teams[f.ganador].name)}!</span>` : '¡Empate!'}</div>
+    h = `<div style="text-align:center"><div class="trofeo">🏆</div><div class="big fin-titulo">${f.ganador ? `<span class="${f.ganador}" style="color:var(--team)">¡Gana ${esc(S.teams[f.ganador].name)}!</span>` : '¡Empate!'}</div>
       <div class="equipos" style="max-width:100vmin;margin:5vmin auto 0">${f.res.map((x) => `<div class="equipo ${x.team}" style="min-height:0;text-align:center">
-        <h3>${esc(S.teams[x.team].name)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">${x.fallos} fallos · ${seg(x.tiempo)} s restantes</div></div>`).join('')}</div></div>`;
+        <h3>${esc(S.teams[x.team].name)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">${x.fallos} ${x.fallos === 1 ? 'fallo' : 'fallos'} · ${seg(x.tiempo)} s restantes</div></div>`).join('')}</div></div>`;
   }
+  // cada pantalla lleva una clave: si cambia (otra pregunta, otra prueba, otro turno) se anima su entrada
+  const dato = S.quiz || S.vf || S.cifra || S.oculta || S.p;
+  const clave = S.phase + '-' + (S.intro ? S.intro.prueba : '') + (dato ? dato.n + (dato.kind || '') : '') + (S.rueda ? S.rueda.turno : '');
+  h = `<div class="vista" id="v-${clave.replace(/[^\w-]/g, '')}">${h}</div>`;
   if (S.paused) h += '<div class="pausa">⏸ Pausa</div>';
-  m.innerHTML = h;
+  // pantalla nueva → se reemplaza entera (y se anima su entrada); misma pantalla → solo se actualiza lo que cambió
+  if (clave !== claveAnterior) { m.innerHTML = h; claveAnterior = clave; }
+  else Idiomorph.morph(m, h, { morphStyle: 'innerHTML' });
 }
 setInterval(() => { if (S && S.phase === 'rueda' && flashHasta && Date.now() > flashHasta) { flashHasta = 0; render(); } }, 200);
 </script>

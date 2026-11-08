@@ -75,6 +75,7 @@ app.get('/info', (_, res) => res.json({ base: BASE, play: BASE + '/play' }));
 app.get('/qr.svg', async (_, res) => {
   res.type('image/svg+xml').send(await QR.toString(BASE + '/play', { type: 'svg', margin: 1 }));
 });
+app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'idiomorph', 'dist')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---------- utilidades ----------
