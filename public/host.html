@@ -94,7 +94,7 @@ const seg = (ms) => Math.max(0, Math.ceil(ms / 1000));
 const sock = io();
 const h = (c, a) => sock.emit('host', c, a);
 sock.on('connect', () => sock.emit('soyHost'));
-const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', rueda: 'Rueda final', fin: 'Partida terminada' };
+const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', rueda: 'Rueda final', fin: 'Partida terminada' };
 let S = null, X = null, ultimaLectura = '';
 
 sock.on('state', (s) => { S = s; render(); });
@@ -105,8 +105,9 @@ function render() {
   let e = FASES[s.phase] || s.phase;
   if (s.phase === 'quiz') e += ` (${s.quiz.n}/${s.quiz.total})`;
   if (s.phase === 'oculta') e += ` (${s.oculta.n}/${s.oculta.total})`;
-  if (s.phase === 'vf') e += ` (${s.vf.n}/${s.vf.total})`;
-  if (s.p && ['anagrama', 'quiensoy', 'refran'].includes(s.phase)) e += ` (${s.p.n}/${s.p.total})`;
+  if (s.vf) e += ` (${s.vf.n}/${s.vf.total})`;
+  if (s.cifra) e += ` (${s.cifra.n}/${s.cifra.total})`;
+  if (s.p && ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas'].includes(s.phase)) e += ` (${s.p.n}/${s.p.total})`;
   if (s.phase === 'intro') e = s.intro.titulo;
   if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
   if (s.reloj) e += ` · ⏱ ${Math.max(0, Math.ceil(s.reloj.rem / 1000))} s${s.reloj.parado ? ' (en pausa)' : ''}`;
@@ -140,7 +141,7 @@ const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar',
 
 function renderLectura() {
   const card = $('#lectura');
-  const visible = S && X && S.modo === 'presentador' && ['quiz', 'vf', 'oculta', 'anagrama', 'quiensoy', 'refran', 'rueda'].includes(S.phase);
+  const visible = S && X && S.modo === 'presentador' && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'rueda'].includes(S.phase);
   card.classList.toggle('hidden', !visible);
   if (!visible) return;
   let html = '';
@@ -160,21 +161,30 @@ function renderLectura() {
     html = `<div class="meta">Palabra ${X.n} de ${X.total}</div><div class="leer">Pista: ${esc(X.pista)}</div>
       <div class="resp">Respuesta: ${esc(X.palabra)}</div><div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
   } else if (X.tipo === 'vf') {
-    html = `<div class="meta">Verdadero o falso · ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
-      <div class="resp" style="color:${X.v ? 'var(--ok)' : 'var(--ko)'}">Respuesta: ${X.v ? 'VERDADERO' : 'FALSO'}</div>
+    const correcta = X.kind === 'vf' ? (X.correcta === 0 ? 'VERDADERO' : 'FALSO') : `${'AB'[X.correcta]}) ${X.opciones[X.correcta]}`;
+    html = `<div class="meta">${esc(X.titulo)} · ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
+      ${X.kind === 'antes' ? `<div class="ops">${X.opciones.map((o, k) => `<div class="${k === X.correcta ? 'ok' : ''}">${'AB'[k]}) ${esc(o)}</div>`).join('')}</div>` : ''}
+      <div class="resp">Respuesta: ${esc(correcta)}</div>${X.detalle ? `<div class="meta">${esc(X.detalle)}</div>` : ''}
       <div class="estadoL">${X.stage === 'reveal' ? 'Mostrando la respuesta en la tele…' : `Los equipos responden en el celular · ${['A', 'B'].map((t) => team(t) + (X.respondido[t] ? ' ✓' : ' …')).join(' ')}`}</div>
+      <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
+  } else if (X.tipo === 'cifra') {
+    html = `<div class="meta">Adivina la cifra · ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
+      <div class="resp">Respuesta: ${X.unidad ? Number(X.respuesta).toLocaleString('es-CL') : X.respuesta} ${esc(X.unidad)}</div>
+      <div class="estadoL">${X.stage === 'reveal' ? 'Mostrando el resultado en la tele…' : `Los equipos escriben su número · ${['A', 'B'].map((t) => team(t) + (X.respondido[t] ? ' ✓' : ' …')).join(' ')}`}</div>
       <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
   } else if (X.tipo === 'p') {
     let estado, botones = '';
     if (X.stage === 'reveal') estado = 'Mostrando la respuesta en la tele…';
     else if (X.buzz) { estado = `🔔 ${team(X.buzz.team)} presionó. ¿Ha acertado?`; botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X'); }
     else {
-      estado = { anagrama: 'Di la pista en voz alta. Las letras revueltas están en la tele.', quiensoy: 'Lee la pista marcada. Saldrá la siguiente automáticamente (o presiona «Otra pista»).', refran: 'Lee el comienzo del refrán.' }[X.kind];
+      estado = { anagrama: 'Di la pista en voz alta. Las letras revueltas están en la tele.', quiensoy: 'Lee la pista marcada. Saldrá la siguiente automáticamente (o presiona «Otra pista»).', refran: 'Lee el comienzo del refrán.', adivinanza: 'Lee la adivinanza en voz alta.', siglas: 'Lee las siglas en voz alta, letra por letra.' }[X.kind];
       botones = (X.kind === 'quiensoy' && X.numPistas < 3 ? btn('bPaso', 'pista', 'Otra pista', 'P') : '') + btn('bNadie', 'nadie', 'Nadie lo sabe →', 'N');
     }
     let leer = '';
     if (X.kind === 'anagrama') leer = `<div class="leer">Pista: ${esc(X.item.pista)}</div><div class="meta">En la tele: ${esc(X.revuelta)}</div>`;
     else if (X.kind === 'refran') leer = `<div class="leer">${esc(X.item.inicio)}</div>`;
+    else if (X.kind === 'adivinanza') leer = `<div class="leer" style="font-style:italic">«${esc(X.item.texto)}»</div>`;
+    else if (X.kind === 'siglas') leer = `<div class="leer" style="font-size:44px;letter-spacing:.2em">${esc(X.item.sigla)}</div>`;
     else leer = X.item.pistas.map((p, k) => `<div class="leer" style="font-size:${k === X.numPistas - 1 ? 28 : 20}px;opacity:${k < X.numPistas ? 1 : .35}">${k + 1}. ${esc(p)}${k === X.numPistas - 1 && X.stage === 'play' ? ' ⬅ lee esta' : ''}</div>`).join('');
     html = `<div class="meta">${esc(X.titulo)} · ${X.n} de ${X.total}</div>${leer}
       <div class="resp">Respuesta: ${esc(X.respuesta)}</div><div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;

@@ -303,18 +303,18 @@ exports.quienSoy = [
   { pistas: ['Tengo una memoria legendaria', 'Mis grandes orejas me ayudan a refrescarme', 'Tengo trompa'], respuestas: ['elefante'] },
   { pistas: ['Me abro cuando el cielo se nubla', 'Tengo varillas', 'Te protejo de la lluvia'], respuestas: ['paraguas'] },
   { pistas: ['Tengo manecillas', 'Doy vueltas sin moverme de mi sitio', 'Te digo la hora'], respuestas: ['reloj'] },
-  { pistas: ['Navegué con tres barcos', 'Zarpé desde España en 1492', 'Llegué a América creyendo que eran las Indias'], respuestas: ['cristobal colon', 'colon'] },
+  { pistas: ['Navegué con tres barcos', 'Zarpé desde España en 1492', 'Llegué a América creyendo que eran las Indias'], respuestas: ['cristóbal colón', 'colón'] },
   { pistas: ['Nací en Alemania en 1879', 'Gané el Premio Nobel de Física', 'Mi fórmula más famosa es E = mc²'], respuestas: ['albert einstein', 'einstein'] },
 ];
 exports.quienSoyChile = [
   { pistas: ['Nací en Parral', 'Tuve una casa en Isla Negra', 'Escribí «Veinte poemas de amor y una canción desesperada»'], respuestas: ['pablo neruda', 'neruda'] },
   { pistas: ['Fui profesora rural', 'Nací en Vicuña', 'Fui la primera latinoamericana en ganar el Nobel de Literatura'], respuestas: ['gabriela mistral', 'mistral'] },
-  { pistas: ['Luché en la batalla de Rancagua', 'Fui Director Supremo', 'Me llaman el padre de la patria chilena'], respuestas: ['bernardo ohiggins', 'ohiggins', "o'higgins"] },
+  { pistas: ['Luché en la batalla de Rancagua', 'Fui Director Supremo', 'Me llaman el padre de la patria chilena'], respuestas: ["bernardo o'higgins", 'ohiggins', "o'higgins"] },
   { pistas: ['Nací en San Carlos, en Ñuble', 'Fui cantautora, pintora y bordadora', 'Compuse «Gracias a la vida»'], respuestas: ['violeta parra', 'violeta'] },
   { pistas: ['Fui abogado y marino', 'Combatí en la Guerra del Pacífico', 'Morí abordando el Huáscar en el combate naval de Iquique'], respuestas: ['arturo prat', 'prat'] },
   { pistas: ['Vivo en Pelotillehue', 'Mi novia se llama Yayita', 'Cuando algo sale mal, exijo una explicación'], respuestas: ['condorito'] },
   { pistas: ['Estoy en medio del océano Pacífico', 'Mis habitantes originarios son los rapanui', 'Soy famosa por los moáis'], respuestas: ['isla de pascua', 'rapa nui', 'pascua'] },
-  { pistas: ['Nací en Tocopilla', 'Jugué en el Barcelona y en el Arsenal', 'Soy el máximo goleador de la historia de la selección chilena'], respuestas: ['alexis sanchez', 'alexis'] },
+  { pistas: ['Nací en Tocopilla', 'Jugué en el Barcelona y en el Arsenal', 'Soy el máximo goleador de la historia de la selección chilena'], respuestas: ['alexis sánchez', 'alexis'] },
 ];
 
 // Completa el refrán — se dice el comienzo y hay que decir el final
@@ -453,20 +453,20 @@ exports.palabrasOcultasChileDificil = [
 exports.quienSoyDificil = [
   { pistas: ['Nací en Varsovia', 'Gané dos premios Nobel en ciencias distintas', 'Descubrí el polonio y el radio'], respuestas: ['marie curie', 'curie'] },
   { pistas: ['Escribía al revés, como en un espejo', 'Diseñé máquinas voladoras', 'Pinté «La última cena»'], respuestas: ['leonardo da vinci', 'da vinci', 'leonardo'] },
-  { pistas: ['Nací en Caracas', 'Un país lleva mi apellido', 'Me llaman el Libertador'], respuestas: ['simon bolivar', 'bolivar'] },
+  { pistas: ['Nací en Caracas', 'Un país lleva mi apellido', 'Me llaman el Libertador'], respuestas: ['simón bolívar', 'bolívar'] },
   { pistas: ['Sería capaz de flotar en el agua', 'Tengo más de cien lunas', 'Mis anillos son los más famosos'], respuestas: ['saturno'] },
   { pistas: ['Sufrí un grave accidente en un bus', 'Mi casa azul es un museo en Coyoacán', 'Pinté muchos autorretratos con las cejas unidas'], respuestas: ['frida kahlo', 'frida'] },
   { pistas: ['La Inquisición me juzgó', 'Descubrí cuatro lunas de Júpiter', 'Defendí que la Tierra gira alrededor del Sol'], respuestas: ['galileo galilei', 'galileo'] },
 ];
 exports.quienSoyChileDificil = [
-  { pistas: ['Creé la primera bandera nacional', 'Me fusilaron en Mendoza en 1821', 'Lideré la Patria Vieja junto a mis hermanos'], respuestas: ['jose miguel carrera', 'carrera'] },
-  { pistas: ['Me disfrazaba para burlar a los realistas', 'Fui guerrillero de la independencia', 'Me asesinaron en Tiltil en 1818'], respuestas: ['manuel rodriguez'] },
-  { pistas: ['Fui director de teatro', 'Un estadio de Santiago lleva mi nombre', 'Compuse «El derecho de vivir en paz»'], respuestas: ['victor jara'] },
+  { pistas: ['Creé la primera bandera nacional', 'Me fusilaron en Mendoza en 1821', 'Lideré la Patria Vieja junto a mis hermanos'], respuestas: ['josé miguel carrera', 'carrera'] },
+  { pistas: ['Me disfrazaba para burlar a los realistas', 'Fui guerrillero de la independencia', 'Me asesinaron en Tiltil en 1818'], respuestas: ['manuel rodríguez'] },
+  { pistas: ['Fui director de teatro', 'Un estadio de Santiago lleva mi nombre', 'Compuse «El derecho de vivir en paz»'], respuestas: ['víctor jara'] },
   { pistas: ['Fui caballerizo de Pedro de Valdivia', 'Aprendí las tácticas de los españoles', 'Fui el líder mapuche que venció en Tucapel'], respuestas: ['lautaro'] },
   { pistas: ['Nací en Chillán en 1903', 'Fui un niño prodigio', 'Fui uno de los grandes pianistas del siglo XX'], respuestas: ['claudio arrau', 'arrau'] },
   { pistas: ['Nací en Extremadura', 'Fundé Santiago en 1541', 'Morí tras la batalla de Tucapel'], respuestas: ['pedro de valdivia', 'valdivia'] },
-  { pistas: ['Viví muchos años en España', 'Escribí «2666»', 'Escribí «Los detectives salvajes»'], respuestas: ['roberto bolano', 'bolano'] },
-  { pistas: ['Junto a mí hay un lago con mi mismo nombre', 'Estoy al lado de Pucón', 'Soy uno de los volcanes más activos de Chile'], respuestas: ['villarrica', 'volcan villarrica'] },
+  { pistas: ['Viví muchos años en España', 'Escribí «2666»', 'Escribí «Los detectives salvajes»'], respuestas: ['roberto bolaño', 'bolaño'] },
+  { pistas: ['Junto a mí hay un lago con mi mismo nombre', 'Estoy al lado de Pucón', 'Soy uno de los volcanes más activos de Chile'], respuestas: ['villarrica', 'volcán villarrica'] },
 ];
 
 exports.refranesDificil = [
@@ -608,3 +608,9 @@ exports.ruedasChileDificil = [
     L('Z', 'empieza', 'Elegante balneario de la región de Valparaíso, vecino de Papudo', 'zapallar'),
   ],
 ];
+
+// =====================================================================
+// Suma el contenido de contenido-extra.js
+// =====================================================================
+const EXTRA = require('./contenido-extra');
+for (const [k, v] of Object.entries(EXTRA)) exports[k] = [...(exports[k] || []), ...v];

@@ -190,15 +190,34 @@ function render() {
       <div class="tiles">${o.letras.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>
       <div class="aviso">${aviso}</div>
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${o.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${o.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
-  } else if (S.phase === 'vf') {
+  } else if (S.vf) {
     const v = S.vf, rev = v.stage === 'reveal';
-    const enunciado = v.texto ? `<div class="qtxt">${esc(v.texto)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchen la afirmación</div>';
-    h = `<div class="q"><div class="pista">Verdadero o falso · ${v.n} de ${v.total}</div>${enunciado}
-      ${rev ? `<div class="big" style="font-size:9vmin;color:${v.verdadero ? 'var(--ok)' : 'var(--ko)'}">${v.verdadero ? 'VERDADERO' : 'FALSO'}</div>
-               <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${v.gana[t] ? '+' + v.gana[t] + ' s' : v.resp[t] === null ? 'sin respuesta' : 'falló'}</span>`).join('')}</div>`
-            : `<div class="bar"><i style="width:${(100 * v.rem / v.total_ms).toFixed(1)}%"></i></div>
-               <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${v.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${v.respondido[t] ? '✓' : '…'}</span>`).join('')}</div>`}</div>`;
-  } else if (S.phase === 'anagrama' || S.phase === 'quiensoy' || S.phase === 'refran') {
+    const chips = rev
+      ? ['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${v.gana[t] ? '+' + v.gana[t] + ' s' : v.resp[t] === null ? 'sin respuesta' : 'falló'}</span>`).join('')
+      : ['A', 'B'].map((t) => `<span class="chip ${t} ${v.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${v.respondido[t] ? '✓' : '…'}</span>`).join('');
+    let cuerpo;
+    if (v.kind === 'antes') {
+      cuerpo = `<div class="qtxt">${esc(v.texto)}</div>
+        <div class="opts">${v.opciones.map((o, k) => `<div class="opt o${k + 1} ${rev ? (k === v.correcta ? 'win' : 'dim') : ''}"><span class="k">${'AB'[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
+        ${rev && v.detalle ? `<div class="sub" style="margin-top:2.5vmin">${esc(v.detalle)}</div>` : ''}`;
+    } else {
+      cuerpo = `<div class="qtxt">${esc(v.texto)}</div>` + (rev ? `<div class="big" style="font-size:9vmin;color:${v.correcta === 0 ? 'var(--ok)' : 'var(--ko)'}">${v.correcta === 0 ? 'VERDADERO' : 'FALSO'}</div>` : '');
+    }
+    h = `<div class="q"><div class="pista">${esc(v.titulo)} · ${v.n} de ${v.total}</div>${cuerpo}
+      ${rev ? '' : `<div class="bar"><i style="width:${(100 * v.rem / v.total_ms).toFixed(1)}%"></i></div>`}
+      <div class="estado">${chips}</div></div>`;
+  } else if (S.phase === 'cifra') {
+    const c = S.cifra, rev = c.stage === 'reveal';
+    const num = (x) => (c.unidad ? Number(x).toLocaleString('es-CL') : String(x)); // años sin punto de miles
+    const chips = ['A', 'B'].map((t) => rev
+      ? `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${c.resp[t] === null ? 'sin respuesta' : num(c.resp[t])}${c.gana[t] ? ' · +' + c.gana[t] + ' s' : ''}</span>`
+      : `<span class="chip ${t} ${c.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${c.respondido[t] ? '✓' : '…'}</span>`).join('');
+    h = `<div class="q"><div class="pista">Adivina la cifra · ${c.n} de ${c.total}</div>
+      <div class="qtxt">${esc(c.texto)}</div>
+      ${rev ? `<div class="big" style="font-size:12vmin;color:var(--ok)">${num(c.respuesta)} <span style="font-size:4vmin">${esc(c.unidad)}</span></div>`
+            : '<div class="sub">Escriban su número en el celular</div>'}
+      <div class="estado" style="margin-top:3vmin">${chips}</div></div>`;
+  } else if (S.p && ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas'].includes(S.phase)) {
     const p = S.p, rev = p.stage === 'reveal';
     let aviso = '';
     if (p.ganador) aviso = `<span class="${p.ganador.team}" style="color:var(--team)">¡${esc(S.teams[p.ganador.team].name)} acierta! +${p.ganador.seg} s</span>`;
@@ -216,6 +235,12 @@ function render() {
         ? `<div style="max-width:120vmin;margin:0 auto">${p.pistas.map((t, k) => `<div class="qtxt" style="font-size:4.4vmin;margin:1.5vmin 0;animation:pop .35s">${k + 1}. ${esc(t)}</div>`).join('')}</div>`
         : `<div class="big" style="margin:3vmin 0">🎙️ Escuchen la pista ${p.numPistas} de 3</div>`)
         + (rev ? `<div class="big" style="color:var(--ok);margin-top:2vmin">${esc(p.respuesta.toUpperCase())}</div>` : '');
+    } else if (p.kind === 'adivinanza') {
+      cuerpo = `<div class="qtxt" style="font-size:5.6vmin;max-width:140vmin;margin:3vmin auto;font-style:italic">«${esc(p.texto)}»</div>`
+        + (rev ? `<div class="big" style="color:var(--ok)">${esc(p.respuesta.toUpperCase())}</div>` : '');
+    } else if (p.kind === 'siglas') {
+      cuerpo = `<div class="tiles">${[...p.sigla].map((ch) => `<div class="tile on" style="width:13vmin;height:15vmin;font-size:10vmin">${esc(ch)}</div>`).join('')}</div>`
+        + (rev ? `<div class="qtxt" style="color:var(--ok)">${esc((t => t.charAt(0).toUpperCase() + t.slice(1))(p.respuesta.split(': ').slice(1).join(': ')))}</div>` : '');
     } else {
       cuerpo = rev ? `<div class="qtxt" style="max-width:140vmin;margin:3vmin auto">${esc(p.respuesta)}</div>`
         : p.inicio ? `<div class="qtxt" style="font-size:7vmin;margin:3vmin 0">${esc(p.inicio)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchen el refrán</div>';

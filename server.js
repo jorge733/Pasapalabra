@@ -19,7 +19,10 @@ const CONFIG = {
   segVFPresentador: 15,    //   segundos para responder (con presentador: incluye la lectura)
   palabrasOcultas: 4,      // Palabra oculta: nº de palabras
   revelarCadaMs: 2200,     //   cada cuánto aparece una letra
-  porPrueba: 4,            // Letras revueltas, ¿Quién soy? y Completa el refrán: nº de rondas de cada una
+  porPrueba: 4,            // Letras revueltas, Siglas, ¿Quién soy?, Adivinanzas y Completa el refrán: nº de rondas de cada una
+  queFueAntes: 5,          // ¿Qué fue antes?: nº de preguntas
+  cifras: 4,               // Adivina la cifra: nº de preguntas
+  segCifra: 25,            //   segundos para escribir el número
   segPulsador: 30,         //   segundos antes de dar la ronda por perdida si nadie presiona
   quienSoyCadaMs: 10000,   // ¿Quién soy?: cada cuánto sale una pista nueva
   segParaResponder: 12,    // segundos para escribir la respuesta tras presionar «¡La sé!» (modo automático)
@@ -138,14 +141,35 @@ const PRUEBAS = {
     auto: 'Lean el comienzo del refrán, presionen «¡La sé!» y escriban cómo termina. Acertar suma 8 segundos.',
     presentador: 'El presentador dice el comienzo del refrán. Presionen «¡La sé!» y digan cómo termina. Acertar suma 8 segundos.',
   },
+  antes: {
+    titulo: '¿Qué fue antes?',
+    auto: 'Elijan en el celular cuál de los dos hechos ocurrió primero. Cada acierto suma 3 segundos.',
+    presentador: 'Escuchen los dos hechos y elijan en el celular cuál ocurrió primero. Cada acierto suma 3 segundos.',
+  },
+  cifra: {
+    titulo: 'Adivina la cifra',
+    auto: 'Escriban un número en el celular. El equipo que más se acerque gana 8 segundos; si lo aciertan exacto, 12.',
+    presentador: 'Escuchen la pregunta y escriban un número en el celular. El equipo que más se acerque gana 8 segundos; si lo aciertan exacto, 12.',
+  },
+  adivinanza: {
+    titulo: 'Adivinanzas',
+    auto: 'Lean la adivinanza, presionen «¡La sé!» y escriban la respuesta. Acertar suma 8 segundos.',
+    presentador: 'El presentador lee la adivinanza. Presionen «¡La sé!» y digan la respuesta en voz alta. Acertar suma 8 segundos.',
+  },
+  siglas: {
+    titulo: 'Siglas',
+    auto: '¿Qué significan estas siglas? Presionen «¡La sé!» y escriban el significado completo. Acertar suma 8 segundos.',
+    presentador: '¿Qué significan estas siglas? Presionen «¡La sé!» y digan el significado completo en voz alta. Acertar suma 8 segundos.',
+  },
   rueda: {
     titulo: 'La Rueda Final',
     auto: 'Una palabra por cada letra. Si fallas o dices «Paso», le toca al otro equipo. ¡Gana quien más acierte!',
     presentador: 'El presentador lee una definición por cada letra. Respondan en voz alta o digan «Paso». Si fallas o pasas, le toca al otro equipo. ¡Gana quien más acierte!',
   },
 };
-const ORDEN = ['quiz', 'vf', 'anagrama', 'oculta', 'quiensoy', 'refran']; // la rueda va siempre al final
-const PULSADOR = ['anagrama', 'quiensoy', 'refran']; // pruebas de «presiona y responde»
+const ORDEN = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran']; // la rueda va siempre al final
+const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas']; // pruebas de «presiona y responde»
+const ELECCION = ['vf', 'antes']; // pruebas en que ambos equipos eligen una opción en el celular
 
 // ---------- estado ----------
 const players = {}; // socket.id -> { name, team }
@@ -167,8 +191,9 @@ const conPresentador = () => G.modo === 'presentador';
 
 // Elige el contenido según el tema: 'general', 'chile' o 'mixto'
 function pool(general, chile) {
-  if (G.tema === 'chile') return chile;
-  if (G.tema === 'general') return general;
+  general = general || []; chile = chile || [];
+  if (G.tema === 'chile') return chile.length ? chile : general; // pruebas sin versión chilena usan la general
+  if (G.tema === 'general') return general.length ? general : chile;
   return [...general, ...chile];
 }
 // En «mixto» se sortea si la rueda es general o chilena; los dos equipos reciben ruedas del mismo tipo para que sea justo.
@@ -215,7 +240,7 @@ function ruedasParaPartida() {
 // Toma n elementos de una prueba según tema y dificultad, sin repetir lo ya jugado
 function tomar(general, chile, n) {
   const dificiles = G.dificultad === 'dificil' ? pool(C[general + 'Dificil'] || [], C[chile + 'Dificil'] || []) : [];
-  const normales = pool(C[general], C[chile]);
+  const normales = pool(C[general] || [], C[chile] || []);
   const candidatos = dificiles.length >= n ? dificiles : [...dificiles, ...normales];
   return elegirSinRepetir(`${general}|${G.dificultad}|${G.tema}`, candidatos, n);
 }
@@ -237,7 +262,11 @@ function iniciarPrueba(k) {
   G.phase = k;
   const n = CONFIG.porPrueba;
   if (k === 'quiz') { G.r = { list: tomar('preguntasRapidas', 'preguntasChile', CONFIG.preguntasRapidas), i: -1 }; siguientePregunta(); }
-  else if (k === 'vf') { G.r = { list: tomar('verdaderoFalso', 'verdaderoFalsoChile', CONFIG.verdaderoFalso), i: -1 }; siguienteVF(); }
+  else if (k === 'vf') { G.r = { kind: k, list: tomar('verdaderoFalso', 'verdaderoFalsoChile', CONFIG.verdaderoFalso), i: -1 }; siguienteVF(); }
+  else if (k === 'antes') { G.r = { kind: k, list: tomar('queFueAntes', 'queFueAntesChile', CONFIG.queFueAntes), i: -1 }; siguienteVF(); }
+  else if (k === 'cifra') { G.r = { list: tomar('cifras', 'cifrasChile', CONFIG.cifras), i: -1 }; siguienteCifra(); }
+  else if (k === 'adivinanza') { G.r = { kind: k, list: tomar('adivinanzas', 'adivinanzasChile', n), i: -1 }; siguientePulsador(); }
+  else if (k === 'siglas') { G.r = { kind: k, list: tomar('siglas', 'siglasChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'oculta') { G.r = { list: tomar('palabrasOcultas', 'palabrasOcultasChile', CONFIG.palabrasOcultas), i: -1 }; siguienteOculta(); }
   else if (k === 'anagrama') { G.r = { kind: k, list: tomar('letrasRevueltas', 'letrasRevueltasChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'quiensoy') { G.r = { kind: k, list: tomar('quienSoy', 'quienSoyChile', n), i: -1 }; siguientePulsador(); }
@@ -280,25 +309,69 @@ function revelarQuiz() {
   emitir('reveal');
 }
 
-// ---- Verdadero o falso ----
+// ---- Verdadero o falso / ¿Qué fue antes?: los dos equipos eligen una opción ----
 function siguienteVF() {
   const r = G.r;
   r.i++;
   if (r.i >= r.list.length) return avanzar();
-  r.item = r.list[r.i];
+  const it = r.list[r.i];
+  r.item = r.kind === 'antes'
+    ? { texto: '¿Qué ocurrió antes?', opciones: [it.a, it.b], correcta: it.antes === 'a' ? 0 : 1, detalle: `${it.a}: ${it.anioA} · ${it.b}: ${it.anioB}` }
+    : { texto: it.texto, opciones: ['Verdadero', 'Falso'], correcta: it.v ? 0 : 1, detalle: null };
   r.stage = 'ask'; r.rem = (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000;
   r.resp = { A: null, B: null }; r.gana = {};
 }
-function responderVF(team, valor) {
+function responderVF(team, k) {
   const r = G.r;
-  if (G.phase !== 'vf' || r.stage !== 'ask' || r.resp[team] !== null) return;
-  r.resp[team] = !!valor;
+  if (!ELECCION.includes(G.phase) || r.stage !== 'ask' || r.resp[team] !== null) return;
+  if (typeof k === 'boolean') k = k ? 0 : 1; // compatibilidad
+  k = Number(k);
+  if (k !== 0 && k !== 1) return;
+  r.resp[team] = k;
   if (r.resp.A !== null && r.resp.B !== null) revelarVF(); else emitir();
 }
 function revelarVF() {
   const r = G.r;
-  r.stage = 'reveal'; r.rem = 4000; r.gana = {};
-  for (const t of ['A', 'B']) if (r.resp[t] === r.item.v) { r.gana[t] = 3; G.teams[t].bonus += 3; }
+  r.stage = 'reveal'; r.rem = r.kind === 'antes' ? 5500 : 4000; r.gana = {};
+  for (const t of ['A', 'B']) if (r.resp[t] === r.item.correcta) { r.gana[t] = 3; G.teams[t].bonus += 3; }
+  emitir(Object.keys(r.gana).length ? 'ok' : 'fail');
+}
+
+// ---- Adivina la cifra: cada equipo escribe un número; gana el más cercano ----
+function leerNumero(v) {
+  let t = String(v ?? '').trim().replace(/\s/g, '');
+  if (!t) return NaN;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');      // 4.270,5 → 4270.5
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');    // 384.400 → 384400
+  return parseFloat(t);
+}
+function siguienteCifra() {
+  const r = G.r;
+  r.i++;
+  if (r.i >= r.list.length) return avanzar();
+  r.item = r.list[r.i];
+  r.stage = 'ask'; r.rem = CONFIG.segCifra * 1000;
+  r.resp = { A: null, B: null }; r.gana = {};
+}
+function responderCifra(team, valor) {
+  const r = G.r;
+  if (G.phase !== 'cifra' || r.stage !== 'ask' || r.resp[team] !== null) return;
+  const x = leerNumero(valor);
+  if (!Number.isFinite(x)) return;
+  r.resp[team] = x;
+  if (r.resp.A !== null && r.resp.B !== null) revelarCifra(); else emitir();
+}
+function revelarCifra() {
+  const r = G.r, ok = r.item.respuesta;
+  r.stage = 'reveal'; r.rem = 6500; r.gana = {};
+  const dif = (t) => Math.abs(r.resp[t] - ok);
+  const conResp = ['A', 'B'].filter((t) => r.resp[t] !== null);
+  if (conResp.length) {
+    const mejor = Math.min(...conResp.map(dif));
+    const ganadores = conResp.filter((t) => dif(t) === mejor);
+    const premio = mejor === 0 ? 12 : ganadores.length === 2 ? 5 : 8;
+    for (const t of ganadores) { r.gana[t] = premio; G.teams[t].bonus += premio; }
+  }
   emitir(Object.keys(r.gana).length ? 'ok' : 'fail');
 }
 
@@ -345,13 +418,14 @@ function fallarOculta(team) {
 // ---- Pruebas de pulsador: letras revueltas, ¿quién soy?, completa el refrán ----
 function respuestasDe(r) {
   if (r.kind === 'anagrama') return [r.item.palabra];
-  if (r.kind === 'quiensoy') return r.item.respuestas;
-  return r.item.finales;
+  if (r.kind === 'refran') return r.item.finales;
+  return r.item.respuestas; // ¿quién soy?, adivinanzas, siglas
 }
 function textoRespuesta(r) {
   if (r.kind === 'anagrama') return r.item.palabra.toUpperCase();
-  if (r.kind === 'quiensoy') return r.item.respuestas[0];
-  return r.item.inicio.replace(/…$/, '') + ' ' + r.item.finales[0];
+  if (r.kind === 'refran') return r.item.inicio.replace(/…$/, '') + ' ' + r.item.finales[0];
+  if (r.kind === 'siglas') return `${r.item.sigla}: ${r.item.respuestas[0]}`;
+  return r.item.respuestas[0];
 }
 function siguientePulsador() {
   const r = G.r;
@@ -457,8 +531,10 @@ function juzgar(res) {
     r.buzz = null;
     if (res === 'ok') { r.gana = { [t]: 8 }; G.teams[t].bonus += 8; r.stage = 'reveal'; r.rem = 5000; return emitir('ok'); }
     if (res === 'ko') { r.bloqueado[t] = true; if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; } return emitir('fail'); }
-  } else if (G.phase === 'vf' && r.stage === 'ask') {
+  } else if (ELECCION.includes(G.phase) && r.stage === 'ask') {
     if (res === 'nadie') return revelarVF();
+  } else if (G.phase === 'cifra' && r.stage === 'ask') {
+    if (res === 'nadie') return revelarCifra();
   } else if (G.phase === 'oculta' && r.stage === 'play') {
     if (res === 'nadie') { r.buzz = null; r.stage = 'reveal'; r.rem = 4000; r.visibles = r.visibles.map(() => true); return emitir('reveal'); }
     if (!r.buzz) return;
@@ -489,9 +565,12 @@ setInterval(() => {
       // con presentador, el reloj se detiene mientras un equipo responde; si se acaba, nadie suma
       else if (!r.buzz) { r.rem -= dt; if (r.rem <= 0) { r.rem = 5000; r.stage = 'reveal'; emitir('tiempo'); } }
     } else { r.rem -= dt; if (r.rem <= 0) { siguientePregunta(); emitir(); } }
-  } else if (G.phase === 'vf') {
+  } else if (ELECCION.includes(G.phase)) {
     r.rem -= dt;
     if (r.rem <= 0) { if (r.stage === 'ask') revelarVF(); else { siguienteVF(); emitir(); } }
+  } else if (G.phase === 'cifra') {
+    r.rem -= dt;
+    if (r.rem <= 0) { if (r.stage === 'ask') revelarCifra(); else { siguienteCifra(); emitir(); } }
   } else if (G.phase === 'oculta') {
     if (r.stage === 'play') {
       if (r.buzz) { if (!conPresentador()) { r.buzz.rem -= dt; if (r.buzz.rem <= 0) fallarOculta(r.buzz.team); } }
@@ -547,11 +626,17 @@ function publico() {
     s.quiz = { n: r.i + 1, total: r.list.length, texto: ver ? r.q.texto : null, opciones: ver ? r.q.opciones : null, stage: r.stage, rem: r.rem,
       respondido: { A: !!r.resp.A, B: !!r.resp.B }, buzz: r.buzz, bloqueado: r.bloqueado };
     if (r.stage === 'reveal') Object.assign(s.quiz, { correcta: r.q.correcta, resp: r.resp, gana: r.gana });
-  } else if (G.phase === 'vf') {
+  } else if (ELECCION.includes(G.phase)) {
     const rev = r.stage === 'reveal';
-    s.vf = { n: r.i + 1, total: r.list.length, stage: r.stage, rem: r.rem, total_ms: (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000,
-      texto: !oculto || rev ? r.item.texto : null, respondido: { A: r.resp.A !== null, B: r.resp.B !== null },
-      verdadero: rev ? r.item.v : null, resp: rev ? r.resp : null, gana: rev ? r.gana : null };
+    s.vf = { kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, stage: r.stage, rem: r.rem,
+      total_ms: (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000,
+      texto: r.item.texto, opciones: r.item.opciones, respondido: { A: r.resp.A !== null, B: r.resp.B !== null },
+      correcta: rev ? r.item.correcta : null, detalle: rev ? r.item.detalle : null, resp: rev ? r.resp : null, gana: rev ? r.gana : null };
+  } else if (G.phase === 'cifra') {
+    const rev = r.stage === 'reveal';
+    s.cifra = { n: r.i + 1, total: r.list.length, stage: r.stage, texto: r.item.pregunta, unidad: r.item.unidad,
+      respondido: { A: r.resp.A !== null, B: r.resp.B !== null },
+      respuesta: rev ? r.item.respuesta : null, resp: rev ? r.resp : null, gana: rev ? r.gana : null };
   } else if (G.phase === 'oculta') {
     s.oculta = { n: r.i + 1, total: r.list.length, pista: !oculto || r.stage === 'reveal' ? r.pista : null, stage: r.stage,
       letras: [...r.palabra].map((ch, k) => (ch === ' ' ? ' ' : r.visibles[k] ? ch : '')),
@@ -564,6 +649,8 @@ function publico() {
     if (r.kind === 'anagrama') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null });
     if (r.kind === 'quiensoy') s.p.pistas = ver ? it.pistas.slice(0, rev ? 3 : r.pistas) : null;
     if (r.kind === 'refran') s.p.inicio = ver ? it.inicio : null;
+    if (r.kind === 'adivinanza') s.p.texto = it.texto;
+    if (r.kind === 'siglas') s.p.sigla = it.sigla;
   } else if (G.phase === 'rueda') {
     const eq = {};
     for (const t of ['A', 'B']) {
@@ -584,7 +671,8 @@ function reloj() {
   if (!r) return null;
   if (G.phase === 'quiz' && r.stage === 'ask')
     return { rem: r.rem, total: (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000, parado: !!r.buzz };
-  if (G.phase === 'vf' && r.stage === 'ask')
+  if (G.phase === 'cifra' && r.stage === 'ask') return { rem: r.rem, total: CONFIG.segCifra * 1000, parado: false };
+  if (ELECCION.includes(G.phase) && r.stage === 'ask')
     return { rem: r.rem, total: (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000, parado: false };
   if (G.phase === 'oculta' && r.stage === 'play') {
     const ocultas = r.visibles.filter((v) => !v).length;
@@ -601,7 +689,8 @@ function secreto() {
   const r = G.r;
   if (!r) return null;
   if (G.phase === 'quiz') return { tipo: 'quiz', n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, correcta: r.q.correcta, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };
-  if (G.phase === 'vf') return { tipo: 'vf', n: r.i + 1, total: r.list.length, texto: r.item.texto, v: r.item.v, stage: r.stage, rem: r.rem, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
+  if (ELECCION.includes(G.phase)) return { tipo: 'vf', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, texto: r.item.texto, opciones: r.item.opciones, correcta: r.item.correcta, detalle: r.item.detalle, stage: r.stage, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
+  if (G.phase === 'cifra') return { tipo: 'cifra', n: r.i + 1, total: r.list.length, texto: r.item.pregunta, respuesta: r.item.respuesta, unidad: r.item.unidad, stage: r.stage, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
   if (G.phase === 'oculta') return { tipo: 'oculta', n: r.i + 1, total: r.list.length, pista: r.pista, palabra: r.palabra, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };
   if (PULSADOR.includes(G.phase)) return { tipo: 'p', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, stage: r.stage, buzz: r.buzz, bloqueado: r.bloqueado,
     item: r.item, revuelta: r.revuelta, numPistas: r.pistas, respuesta: textoRespuesta(r) };
@@ -630,6 +719,7 @@ io.on('connection', (sock) => {
   const team = () => players[sock.id] && players[sock.id].team;
   sock.on('quiz', (opt) => team() && responderQuiz(team(), Number(opt)));
   sock.on('vf', (v) => team() && responderVF(team(), v));
+  sock.on('cifra', (v) => team() && responderCifra(team(), v));
   sock.on('buzz', () => {
     const t = team();
     if (!t || !G.r) return;

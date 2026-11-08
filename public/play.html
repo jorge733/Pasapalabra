@@ -113,16 +113,28 @@ function vista() {
       return { key: 'op' + o.n, html: () => `<p>Palabra ${o.n}/${o.total}${o.pista ? ' · ' + esc(o.pista) : ' · escucha la pista'}</p>
         <button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
     }
-    case 'vf': {
-      const v = S.vf;
-      if (v.stage === 'reveal') return { key: 'vr' + v.n, html: () => `<div class="grow"></div><div class="res ${v.gana[mt] ? 'ok' : 'ko'}">${v.gana[mt] ? '¡Correcto! +3 s' : 'Era ' + (v.verdadero ? 'VERDADERO' : 'FALSO')}</div><div class="grow"></div>` };
-      if (v.respondido[mt]) return { key: 'vw' + v.n, html: () => `<div class="grow"></div><h2>Respuesta de tu equipo enviada</h2><p>Esperando…</p><div class="grow"></div>` };
-      return { key: 'va' + v.n, html: () => `<p>Afirmación ${v.n}/${v.total} · ${v.texto ? 'mira la tele' : 'escucha al presentador'}</p>
-        <div class="opts" style="grid-template-columns:1fr">
-          <button style="background:var(--ok);font-size:30px" onclick="sock.emit('vf',true);vibra(30)">✔ Verdadero</button>
-          <button style="background:var(--ko);font-size:30px" onclick="sock.emit('vf',false);vibra(30)">✘ Falso</button></div>` };
+    case 'vf': case 'antes': {
+      const v = S.vf, k = v.kind + v.n;
+      if (v.stage === 'reveal') return { key: 'vr' + k, html: () => `<div class="grow"></div><div class="res ${v.gana[mt] ? 'ok' : 'ko'}">${v.gana[mt] ? '¡Correcto! +3 s' : 'Era: ' + esc(v.opciones[v.correcta])}</div><div class="grow"></div>` };
+      if (v.respondido[mt]) return { key: 'vw' + k, html: () => `<div class="grow"></div><h2>Respuesta de tu equipo enviada</h2><p>Esperando…</p><div class="grow"></div>` };
+      const colores = v.kind === 'vf' ? ['var(--ok)', 'var(--ko)'] : ['var(--o1)', 'var(--o2)'];
+      const marcas = v.kind === 'vf' ? ['✔ ', '✘ '] : ['A) ', 'B) '];
+      return { key: 'va' + k, html: () => `<p>${esc(v.titulo)} · ${v.n}/${v.total}</p><h2>${esc(v.texto)}</h2>
+        <div class="opts" style="grid-template-columns:1fr">${v.opciones.map((o, i) =>
+          `<button style="background:${colores[i]};font-size:${v.kind === 'vf' ? 30 : 22}px" onclick="sock.emit('vf',${i});vibra(30)">${marcas[i]}${esc(o)}</button>`).join('')}</div>` };
     }
-    case 'anagrama': case 'quiensoy': case 'refran': {
+    case 'cifra': {
+      const c = S.cifra, num = (x) => (c.unidad ? Number(x).toLocaleString('es-CL') : String(x));
+      if (c.stage === 'reveal') return { key: 'cr' + c.n, html: () => `<div class="grow"></div>
+        <div class="res ${c.gana[mt] ? 'ok' : 'ko'}">${c.gana[mt] ? '¡Bien! +' + c.gana[mt] + ' s' : 'Esta vez no'}</div>
+        <p style="margin-top:10px">Respuesta: <b style="color:var(--ink)">${num(c.respuesta)} ${esc(c.unidad)}</b>${c.resp[mt] !== null ? ' · ustedes: ' + num(c.resp[mt]) : ''}</p><div class="grow"></div>` };
+      if (c.respondido[mt]) return { key: 'cw' + c.n, html: () => `<div class="grow"></div><h2>Número de tu equipo enviado</h2><p>Esperando…</p><div class="grow"></div>` };
+      return { key: 'ca' + c.n, html: () => `<p>Adivina la cifra · ${c.n}/${c.total}</p><h2>${esc(c.texto)}</h2>
+        <form onsubmit="event.preventDefault();const v=$('#resp').value.trim();if(v){sock.emit('cifra',v);vibra(30)}">
+        <input id="resp" class="in" inputmode="decimal" autocomplete="off" placeholder="Tu número${c.unidad ? ' (' + esc(c.unidad) + ')' : ''}">
+        <button class="btn" style="margin-top:12px">Enviar</button></form>`, after: () => $('#resp').focus() };
+    }
+    case 'anagrama': case 'quiensoy': case 'refran': case 'adivinanza': case 'siglas': {
       const p = S.p, k = p.kind + p.n;
       if (p.stage === 'reveal') return { key: 'pr' + k, html: () => `<div class="grow"></div>` + (p.ganador
         ? `<div class="res ${p.ganador.team === mt ? 'ok' : 'ko'}">${p.ganador.team === mt ? '¡Bien! +' + p.ganador.seg + ' s' : 'Acertó ' + esc(equipoNombre(p.ganador.team))}</div>`
