@@ -73,6 +73,14 @@ En el panel del presentador, antes de empezar, puedes elegir:
 - **🇨🇱 Solo Chile**: 20 preguntas, 12 palabras ocultas y 2 ruedas completas sobre Chile (comida, lugares, música, historia y chilenismos).
 - **🌍 General**: cultura general, sin temática chilena.
 
+## Variedad entre partidas
+
+El juego **recuerda qué preguntas ya salieron** y no las repite hasta haber usado todas las de esa categoría; después vuelve a empezar. Lo guarda en el archivo `historial.json` (junto a `server.js`), así que lo recuerda aunque cierres el juego. Para empezar de cero, borra ese archivo.
+
+La Rueda Final se arma **letra a letra**: para cada letra se elige entre todas las definiciones disponibles (de todas las ruedas del tema y la dificultad elegidos), dando una distinta a cada equipo. Así cada rueda es una combinación nueva.
+
+Cuantas más preguntas añadas en `contenido.js`, más tardarán en repetirse.
+
 ## Personalizarlo
 
 Todo el contenido está en [`contenido.js`](contenido.js): preguntas, palabras ocultas y ruedas de letras, con una sección general y otra chilena (`preguntasChile`, `palabrasOcultasChile`, `ruedasChile`). Añade las tuyas siguiendo el mismo formato (por ejemplo, preguntas sobre tu familia o tus amigos). Las respuestas se comparan sin tildes ni mayúsculas, se admite una errata en palabras de 6 letras o más y puedes poner varias respuestas válidas.

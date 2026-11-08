@@ -172,26 +172,52 @@ function pool(general, chile) {
   return [...general, ...chile];
 }
 // En «mixto» se sortea si la rueda es general o chilena; los dos equipos reciben ruedas del mismo tipo para que sea justo.
-function ruedasParaPartida() {
-  if (G.dificultad !== 'dificil') {
-    const fuente = G.tema === 'mixto' ? shuffle([C.ruedas, C.ruedasChile])[0] : pool(C.ruedas, C.ruedasChile);
-    return shuffle(fuente).slice(0, 2);
+// ---------- variedad: recuerda lo ya jugado para no repetirlo ----------
+// Se guarda en historial.json (junto a server.js), así que se recuerda aunque se cierre el juego.
+const fs = require('fs');
+const HIST_FILE = path.join(__dirname, 'historial.json');
+let HIST = {};
+try { HIST = JSON.parse(fs.readFileSync(HIST_FILE, 'utf8')); } catch (e) { HIST = {}; }
+function guardarHistorial() { try { fs.writeFileSync(HIST_FILE, JSON.stringify(HIST)); } catch (e) {} }
+const idDe = (x) => JSON.stringify(x);
+// Elige n elementos de los candidatos que no hayan salido todavía; cuando se agotan, vuelve a empezar.
+function elegirSinRepetir(categoria, candidatos, n) {
+  const usados = new Set(HIST[categoria] || []);
+  let libres = shuffle(candidatos.filter((x) => !usados.has(idDe(x))));
+  if (libres.length < n) {
+    // se acabaron los nuevos: usa los que quedan y completa con el resto (y reinicia la memoria)
+    const resto = shuffle(candidatos.filter((x) => usados.has(idDe(x))));
+    libres = [...libres, ...resto];
+    HIST[categoria] = [];
   }
-  // Difícil: cada letra se arma con las definiciones difíciles disponibles (y, si faltan, con las normales),
-  // dando una distinta a cada equipo.
-  const dificiles = pool(C.ruedasDificil || [], C.ruedasChileDificil || []);
+  const elegidos = libres.slice(0, n);
+  HIST[categoria] = [...(HIST[categoria] || []), ...elegidos.map(idDe)];
+  guardarHistorial();
+  return elegidos;
+}
+
+// La rueda se arma letra a letra con todas las definiciones disponibles para esa letra,
+// dando una distinta a cada equipo y evitando las que ya salieron en partidas anteriores.
+function ruedasParaPartida() {
+  const dif = G.dificultad === 'dificil';
+  const dificiles = dif ? pool(C.ruedasDificil || [], C.ruedasChileDificil || []) : [];
   const normales = pool(C.ruedas, C.ruedasChile);
   const A = [], B = [];
-  C.ruedas[0].forEach((_, j) => {
-    const [x, y] = [...shuffle(dificiles.map((r) => r[j])), ...shuffle(normales.map((r) => r[j]))];
-    if (Math.random() < 0.5) { A.push(x); B.push(y); } else { A.push(y); B.push(x); }
+  C.ruedas[0].forEach((base, j) => {
+    const deLaLetra = (ruedas) => ruedas.map((r) => r[j]).filter(Boolean);
+    let cand = deLaLetra(dificiles);
+    if (cand.length < 2) cand = [...cand, ...deLaLetra(normales)];
+    const [x, y] = elegirSinRepetir(`rueda|${base.letra}|${G.dificultad}|${G.tema}`, cand, 2);
+    if (Math.random() < 0.5) { A.push(x); B.push(y || x); } else { A.push(y || x); B.push(x); }
   });
   return [A, B];
 }
-// Toma n elementos de una prueba según tema y dificultad (en «Difícil» se completan con normales si faltan)
+// Toma n elementos de una prueba según tema y dificultad, sin repetir lo ya jugado
 function tomar(general, chile, n) {
-  const dificiles = G.dificultad === 'dificil' ? shuffle(pool(C[general + 'Dificil'] || [], C[chile + 'Dificil'] || [])) : [];
-  return [...dificiles, ...shuffle(pool(C[general], C[chile]))].slice(0, n);
+  const dificiles = G.dificultad === 'dificil' ? pool(C[general + 'Dificil'] || [], C[chile + 'Dificil'] || []) : [];
+  const normales = pool(C[general], C[chile]);
+  const candidatos = dificiles.length >= n ? dificiles : [...dificiles, ...normales];
+  return elegirSinRepetir(`${general}|${G.dificultad}|${G.tema}`, candidatos, n);
 }
 
 // ---------- secuencia de la partida ----------
