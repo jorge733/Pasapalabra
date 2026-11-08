@@ -69,9 +69,22 @@ function nuevaPartida() {
     phase: 'lobby', paused: false, rem: 0,
     teams: { A: { name: 'Equipo Violeta', bonus: 0 }, B: { name: 'Equipo Ámbar', bonus: 0 } },
     r: null, log: [],
+    tema: G ? G.tema : 'mixto',
   };
 }
 nuevaPartida();
+
+// Elige el contenido según el tema: 'general', 'chile' o 'mixto'
+function pool(general, chile) {
+  if (G.tema === 'chile') return chile;
+  if (G.tema === 'general') return general;
+  return [...general, ...chile];
+}
+// En «mixto» se sortea si la rueda es general o chilena; los dos equipos reciben ruedas del mismo tipo para que sea justo.
+function ruedasParaPartida() {
+  const fuente = G.tema === 'mixto' ? shuffle([C.ruedas, C.ruedasChile])[0] : pool(C.ruedas, C.ruedasChile);
+  return shuffle(fuente).slice(0, 2);
+}
 
 const INTROS = {
   intro1: { titulo: 'Prueba 1 · Respuesta rápida', texto: 'Responded en el móvil. Acertar suma 5 segundos y el equipo más rápido gana 3 más.', next: 'quiz' },
@@ -83,10 +96,10 @@ function irA(phase) {
   G.phase = phase;
   if (INTROS[phase]) { G.rem = 7000; G.r = null; }
   else if (phase === 'quiz') {
-    G.r = { list: shuffle(C.preguntasRapidas).slice(0, CONFIG.preguntasRapidas), i: -1 };
+    G.r = { list: shuffle(pool(C.preguntasRapidas, C.preguntasChile)).slice(0, CONFIG.preguntasRapidas), i: -1 };
     siguientePregunta();
   } else if (phase === 'oculta') {
-    G.r = { list: shuffle(C.palabrasOcultas).slice(0, CONFIG.palabrasOcultas), i: -1 };
+    G.r = { list: shuffle(pool(C.palabrasOcultas, C.palabrasOcultasChile)).slice(0, CONFIG.palabrasOcultas), i: -1 };
     siguienteOculta();
   } else if (phase === 'rueda') iniciarRueda();
   emitir();
@@ -164,7 +177,7 @@ function fallarOculta(team) {
 
 // ---- Ronda final: la rueda ----
 function iniciarRueda() {
-  const sets = shuffle(C.ruedas).slice(0, 2);
+  const sets = ruedasParaPartida();
   const mk = (set, team) => ({
     letras: set.map((l) => ({ ...l, estado: 'pendiente' })),
     idx: 0,
@@ -254,7 +267,7 @@ setInterval(() => { if (!['lobby', 'fin'].includes(G.phase)) emitir(); }, 500);
 // ---------- estado público (sin respuestas) ----------
 function publico() {
   const s = {
-    phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tiempoBase: CONFIG.tiempoBaseRueda,
+    phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, tiempoBase: CONFIG.tiempoBaseRueda,
     teams: G.teams,
     players: Object.values(players),
     intro: INTROS[G.phase] || null,
@@ -306,6 +319,7 @@ io.on('connection', (sock) => {
     else if (cmd === 'saltar' && SIGUIENTE[G.phase]) (G.phase === 'rueda' ? terminar() : irA(SIGUIENTE[G.phase]));
     else if (cmd === 'pausa') { G.paused = !G.paused; emitir(); }
     else if (cmd === 'nueva') { nuevaPartida(); emitir(); }
+    else if (cmd === 'tema' && G.phase === 'lobby' && ['mixto', 'chile', 'general'].includes(arg)) { G.tema = arg; emitir(); }
     else if (cmd === 'irRueda') irA('intro3');
     else if (cmd === 'nombre' && arg && G.teams[arg.team]) { G.teams[arg.team].name = String(arg.name).slice(0, 20); emitir(); }
     else if (cmd === 'darPorBuena' && G.phase === 'rueda') {

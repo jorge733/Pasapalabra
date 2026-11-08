@@ -12,6 +12,7 @@
   .card h3{margin:0;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.1em}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
   .grid button{padding:14px;font-weight:900;background:#4338ca}
+  .grid button.sel{outline:3px solid #fff;background:#7c3aed}
   .grid button.warn{background:#b91c1c}.grid button.go{background:#15803d}
   button:disabled{opacity:.35;cursor:default}
   .names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -23,6 +24,14 @@
 </head><body><div class="wrap">
   <h1>Letra<span style="color:var(--B)">manía</span> · Presentador</h1>
   <div class="card"><h3>Estado</h3><div id="estado" style="font-weight:800;font-size:20px"></div><div id="jug" style="color:var(--muted)"></div></div>
+  <div class="card"><h3>Temática de las preguntas</h3>
+    <div class="grid" id="temas">
+      <button data-t="mixto" onclick="h('tema','mixto')">🎲 Mixto</button>
+      <button data-t="chile" onclick="h('tema','chile')">🇨🇱 Solo Chile</button>
+      <button data-t="general" onclick="h('tema','general')">🌍 General</button>
+    </div>
+    <p style="margin:0;color:var(--muted);font-size:14px">Se elige antes de empezar la partida.</p>
+  </div>
   <div class="card"><h3>Controles</h3>
     <div class="grid">
       <button class="go" id="bEmpezar" onclick="h('empezar')">▶ Empezar partida</button>
@@ -57,6 +66,7 @@ sock.on('state', (s) => {
   $('#estado').textContent = e + (s.paused ? ' · EN PAUSA' : '');
   $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${p.team === 'A' ? s.teams.A.name : s.teams.B.name})`).join(', ');
   $('#bEmpezar').disabled = s.phase !== 'lobby';
+  document.querySelectorAll('#temas button').forEach((b) => { b.classList.toggle('sel', b.dataset.t === s.tema); b.disabled = s.phase !== 'lobby'; });
   $('#bPausa').textContent = s.paused ? '▶ Reanudar' : '⏸ Pausa';
   for (const t of ['A', 'B']) if (document.activeElement !== $('#n' + t)) $('#n' + t).value = s.teams[t].name;
   const u = s.phase === 'rueda' && s.rueda.ultimo;

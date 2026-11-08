@@ -41,9 +41,17 @@ Jugadores (o escanean el QR de la tele):  http://192.168.1.50:3000/play
 >
 > Si la dirección detectada no es la buena (por ejemplo, si tienes VPN), puedes indicarla tú: `HOST_IP=192.168.1.50 npm start` (en Windows PowerShell: `$env:HOST_IP="192.168.1.50"; npm start`).
 
+## Temática
+
+En el panel del presentador, antes de empezar, puedes elegir:
+
+- **🎲 Mixto** (por defecto): mezcla preguntas generales y chilenas. La rueda final se sortea entre las generales y las chilenas, y los dos equipos reciben ruedas del mismo tipo.
+- **🇨🇱 Solo Chile**: 20 preguntas, 12 palabras ocultas y 2 ruedas completas sobre Chile (comida, lugares, música, historia y chilenismos).
+- **🌍 General**: cultura general, sin temática chilena.
+
 ## Personalizarlo
 
-Todo el contenido está en [`contenido.js`](contenido.js): preguntas, palabras ocultas y ruedas de letras. Añade las tuyas siguiendo el mismo formato (por ejemplo, preguntas sobre tu familia o tus amigos). Las respuestas se comparan sin tildes ni mayúsculas, se admite una errata en palabras de 6 letras o más y puedes poner varias respuestas válidas.
+Todo el contenido está en [`contenido.js`](contenido.js): preguntas, palabras ocultas y ruedas de letras, con una sección general y otra chilena (`preguntasChile`, `palabrasOcultasChile`, `ruedasChile`). Añade las tuyas siguiendo el mismo formato (por ejemplo, preguntas sobre tu familia o tus amigos). Las respuestas se comparan sin tildes ni mayúsculas, se admite una errata en palabras de 6 letras o más y puedes poner varias respuestas válidas.
 
 Los tiempos y el número de preguntas se cambian en `CONFIG`, al principio de [`server.js`](server.js).
 
