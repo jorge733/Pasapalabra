@@ -25,7 +25,9 @@ const CONFIG = {
   segCifra: 25,            //   segundos para escribir el número
   segPulsador: 30,         //   segundos antes de dar la ronda por perdida si nadie presiona
   quienSoyCadaMs: 10000,   // ¿Quién soy?: cada cuánto sale una pista nueva
-  segParaResponder: 12,    // segundos para escribir la respuesta tras presionar «¡La sé!» (modo automático)
+  segRebote: 5,            // si un equipo falla, el otro tiene al menos estos segundos para presionar «¡Lo sé!»
+  segPensar: 5,            // segundos al empezar cada pregunta en que el botón «¡Lo sé!» está bloqueado (para pensar)
+  segParaResponder: 12,    // segundos para escribir la respuesta tras presionar «¡Lo sé!» (modo automático)
 };
 
 // --- Dirección IP de la red local ---
@@ -123,13 +125,13 @@ const PRUEBAS = {
   },
   anagrama: {
     titulo: 'Letras revueltas',
-    auto: 'Ordenen las letras para formar la palabra. Presionen «¡La sé!» y escríbanla. Acertar suma 8 segundos.',
-    presentador: 'Ordenen las letras de la tele para formar la palabra. Presionen «¡La sé!» y díganla en voz alta. Acertar suma 8 segundos.',
+    auto: 'Ordenen las letras para formar la palabra. Presionen «¡Lo sé!» y escríbanla. Acertar suma 8 segundos.',
+    presentador: 'Ordenen las letras de la tele para formar la palabra. Presionen «¡Lo sé!» y díganla en voz alta. Acertar suma 8 segundos.',
   },
   oculta: {
     titulo: 'Palabra oculta',
-    auto: 'Las letras van apareciendo. Presionen «¡La sé!» y escriban la palabra. Cuanto antes, más segundos.',
-    presentador: 'Las letras van apareciendo y el presentador da la pista. Presionen «¡La sé!» y digan la palabra en voz alta. Cuanto antes, más segundos.',
+    auto: 'Las letras van apareciendo. Presionen «¡Lo sé!» y escriban la palabra. Cuanto antes, más segundos.',
+    presentador: 'Las letras van apareciendo y el presentador da la pista. Presionen «¡Lo sé!» y digan la palabra en voz alta. Cuanto antes, más segundos.',
   },
   quiensoy: {
     titulo: '¿Quién soy?',
@@ -138,8 +140,8 @@ const PRUEBAS = {
   },
   refran: {
     titulo: 'Completa el refrán',
-    auto: 'Lean el comienzo del refrán, presionen «¡La sé!» y escriban cómo termina. Acertar suma 8 segundos.',
-    presentador: 'El presentador dice el comienzo del refrán. Presionen «¡La sé!» y digan cómo termina. Acertar suma 8 segundos.',
+    auto: 'Lean el comienzo del refrán, presionen «¡Lo sé!» y escriban cómo termina. Acertar suma 8 segundos.',
+    presentador: 'El presentador dice el comienzo del refrán. Presionen «¡Lo sé!» y digan cómo termina. Acertar suma 8 segundos.',
   },
   antes: {
     titulo: '¿Qué fue antes?',
@@ -153,13 +155,13 @@ const PRUEBAS = {
   },
   adivinanza: {
     titulo: 'Adivinanzas',
-    auto: 'Lean la adivinanza, presionen «¡La sé!» y escriban la respuesta. Acertar suma 8 segundos.',
-    presentador: 'El presentador lee la adivinanza. Presionen «¡La sé!» y digan la respuesta en voz alta. Acertar suma 8 segundos.',
+    auto: 'Lean la adivinanza, presionen «¡Lo sé!» y escriban la respuesta. Acertar suma 8 segundos.',
+    presentador: 'El presentador lee la adivinanza. Presionen «¡Lo sé!» y digan la respuesta en voz alta. Acertar suma 8 segundos.',
   },
   siglas: {
     titulo: 'Siglas',
-    auto: '¿Qué significan estas siglas? Presionen «¡La sé!» y escriban el significado completo. Acertar suma 8 segundos.',
-    presentador: '¿Qué significan estas siglas? Presionen «¡La sé!» y digan el significado completo en voz alta. Acertar suma 8 segundos.',
+    auto: '¿Qué significan estas siglas? Presionen «¡Lo sé!» y escriban el significado completo. Acertar suma 8 segundos.',
+    presentador: '¿Qué significan estas siglas? Presionen «¡Lo sé!» y digan el significado completo en voz alta. Acertar suma 8 segundos.',
   },
   rueda: {
     titulo: 'La Rueda Final',
@@ -286,10 +288,11 @@ function siguientePregunta() {
   r.stage = 'ask'; r.rem = (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000; r.elapsed = 0;
   r.resp = { A: null, B: null };
   r.buzz = null; r.bloqueado = { A: false, B: false }; r.gana = {};
+  r.espera = conPresentador() ? CONFIG.segPensar * 1000 : 0; // con presentador se presiona «¡Lo sé!»
 }
 function pulsarQuiz(team) {
   const r = G.r;
-  if (!conPresentador() || r.stage !== 'ask' || r.buzz || r.bloqueado[team]) return;
+  if (!conPresentador() || r.stage !== 'ask' || r.buzz || r.bloqueado[team] || r.espera > 0) return;
   r.buzz = { team };
   emitir('buzz');
 }
@@ -386,10 +389,11 @@ function siguienteOculta() {
   r.stage = 'play'; r.revealRem = CONFIG.revelarCadaMs; r.buzz = null;
   r.totalMs = Math.max(1, r.visibles.filter((v) => !v).length - 1) * CONFIG.revelarCadaMs;
   r.bloqueado = { A: false, B: false }; r.ganador = null; r.intento = null;
+  r.espera = CONFIG.segPensar * 1000;
 }
 function pulsarOculta(team) {
   const r = G.r;
-  if (r.stage !== 'play' || r.buzz || r.bloqueado[team]) return;
+  if (r.stage !== 'play' || r.buzz || r.bloqueado[team] || r.espera > 0) return;
   r.buzz = { team, rem: CONFIG.segParaResponder * 1000 };
   emitir('buzz');
 }
@@ -412,6 +416,11 @@ function fallarOculta(team) {
   const r = G.r;
   r.bloqueado[team] = true; r.buzz = null;
   if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 4000; r.visibles = r.visibles.map(() => true); }
+  else {
+    // el otro equipo tiene al menos unos segundos para presionar antes de que se acabe la palabra
+    const quedan = Math.max(0, r.visibles.filter((v) => !v).length - 2) * CONFIG.revelarCadaMs + r.revealRem;
+    if (quedan < CONFIG.segRebote * 1000) r.revealRem += CONFIG.segRebote * 1000 - quedan;
+  }
   emitir('fail');
 }
 
@@ -436,10 +445,11 @@ function siguientePulsador() {
   r.pistas = 1;
   r.rem = r.kind === 'quiensoy' ? CONFIG.quienSoyCadaMs : CONFIG.segPulsador * 1000; // tiempo hasta la siguiente pista o hasta rendirse
   if (r.kind === 'anagrama') r.revuelta = revolver(r.item.palabra);
+  r.espera = CONFIG.segPensar * 1000;
 }
 function pulsarP(team) {
   const r = G.r;
-  if (r.stage !== 'play' || r.buzz || r.bloqueado[team]) return;
+  if (r.stage !== 'play' || r.buzz || r.bloqueado[team] || r.espera > 0) return;
   r.buzz = { team, rem: CONFIG.segParaResponder * 1000 };
   emitir('buzz');
 }
@@ -461,6 +471,11 @@ function fallarP(team) {
   const r = G.r;
   r.bloqueado[team] = true; r.buzz = null;
   if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; }
+  else {
+    // el otro equipo tiene al menos unos segundos para presionar
+    const quedan = (r.kind === 'quiensoy' ? (3 - r.pistas) * CONFIG.quienSoyCadaMs : 0) + r.rem;
+    if (quedan < CONFIG.segRebote * 1000) r.rem += CONFIG.segRebote * 1000 - quedan;
+  }
   emitir('fail');
 }
 function rendirP() { const r = G.r; r.buzz = null; r.stage = 'reveal'; r.rem = 5000; emitir('reveal'); }
@@ -530,7 +545,12 @@ function juzgar(res) {
     const t = r.buzz.team;
     r.buzz = null;
     if (res === 'ok') { r.gana = { [t]: 8 }; G.teams[t].bonus += 8; r.stage = 'reveal'; r.rem = 5000; return emitir('ok'); }
-    if (res === 'ko') { r.bloqueado[t] = true; if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; } return emitir('fail'); }
+    if (res === 'ko') {
+      r.bloqueado[t] = true;
+      if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; }
+      else r.rem = Math.max(r.rem, CONFIG.segRebote * 1000); // el otro equipo tiene tiempo para presionar
+      return emitir('fail');
+    }
   } else if (ELECCION.includes(G.phase) && r.stage === 'ask') {
     if (res === 'nadie') return revelarVF();
   } else if (G.phase === 'cifra' && r.stage === 'ask') {
@@ -559,6 +579,12 @@ setInterval(() => {
   if (G.paused) return;
   const r = G.r;
   if (G.phase === 'intro') { G.rem -= dt; if (G.rem <= 0) iniciarPrueba(G.introDe); return; }
+  // tiempo para pensar: el botón está bloqueado y el resto del reloj no corre
+  if (r && r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && ['quiz', 'oculta', ...PULSADOR].includes(G.phase)) {
+    r.espera -= dt;
+    if (r.espera <= 0) { r.espera = 0; emitir('listo'); }
+    return;
+  }
   if (G.phase === 'quiz') {
     if (r.stage === 'ask') {
       if (!conPresentador()) { r.rem -= dt; r.elapsed += dt; if (r.rem <= 0) revelarQuiz(); }
@@ -624,7 +650,7 @@ function publico() {
   if (G.phase === 'quiz') {
     const ver = !oculto || r.stage === 'reveal';
     s.quiz = { n: r.i + 1, total: r.list.length, texto: ver ? r.q.texto : null, opciones: ver ? r.q.opciones : null, stage: r.stage, rem: r.rem,
-      respondido: { A: !!r.resp.A, B: !!r.resp.B }, buzz: r.buzz, bloqueado: r.bloqueado };
+      respondido: { A: !!r.resp.A, B: !!r.resp.B }, buzz: r.buzz, bloqueado: r.bloqueado, espera: r.espera || 0 };
     if (r.stage === 'reveal') Object.assign(s.quiz, { correcta: r.q.correcta, resp: r.resp, gana: r.gana });
   } else if (ELECCION.includes(G.phase)) {
     const rev = r.stage === 'reveal';
@@ -640,11 +666,11 @@ function publico() {
   } else if (G.phase === 'oculta') {
     s.oculta = { n: r.i + 1, total: r.list.length, pista: !oculto || r.stage === 'reveal' ? r.pista : null, stage: r.stage,
       letras: [...r.palabra].map((ch, k) => (ch === ' ' ? ' ' : r.visibles[k] ? ch : '')),
-      buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento };
+      buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento, espera: r.espera || 0 };
   } else if (PULSADOR.includes(G.phase)) {
     const rev = r.stage === 'reveal', ver = !oculto || rev, it = r.item;
     s.p = { kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, stage: r.stage,
-      buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento, numPistas: r.pistas,
+      buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento, numPistas: r.pistas, espera: r.espera || 0,
       respuesta: rev ? textoRespuesta(r) : null };
     if (r.kind === 'anagrama') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null });
     if (r.kind === 'quiensoy') s.p.pistas = ver ? it.pistas.slice(0, rev ? 3 : r.pistas) : null;
@@ -669,6 +695,8 @@ function publico() {
 function reloj() {
   const r = G.r;
   if (!r) return null;
+  if (r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && ['quiz', 'oculta', ...PULSADOR].includes(G.phase))
+    return { rem: r.espera, total: CONFIG.segPensar * 1000, parado: false, pensar: true };
   if (G.phase === 'quiz' && r.stage === 'ask')
     return { rem: r.rem, total: (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000, parado: !!r.buzz };
   if (G.phase === 'cifra' && r.stage === 'ask') return { rem: r.rem, total: CONFIG.segCifra * 1000, parado: false };
@@ -688,7 +716,7 @@ function reloj() {
 function secreto() {
   const r = G.r;
   if (!r) return null;
-  if (G.phase === 'quiz') return { tipo: 'quiz', n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, correcta: r.q.correcta, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };
+  if (G.phase === 'quiz') return { tipo: 'quiz', n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, correcta: r.q.correcta, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage, espera: r.espera || 0 };
   if (ELECCION.includes(G.phase)) return { tipo: 'vf', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, texto: r.item.texto, opciones: r.item.opciones, correcta: r.item.correcta, detalle: r.item.detalle, stage: r.stage, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
   if (G.phase === 'cifra') return { tipo: 'cifra', n: r.i + 1, total: r.list.length, texto: r.item.pregunta, respuesta: r.item.respuesta, unidad: r.item.unidad, stage: r.stage, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
   if (G.phase === 'oculta') return { tipo: 'oculta', n: r.i + 1, total: r.list.length, pista: r.pista, palabra: r.palabra, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };

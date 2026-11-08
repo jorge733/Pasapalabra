@@ -39,7 +39,7 @@
 </head><body><div class="wrap">
   <h1>Letra<span style="color:var(--B)">manía</span> · Presentador</h1>
 
-  <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="lecturaBody"></div></div>
+  <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="pensarH" class="estadoL hidden" style="background:#78350f"></div><div id="lecturaBody"></div></div>
 
   <div class="card"><h3>Estado</h3><div id="estado" style="font-weight:800;font-size:20px"></div><div id="jug" style="color:var(--muted)"></div></div>
 
@@ -110,7 +110,7 @@ function render() {
   if (s.p && ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas'].includes(s.phase)) e += ` (${s.p.n}/${s.p.total})`;
   if (s.phase === 'intro') e = s.intro.titulo;
   if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
-  if (s.reloj) e += ` · ⏱ ${Math.max(0, Math.ceil(s.reloj.rem / 1000))} s${s.reloj.parado ? ' (en pausa)' : ''}`;
+  if (s.reloj) e += s.reloj.pensar ? ` · 🤔 ${Math.max(0, Math.ceil(s.reloj.rem / 1000))} s para pensar` : ` · ⏱ ${Math.max(0, Math.ceil(s.reloj.rem / 1000))} s${s.reloj.parado ? ' (en pausa)' : ''}`;
   $('#estado').textContent = e + (s.paused ? ' · EN PAUSA' : '');
   $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${s.teams[p.team].name})`).join(', ');
   $('#bEmpezar').disabled = s.phase !== 'lobby';
@@ -204,6 +204,9 @@ function renderLectura() {
   }
   // Redibuja solo si cambia (evita parpadeos y clics perdidos); el reloj de la rueda se actualiza igual
   if (html !== ultimaLectura) { ultimaLectura = html; $('#lecturaBody').innerHTML = html; }
+  const ph = $('#pensarH'), dato = S.quiz || S.oculta || S.p, esp = dato && dato.espera > 0 ? dato.espera : 0;
+  ph.classList.toggle('hidden', !esp);
+  if (esp) ph.textContent = `🤔 Tiempo para pensar: el botón «¡Lo sé!» se activa en ${seg(esp)} s`;
   const rh = $('#relojH'); if (rh && X.tiempo != null) rh.textContent = seg(X.tiempo);
 }
 

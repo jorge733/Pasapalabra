@@ -52,6 +52,7 @@ sock.on('me', (m) => { me = m; try { localStorage.setItem('letramania-yo', JSON.
 sock.on('state', (s, ev) => {
   S = s;
   if (me && ev === 'turno' && s.phase === 'rueda' && s.rueda.turno === me.team) vibra([80, 60, 80]);
+  if (me && ev === 'listo') vibra(40); // el botón «¡Lo sé!» se acaba de activar
   render();
 });
 
@@ -86,7 +87,7 @@ function vista() {
         if (q.buzz && q.buzz.team === mt) return { key: 'pqm' + q.n, html: () => `<div class="grow"></div><h1>🔔 ¡Les toca!</h1><h2>Digan la respuesta en voz alta</h2><div class="grow"></div>` };
         if (q.buzz) return { key: 'pqo' + q.n, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(q.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
         if (q.bloqueado[mt]) return { key: 'pql' + q.n, html: () => `<div class="grow"></div><h2>Tu equipo falló esta pregunta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
-        return { key: 'pqb' + q.n, html: () => `<p>Pregunta ${q.n}/${q.total} · escucha al presentador</p><button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
+        return { key: 'pqb' + q.n + (q.espera > 0), html: () => `<p>Pregunta ${q.n}/${q.total} · escucha al presentador</p>${botonLoSe(q.espera)}`, tick: () => tickLoSe(q.espera) };
       }
       if (q.stage === 'reveal') {
         const r = q.resp[mt];
@@ -110,8 +111,8 @@ function vista() {
         tick: () => { const c = $('#cuenta'); if (c) c.textContent = seg(o.buzz.rem); } };
       if (o.buzz) return { key: 'ob' + o.n + o.buzz.team, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(o.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
       if (o.bloqueado[mt]) return { key: 'ol' + o.n, html: () => `<div class="grow"></div><h2>Tu equipo falló esta palabra</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
-      return { key: 'op' + o.n, html: () => `<p>Palabra ${o.n}/${o.total}${o.pista ? ' · ' + esc(o.pista) : ' · escucha la pista'}</p>
-        <button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
+      return { key: 'op' + o.n + (o.espera > 0), html: () => `<p>Palabra ${o.n}/${o.total}${o.pista ? ' · ' + esc(o.pista) : ' · escucha la pista'}</p>
+        ${botonLoSe(o.espera)}`, tick: () => tickLoSe(o.espera) };
     }
     case 'vf': case 'antes': {
       const v = S.vf, k = v.kind + v.n;
@@ -147,8 +148,8 @@ function vista() {
         tick: () => { const c = $('#cuenta'); if (c) c.textContent = seg(p.buzz.rem); } };
       if (p.buzz) return { key: 'pb' + k + p.buzz.team, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(p.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
       if (p.bloqueado[mt]) return { key: 'pl' + k, html: () => `<div class="grow"></div><h2>Tu equipo falló esta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
-      return { key: 'pp' + k, html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
-        <button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
+      return { key: 'pp' + k + (p.espera > 0), html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
+        ${botonLoSe(p.espera)}`, tick: () => tickLoSe(p.espera) };
     }
     case 'rueda': {
       const r = S.rueda;
@@ -183,6 +184,13 @@ function vista() {
   }
   return { key: '?', html: () => '' };
 }
+// Botón «¡Lo sé!»: bloqueado mientras corre el tiempo para pensar
+function botonLoSe(espera) {
+  return espera > 0
+    ? `<button class="buzz" disabled style="opacity:.45;font-size:26px">🤔 Piensa…<br><span id="bzc" style="font-size:44px">${seg(espera)}</span></button>`
+    : `<button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡Lo sé!</button>`;
+}
+function tickLoSe(espera) { const c = $('#bzc'); if (c) c.textContent = seg(espera); }
 function responder() { const v = $('#resp').value.trim(); if (v) { sock.emit('rueda', { texto: v }); vibra(30); } }
 function cambiar() { me = { ...me, team: me.team === 'A' ? 'B' : 'A' }; sock.emit('join', me); }
 function salir() { me = null; try { localStorage.removeItem('letramania-yo'); } catch (e) {} render(); }

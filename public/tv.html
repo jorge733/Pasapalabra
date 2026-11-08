@@ -115,7 +115,7 @@ const SFX = {
   ok: () => tono([660, 880, 1320], .1), fail: () => tono([300, 200], .22, 'sawtooth'),
   paso: () => tono([500, 400], .12, 'triangle'), buzz: () => tono([880], .25, 'square'),
   reveal: () => tono([440, 660], .12), turno: () => tono([700], .08), tiempo: () => tono([400, 300, 200], .25, 'sawtooth'),
-  join: () => tono([880, 1100], .06), fin: () => tono([523, 659, 784, 1047, 784, 1047], .14),
+  join: () => tono([880, 1100], .06), listo: () => tono([660, 990], .09), fin: () => tono([523, 659, 784, 1047, 784, 1047], .14),
 };
 
 const sock = io();
@@ -137,6 +137,7 @@ function pintarReloj() {
   const el = $('#reloj'), r = S && S.reloj;
   if (!r) { el.innerHTML = ''; el.className = ''; ultimoSeg = null; return; }
   const n = seg(r.rem);
+  if (r.pensar) { el.innerHTML = `🤔 ${n} <small>PIENSEN</small>`; el.className = ''; ultimoSeg = null; return; }
   el.innerHTML = `⏱ ${n}${r.parado ? ' <small>EN PAUSA</small>' : ''}`;
   el.className = (n <= 5 && !r.parado ? 'bajo' : '') + (r.parado ? ' parado' : '');
   if (n !== ultimoSeg && n <= 5 && n > 0 && !r.parado) tono([1000], .05, 'square'); // tic en los últimos segundos
@@ -162,7 +163,7 @@ function render() {
       <div class="sub" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
   } else if (S.phase === 'quiz' && S.modo === 'presentador' && S.quiz.stage === 'ask') {
     const q = S.quiz;
-    const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : 'Presionen en el celular cuando sepan la respuesta';
+    const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : q.espera > 0 ? `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(q.espera)}</span>` : '¡Ya pueden presionar «¡Lo sé!»!';
     h = `<div class="q"><div class="pista">Pregunta ${q.n} de ${q.total}</div>
       <div class="qtxt">${esc(q.texto)}</div>
       <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
@@ -184,6 +185,7 @@ function render() {
     if (o.ganador) aviso = `<span class="${o.ganador.team}" style="color:var(--team)">¡${esc(S.teams[o.ganador.team].name)} acierta! +${o.ganador.seg} s</span>`;
     else if (o.stage === 'reveal') aviso = 'Nadie la acertó';
     else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[o.buzz.team].name) + ' responde!' : esc(S.teams[o.buzz.team].name) + ' responde… ' + seg(o.buzz.rem)}</span>`;
+    else if (o.espera > 0) aviso = `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(o.espera)}</span>`;
     else if (S.modo === 'presentador' && !o.pista) aviso = '<span style="color:var(--muted)">🎙️ Escuchen la pista</span>';
     else if (o.intento) aviso = `<span style="color:var(--ko)">«${esc(o.intento.texto)}» no es correcta</span>`;
     h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total}${o.pista ? ' · ' + esc(o.pista) : ''}</div>
@@ -224,6 +226,7 @@ function render() {
     else if (rev) aviso = 'Nadie lo acertó';
     else if (p.buzz) aviso = `<span class="${p.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[p.buzz.team].name) + ' responde!' : esc(S.teams[p.buzz.team].name) + ' responde… ' + seg(p.buzz.rem)}</span>`;
     else if (p.intento) aviso = `<span style="color:var(--ko)">«${esc(p.intento.texto)}» no es correcto</span>`;
+    else if (p.espera > 0) aviso = `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(p.espera)}</span>`;
     let cuerpo = '';
     if (p.kind === 'anagrama') {
       const letras = rev ? [...p.respuesta.replace(/\s/g, '')] : [...p.revuelta];
