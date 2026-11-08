@@ -2,6 +2,7 @@
 const express = require('express');
 const http = require('http');
 const os = require('os');
+const dgram = require('dgram');
 const path = require('path');
 const { Server } = require('socket.io');
 const QR = require('qrcode');
@@ -17,13 +18,38 @@ const CONFIG = {
   segParaResponder: 12,    // ronda 2: segundos tras pulsar "¡La sé!"
 };
 
-function lanIP() {
-  for (const list of Object.values(os.networkInterfaces()))
-    for (const i of list || []) if (i.family === 'IPv4' && !i.internal) return i.address;
-  return 'localhost';
+// --- Dirección IP de la red local ---
+// Se ignoran adaptadores virtuales (VirtualBox, VMware, WSL, Hyper-V, VPN…) porque los móviles no pueden llegar a ellos.
+const VIRTUAL = /virtualbox|vmware|vethernet|hyper-v|wsl|docker|loopback|tailscale|zerotier|vpn|bluetooth|host-only/i;
+function candidatas() {
+  const out = [];
+  for (const [nombre, list] of Object.entries(os.networkInterfaces()))
+    for (const i of list || []) if (i.family === 'IPv4' && !i.internal) out.push({ nombre, ip: i.address });
+  return out;
 }
-const IP = process.env.HOST_IP || lanIP();
-const BASE = `http://${IP}:${PORT}`;
+const esVirtual = (c) => VIRTUAL.test(c.nombre) || c.ip.startsWith('192.168.56.') || c.ip.startsWith('169.254.');
+// Pregunta al sistema qué IP usaría para salir a internet (no envía ningún paquete).
+function ipDeRuta() {
+  return new Promise((res) => {
+    const s = dgram.createSocket('udp4');
+    const fin = (ip) => { try { s.close(); } catch (e) {} res(ip); };
+    s.on('error', () => fin(null));
+    try { s.connect(53, '8.8.8.8', () => { try { fin(s.address().address); } catch (e) { fin(null); } }); } catch (e) { fin(null); }
+    setTimeout(() => fin(null), 1500);
+  });
+}
+async function elegirIP() {
+  if (process.env.HOST_IP) return process.env.HOST_IP;
+  const todas = candidatas();
+  const ruta = await ipDeRuta();
+  const deRuta = todas.find((c) => c.ip === ruta);
+  if (deRuta && !esVirtual(deRuta)) return deRuta.ip;
+  const reales = todas.filter((c) => !esVirtual(c));
+  const preferida = reales.find((c) => /wi-?fi|wlan|wireless|inal|ethernet|^eth|^en\d/i.test(c.nombre));
+  return (preferida || reales[0] || todas[0] || { ip: 'localhost' }).ip;
+}
+let IP = 'localhost';
+let BASE = `http://${IP}:${PORT}`;
 
 const app = express();
 const server = http.createServer(app);
@@ -329,9 +355,22 @@ io.on('connection', (sock) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n  LETRAMANÍA lista\n`);
-  console.log(`  Tele (envía esta pestaña al Chromecast): ${BASE}/tv`);
-  console.log(`  Presentador (en tu ordenador):            ${BASE}/host`);
-  console.log(`  Jugadores (o escanean el QR de la tele):  ${BASE}/play\n`);
+server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') console.error(`\n  El puerto ${PORT} ya está en uso: probablemente el juego ya está abierto en otra ventana.\n  Ciérrala (o pulsa Ctrl + C en ella) y vuelve a ejecutar npm start.\n`);
+  else console.error('\n  Error al arrancar el servidor:', e.message, '\n');
+  process.exit(1);
+});
+
+elegirIP().then((ip) => {
+  IP = ip;
+  BASE = `http://${IP}:${PORT}`;
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n  LETRAMANÍA lista\n`);
+    console.log(`  Tele (envía esta pestaña al Chromecast): ${BASE}/tv`);
+    console.log(`  Presentador (en tu ordenador):            ${BASE}/host`);
+    console.log(`  Jugadores (o escanean el QR de la tele):  ${BASE}/play\n`);
+    const otras = candidatas().filter((c) => c.ip !== IP);
+    if (otras.length) console.log(`  (Otras redes del equipo: ${otras.map((c) => `${c.ip} [${c.nombre}]`).join(', ')})\n`);
+    console.log('  Deja esta ventana ABIERTA mientras jugáis. Para cerrar el juego pulsa Ctrl + C.\n');
+  });
 });
