@@ -340,3 +340,213 @@ exports.refranesChile = [
   { inicio: 'Cuando el río suena…', finales: ['piedras trae', 'es porque piedras trae'] },
   { inicio: 'El que no llora…', finales: ['no mama'] },
 ];
+
+// =====================================================================
+// NIVEL DIFÍCIL — se usa cuando el presentador elige «Difícil»
+// (mismo formato que arriba; si faltan rondas, se completan con las normales)
+// =====================================================================
+
+exports.preguntasRapidasDificil = [
+  { pregunta: '¿Cuál es el elemento químico más abundante del universo?', opciones: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'] },
+  { pregunta: '¿Qué científico formuló las tres leyes del movimiento?', opciones: ['Isaac Newton', 'Galileo Galilei', 'Johannes Kepler', 'Albert Einstein'] },
+  { pregunta: '¿Cuál es la capital de Australia?', opciones: ['Canberra', 'Sídney', 'Melbourne', 'Perth'] },
+  { pregunta: '¿Cuántos huesos tiene el cuerpo humano adulto?', opciones: ['206', '196', '212', '230'] },
+  { pregunta: '¿En qué año cayó el Muro de Berlín?', opciones: ['1989', '1991', '1985', '1979'] },
+  { pregunta: '¿Qué planeta tarda más en dar una vuelta sobre sí mismo?', opciones: ['Venus', 'Mercurio', 'Marte', 'Júpiter'] },
+  { pregunta: '¿Quién escribió «Cien años de soledad»?', opciones: ['Gabriel García Márquez', 'Mario Vargas Llosa', 'Julio Cortázar', 'Jorge Luis Borges'] },
+  { pregunta: 'Después de Brasil, ¿cuál es el país más grande de Sudamérica?', opciones: ['Argentina', 'Perú', 'Colombia', 'Bolivia'] },
+  { pregunta: '¿Qué órgano produce la insulina?', opciones: ['Páncreas', 'Hígado', 'Riñón', 'Bazo'] },
+  { pregunta: '¿Cuál es el símbolo químico del oro?', opciones: ['Au', 'Ag', 'Or', 'Go'] },
+  { pregunta: '¿Qué idioma tiene más hablantes nativos en el mundo?', opciones: ['Chino mandarín', 'Inglés', 'Español', 'Hindi'] },
+  { pregunta: '¿Cuántos planetas del sistema solar tienen anillos?', opciones: ['4', '1', '2', '3'] },
+  { pregunta: '¿Qué pintor se cortó parte de una oreja?', opciones: ['Vincent van Gogh', 'Paul Gauguin', 'Claude Monet', 'Salvador Dalí'] },
+  { pregunta: '¿Cuál es la montaña más alta de América?', opciones: ['Aconcagua', 'Ojos del Salado', 'Chimborazo', 'Huascarán'] },
+];
+exports.preguntasChileDificil = [
+  { pregunta: '¿En qué año se proclamó la Independencia de Chile?', opciones: ['1818', '1810', '1817', '1823'] },
+  { pregunta: '¿Qué batalla de 1817 abrió el camino a la independencia de Chile?', opciones: ['Chacabuco', 'Maipú', 'Rancagua', 'Yungay'] },
+  { pregunta: '¿Quién fue el primero en usar el título de «Presidente de la República» en Chile?', opciones: ['Manuel Blanco Encalada', "Bernardo O'Higgins", 'José Miguel Carrera', 'Diego Portales'] },
+  { pregunta: '¿Cuál es la capital de la región de Aysén?', opciones: ['Coyhaique', 'Puerto Aysén', 'Cochrane', 'Chile Chico'] },
+  { pregunta: '¿En qué año ocurrió el terremoto de Valdivia, el más fuerte jamás registrado?', opciones: ['1960', '1939', '1985', '2010'] },
+  { pregunta: '¿Qué escritor chileno escribió «Hijo de ladrón»?', opciones: ['Manuel Rojas', 'José Donoso', 'Alberto Blest Gana', 'Baldomero Lillo'] },
+  { pregunta: '¿Qué novela de Alberto Blest Gana retrata la sociedad santiaguina del siglo XIX?', opciones: ['Martín Rivas', 'Casa grande', 'El roto', 'Coronación'] },
+  { pregunta: '¿Qué tenista chileno llegó a ser número 1 del ranking ATP?', opciones: ['Marcelo Ríos', 'Fernando González', 'Nicolás Massú', 'Nicolás Jarry'] },
+  { pregunta: '¿En qué región está el radiotelescopio ALMA?', opciones: ['Antofagasta', 'Atacama', 'Coquimbo', 'Tarapacá'] },
+  { pregunta: '¿Cuál es el río más largo de Chile?', opciones: ['Loa', 'Biobío', 'Maule', 'Baker'] },
+  { pregunta: '¿Bajo qué presidente se aprobó la ley de Reforma Agraria de 1967?', opciones: ['Eduardo Frei Montalva', 'Salvador Allende', 'Jorge Alessandri', 'Pedro Aguirre Cerda'] },
+  { pregunta: '¿Cuál es el lago más grande de Chile?', opciones: ['General Carrera', 'Llanquihue', 'Ranco', 'Villarrica'] },
+  { pregunta: '¿En qué año ganó Chile su primera Copa América?', opciones: ['2015', '2016', '1991', '2007'] },
+  { pregunta: '¿Qué buque peruano capturó Chile en el combate de Angamos?', opciones: ['Huáscar', 'Independencia', 'Esmeralda', 'Covadonga'] },
+];
+
+exports.verdaderoFalsoDificil = [
+  { texto: 'Botánicamente, el tomate es una fruta.', v: true },
+  { texto: 'La sangre de los pulpos es azul.', v: true },
+  { texto: 'Medido desde el centro de la Tierra, el Everest es el punto más alejado.', v: false },
+  { texto: 'Venus es el planeta más caliente del sistema solar.', v: true },
+  { texto: 'La Torre Eiffel es un poco más alta en verano que en invierno.', v: true },
+  { texto: 'Napoleón era mucho más bajo que el promedio de su época.', v: false },
+  { texto: 'Los seres humanos usan solo el 10 % de su cerebro.', v: false },
+  { texto: 'En Mercurio, un año dura menos que un día solar.', v: true },
+  { texto: 'El sonido viaja más rápido en el agua que en el aire.', v: true },
+  { texto: 'Los tiburones son mamíferos.', v: false },
+  { texto: 'El ADN de humanos y chimpancés coincide en más de un 95 %.', v: true },
+  { texto: 'La Gran Muralla China es una sola muralla continua.', v: false },
+];
+exports.verdaderoFalsoChileDificil = [
+  { texto: 'Todos los países reconocen la soberanía de Chile sobre su territorio antártico.', v: false },
+  { texto: 'La isla Robinson Crusoe pertenece al archipiélago Juan Fernández.', v: true },
+  { texto: 'Valdivia fue fundada antes que Santiago.', v: false },
+  { texto: 'El estrecho de Magallanes une el océano Atlántico con el Pacífico.', v: true },
+  { texto: 'Pablo Neruda nació en Temuco.', v: false },
+  { texto: 'El Palacio de La Moneda fue construido originalmente para acuñar monedas.', v: true },
+  { texto: 'Chile es el mayor productor de cobre del mundo.', v: true },
+  { texto: 'El Huáscar es hoy un buque museo en Talcahuano.', v: true },
+  { texto: 'Gabriela Mistral es un seudónimo.', v: true },
+  { texto: 'Chile limita con cuatro países.', v: false },
+  { texto: 'La región de Ñuble se separó de la región del Biobío.', v: true },
+  { texto: 'Santiago fue fundada por Diego de Almagro.', v: false },
+];
+
+exports.letrasRevueltasDificil = [
+  { pista: 'Animal', palabra: 'Murciélago' },
+  { pista: 'Lugar', palabra: 'Biblioteca' },
+  { pista: 'Transporte', palabra: 'Helicóptero' },
+  { pista: 'Electrodoméstico', palabra: 'Refrigerador' },
+  { pista: 'Profesión', palabra: 'Astronauta' },
+  { pista: 'Animal', palabra: 'Rinoceronte' },
+  { pista: 'Objeto', palabra: 'Calendario' },
+  { pista: 'Profesión', palabra: 'Arquitecto' },
+];
+exports.letrasRevueltasChileDificil = [
+  { pista: 'Ciudad', palabra: 'Antofagasta' },
+  { pista: 'Comida del sur', palabra: 'Curanto' },
+  { pista: 'Ciudad costera', palabra: 'Pichilemu' },
+  { pista: 'Mina de cobre', palabra: 'Chuquicamata' },
+  { pista: 'Lago', palabra: 'Llanquihue' },
+  { pista: 'Ciudad', palabra: 'Coyhaique' },
+  { pista: 'Pan', palabra: 'Marraqueta' },
+  { pista: 'Volcán', palabra: 'Villarrica' },
+];
+
+exports.palabrasOcultasDificil = [
+  { pista: 'Ciencia', palabra: 'Fotosíntesis' },
+  { pista: 'Astronomía', palabra: 'Constelación' },
+  { pista: 'Profesión', palabra: 'Paleontólogo' },
+  { pista: 'Instrumento médico', palabra: 'Estetoscopio' },
+  { pista: 'Animal', palabra: 'Hipopótamo' },
+  { pista: 'Energía', palabra: 'Electricidad' },
+  { pista: 'Geografía', palabra: 'Archipiélago' },
+  { pista: 'Juguete', palabra: 'Caleidoscopio' },
+];
+exports.palabrasOcultasChileDificil = [
+  { pista: 'Comida típica', palabra: 'Charquicán' },
+  { pista: 'Bebida navideña', palabra: 'Cola de mono' },
+  { pista: 'Salsa', palabra: 'Chancho en piedra' },
+  { pista: 'Dulce frito', palabra: 'Calzones rotos' },
+  { pista: 'Fiesta religiosa', palabra: 'Cuasimodo' },
+  { pista: 'Ciudad', palabra: 'Puerto Montt' },
+  { pista: 'Mina de cobre', palabra: 'Chuquicamata' },
+  { pista: 'Isla', palabra: 'Tierra del Fuego' },
+];
+
+exports.quienSoyDificil = [
+  { pistas: ['Nací en Varsovia', 'Gané dos premios Nobel en ciencias distintas', 'Descubrí el polonio y el radio'], respuestas: ['marie curie', 'curie'] },
+  { pistas: ['Escribía al revés, como en un espejo', 'Diseñé máquinas voladoras', 'Pinté «La última cena»'], respuestas: ['leonardo da vinci', 'da vinci', 'leonardo'] },
+  { pistas: ['Nací en Caracas', 'Un país lleva mi apellido', 'Me llaman el Libertador'], respuestas: ['simon bolivar', 'bolivar'] },
+  { pistas: ['Sería capaz de flotar en el agua', 'Tengo más de cien lunas', 'Mis anillos son los más famosos'], respuestas: ['saturno'] },
+  { pistas: ['Sufrí un grave accidente en un bus', 'Mi casa azul es un museo en Coyoacán', 'Pinté muchos autorretratos con las cejas unidas'], respuestas: ['frida kahlo', 'frida'] },
+  { pistas: ['La Inquisición me juzgó', 'Descubrí cuatro lunas de Júpiter', 'Defendí que la Tierra gira alrededor del Sol'], respuestas: ['galileo galilei', 'galileo'] },
+];
+exports.quienSoyChileDificil = [
+  { pistas: ['Creé la primera bandera nacional', 'Me fusilaron en Mendoza en 1821', 'Lideré la Patria Vieja junto a mis hermanos'], respuestas: ['jose miguel carrera', 'carrera'] },
+  { pistas: ['Me disfrazaba para burlar a los realistas', 'Fui guerrillero de la independencia', 'Me asesinaron en Tiltil en 1818'], respuestas: ['manuel rodriguez'] },
+  { pistas: ['Fui director de teatro', 'Un estadio de Santiago lleva mi nombre', 'Compuse «El derecho de vivir en paz»'], respuestas: ['victor jara'] },
+  { pistas: ['Fui caballerizo de Pedro de Valdivia', 'Aprendí las tácticas de los españoles', 'Fui el líder mapuche que venció en Tucapel'], respuestas: ['lautaro'] },
+  { pistas: ['Nací en Chillán en 1903', 'Fui un niño prodigio', 'Fui uno de los grandes pianistas del siglo XX'], respuestas: ['claudio arrau', 'arrau'] },
+  { pistas: ['Nací en Extremadura', 'Fundé Santiago en 1541', 'Morí tras la batalla de Tucapel'], respuestas: ['pedro de valdivia', 'valdivia'] },
+  { pistas: ['Viví muchos años en España', 'Escribí «2666»', 'Escribí «Los detectives salvajes»'], respuestas: ['roberto bolano', 'bolano'] },
+  { pistas: ['Junto a mí hay un lago con mi mismo nombre', 'Estoy al lado de Pucón', 'Soy uno de los volcanes más activos de Chile'], respuestas: ['villarrica', 'volcan villarrica'] },
+];
+
+exports.refranesDificil = [
+  { inicio: 'A buen entendedor…', finales: ['pocas palabras bastan'] },
+  { inicio: 'El que a buen árbol se arrima…', finales: ['buena sombra le cobija', 'buena sombra lo cobija'] },
+  { inicio: 'Del dicho al hecho…', finales: ['hay mucho trecho'] },
+  { inicio: 'Agua que no has de beber…', finales: ['déjala correr'] },
+  { inicio: 'Más sabe el diablo por viejo…', finales: ['que por diablo'] },
+  { inicio: 'A palabras necias…', finales: ['oídos sordos'] },
+  { inicio: 'Quien siembra vientos…', finales: ['recoge tempestades', 'cosecha tempestades'] },
+  { inicio: 'No hay mal que por bien…', finales: ['no venga'] },
+];
+exports.refranesChileDificil = [
+  { inicio: 'Cuando el diablo no tiene qué hacer…', finales: ['con la cola mata moscas'] },
+  { inicio: 'Hay que hacer de tripas…', finales: ['corazón'] },
+  { inicio: 'Más vale ser cabeza de ratón…', finales: ['que cola de león'] },
+  { inicio: 'El que con niños se acuesta…', finales: ['amanece mojado'] },
+  { inicio: 'Lo que es del cura…', finales: ['va para la iglesia'] },
+  { inicio: 'Cada oveja…', finales: ['con su pareja'] },
+];
+
+exports.ruedasDificil = [
+  [
+    L('A', 'empieza', 'Ciencia que estudia los astros y el universo', 'astronomía'),
+    L('B', 'empieza', 'Instrumento que mide la presión atmosférica', 'barómetro'),
+    L('C', 'empieza', 'Reptil que cambia de color para camuflarse', 'camaleón'),
+    L('D', 'empieza', 'Cuerpo geométrico de doce caras', 'dodecaedro'),
+    L('E', 'empieza', 'Científico que estudia los insectos', 'entomólogo', 'entomóloga'),
+    L('F', 'empieza', 'Proceso con el que las plantas fabrican su alimento usando la luz', 'fotosíntesis'),
+    L('G', 'empieza', 'Unidad de información equivalente a unos mil millones de bytes', 'gigabyte', 'giga'),
+    L('H', 'empieza', 'Polígono de seis lados', 'hexágono'),
+    L('I', 'empieza', 'Animal que no tiene columna vertebral', 'invertebrado'),
+    L('J', 'empieza', 'El planeta más grande del sistema solar', 'júpiter'),
+    L('K', 'empieza', 'Unidad de temperatura absoluta del Sistema Internacional', 'kelvin'),
+    L('L', 'empieza', 'Instrumento óptico de aumento con una sola lente', 'lupa'),
+    L('M', 'empieza', 'Roca transformada por la presión y la temperatura: roca ___', 'metamórfica'),
+    L('N', 'empieza', 'Ciencia que estudia las monedas y medallas', 'numismática'),
+    L('Ñ', 'contiene', 'Articulación que une la mano con el antebrazo', 'muñeca'),
+    L('O', 'empieza', 'Mamífero australiano con pico de pato que pone huevos', 'ornitorrinco'),
+    L('P', 'empieza', 'Persona que habla muchos idiomas', 'políglota'),
+    L('Q', 'empieza', 'Proteína que forma el pelo y las uñas', 'queratina'),
+    L('R', 'empieza', 'Animal de piel gruesa con uno o dos cuernos sobre la nariz', 'rinoceronte'),
+    L('S', 'empieza', 'Instrumento que registra los terremotos', 'sismógrafo'),
+    L('T', 'empieza', 'Capa de la atmósfera más cercana a la superficie terrestre', 'troposfera', 'tropósfera'),
+    L('U', 'empieza', 'Planeta que gira prácticamente acostado', 'urano'),
+    L('V', 'empieza', 'Vaso sanguíneo que lleva la sangre de vuelta al corazón', 'vena'),
+    L('W', 'empieza', 'Unidad de potencia eléctrica', 'watt'),
+    L('X', 'contiene', 'Ciencia que clasifica a los seres vivos', 'taxonomía'),
+    L('Y', 'empieza', 'Elemento químico de símbolo I, usado como antiséptico', 'yodo'),
+    L('Z', 'empieza', 'Ciencia que estudia los animales', 'zoología'),
+  ],
+];
+exports.ruedasChileDificil = [
+  [
+    L('A', 'empieza', 'Ciudad conocida como «la ciudad de la eterna primavera»', 'arica'),
+    L('B', 'empieza', 'Apellido compuesto del autor de «Martín Rivas»', 'blest gana', 'blest'),
+    L('C', 'empieza', 'Batalla de 1817 que abrió el camino a la independencia', 'chacabuco'),
+    L('D', 'empieza', 'Apellido del autor de «El obsceno pájaro de la noche»', 'donoso'),
+    L('E', 'empieza', 'Corbeta hundida en el combate naval de Iquique', 'esmeralda'),
+    L('F', 'empieza', 'Apellido del presidente de Chile entre 1964 y 1970', 'frei'),
+    L('G', 'empieza', 'Nombre completo del lago más grande de Chile', 'general carrera'),
+    L('H', 'empieza', 'Monitor peruano capturado en Angamos, hoy buque museo', 'huáscar'),
+    L('I', 'empieza', 'Ciudad del norte famosa por su zona franca', 'iquique'),
+    L('J', 'empieza', 'Los ___: banda chilena autora de «Mira niñita»', 'jaivas', 'los jaivas'),
+    L('K', 'empieza', 'Pastel de origen alemán típico de Frutillar y Puerto Varas', 'kuchen'),
+    L('L', 'empieza', 'Líder mapuche que había sido caballerizo de Pedro de Valdivia', 'lautaro'),
+    L('M', 'empieza', 'Batalla de 1818 que selló la independencia de Chile', 'maipú'),
+    L('N', 'empieza', 'Apellido del autor de «Canto general»', 'neruda'),
+    L('Ñ', 'empieza', 'Comuna de Santiago donde está el Estadio Nacional', 'ñuñoa'),
+    L('O', 'empieza', 'El volcán más alto del mundo, en la frontera con Argentina', 'ojos del salado'),
+    L('P', 'empieza', 'Apellido del ministro Diego, figura clave del Estado conservador del siglo XIX', 'portales'),
+    L('Q', 'empieza', 'Pueblo de Ñuble famoso por su cerámica negra', 'quinchamalí'),
+    L('R', 'empieza', 'Ciudad que da nombre al «Desastre» de 1814', 'rancagua'),
+    L('S', 'empieza', 'Campamento minero patrimonio de la humanidad, «la ciudad de las escaleras»', 'sewell'),
+    L('T', 'empieza', 'Comuna donde fue asesinado Manuel Rodríguez', 'tiltil', 'til til'),
+    L('U', 'contiene', 'Enorme mina de cobre a tajo abierto cerca de Calama', 'chuquicamata'),
+    L('V', 'empieza', 'Ciudad devastada por el terremoto de 1960', 'valdivia'),
+    L('W', 'contiene', 'Apellido del naturalista que visitó Chile a bordo del Beagle', 'darwin'),
+    L('X', 'contiene', 'Situación de quien vive fuera de su país por motivos políticos', 'exilio'),
+    L('Y', 'empieza', 'Batalla de 1839 que puso fin a la Confederación Perú-Boliviana', 'yungay'),
+    L('Z', 'empieza', 'Apellido del poeta Raúl, Premio Nacional de Literatura 2000', 'zurita'),
+  ],
+];

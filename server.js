@@ -155,6 +155,7 @@ function nuevaPartida() {
     teams: { A: { name: 'Equipo Violeta', bonus: 0 }, B: { name: 'Equipo Ámbar', bonus: 0 } },
     r: null,
     tema: G ? G.tema : 'mixto',
+    dificultad: G ? G.dificultad : 'dificil', // 'normal' o 'dificil'
     modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el celular)
     rondas: G ? G.rondas : [...ORDEN], // pruebas elegidas por el presentador
     secuencia: [], paso: -1, introDe: null,
@@ -171,10 +172,26 @@ function pool(general, chile) {
 }
 // En «mixto» se sortea si la rueda es general o chilena; los dos equipos reciben ruedas del mismo tipo para que sea justo.
 function ruedasParaPartida() {
-  const fuente = G.tema === 'mixto' ? shuffle([C.ruedas, C.ruedasChile])[0] : pool(C.ruedas, C.ruedasChile);
-  return shuffle(fuente).slice(0, 2);
+  if (G.dificultad !== 'dificil') {
+    const fuente = G.tema === 'mixto' ? shuffle([C.ruedas, C.ruedasChile])[0] : pool(C.ruedas, C.ruedasChile);
+    return shuffle(fuente).slice(0, 2);
+  }
+  // Difícil: cada letra se arma con las definiciones difíciles disponibles (y, si faltan, con las normales),
+  // dando una distinta a cada equipo.
+  const dificiles = pool(C.ruedasDificil || [], C.ruedasChileDificil || []);
+  const normales = pool(C.ruedas, C.ruedasChile);
+  const A = [], B = [];
+  C.ruedas[0].forEach((_, j) => {
+    const [x, y] = [...shuffle(dificiles.map((r) => r[j])), ...shuffle(normales.map((r) => r[j]))];
+    if (Math.random() < 0.5) { A.push(x); B.push(y); } else { A.push(y); B.push(x); }
+  });
+  return [A, B];
 }
-const tomar = (general, chile, n) => shuffle(pool(general, chile)).slice(0, n);
+// Toma n elementos de una prueba según tema y dificultad (en «Difícil» se completan con normales si faltan)
+function tomar(general, chile, n) {
+  const dificiles = G.dificultad === 'dificil' ? shuffle(pool(C[general + 'Dificil'] || [], C[chile + 'Dificil'] || [])) : [];
+  return [...dificiles, ...shuffle(pool(C[general], C[chile]))].slice(0, n);
+}
 
 // ---------- secuencia de la partida ----------
 function empezar() {
@@ -192,12 +209,12 @@ function avanzar() {
 function iniciarPrueba(k) {
   G.phase = k;
   const n = CONFIG.porPrueba;
-  if (k === 'quiz') { G.r = { list: tomar(C.preguntasRapidas, C.preguntasChile, CONFIG.preguntasRapidas), i: -1 }; siguientePregunta(); }
-  else if (k === 'vf') { G.r = { list: tomar(C.verdaderoFalso, C.verdaderoFalsoChile, CONFIG.verdaderoFalso), i: -1 }; siguienteVF(); }
-  else if (k === 'oculta') { G.r = { list: tomar(C.palabrasOcultas, C.palabrasOcultasChile, CONFIG.palabrasOcultas), i: -1 }; siguienteOculta(); }
-  else if (k === 'anagrama') { G.r = { kind: k, list: tomar(C.letrasRevueltas, C.letrasRevueltasChile, n), i: -1 }; siguientePulsador(); }
-  else if (k === 'quiensoy') { G.r = { kind: k, list: tomar(C.quienSoy, C.quienSoyChile, n), i: -1 }; siguientePulsador(); }
-  else if (k === 'refran') { G.r = { kind: k, list: tomar(C.refranes, C.refranesChile, n), i: -1 }; siguientePulsador(); }
+  if (k === 'quiz') { G.r = { list: tomar('preguntasRapidas', 'preguntasChile', CONFIG.preguntasRapidas), i: -1 }; siguientePregunta(); }
+  else if (k === 'vf') { G.r = { list: tomar('verdaderoFalso', 'verdaderoFalsoChile', CONFIG.verdaderoFalso), i: -1 }; siguienteVF(); }
+  else if (k === 'oculta') { G.r = { list: tomar('palabrasOcultas', 'palabrasOcultasChile', CONFIG.palabrasOcultas), i: -1 }; siguienteOculta(); }
+  else if (k === 'anagrama') { G.r = { kind: k, list: tomar('letrasRevueltas', 'letrasRevueltasChile', n), i: -1 }; siguientePulsador(); }
+  else if (k === 'quiensoy') { G.r = { kind: k, list: tomar('quienSoy', 'quienSoyChile', n), i: -1 }; siguientePulsador(); }
+  else if (k === 'refran') { G.r = { kind: k, list: tomar('refranes', 'refranesChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'rueda') iniciarRueda();
   emitir();
 }
@@ -485,7 +502,7 @@ setInterval(() => { if (!['lobby', 'fin'].includes(G.phase)) emitir(); }, 500);
 function publico() {
   const s = {
     phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, modo: G.modo, tiempoBase: CONFIG.tiempoBaseRueda,
-    rondas: G.rondas, catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo })),
+    dificultad: G.dificultad, rondas: G.rondas, catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo })),
     teams: G.teams,
     players: Object.values(players),
     intro: null,
@@ -593,6 +610,7 @@ io.on('connection', (sock) => {
     }
     else if (cmd === 'pausa') { G.paused = !G.paused; emitir(); }
     else if (cmd === 'nueva') { nuevaPartida(); emitir(); }
+    else if (cmd === 'dificultad' && G.phase === 'lobby' && ['normal', 'dificil'].includes(arg)) { G.dificultad = arg; emitir(); }
     else if (cmd === 'tema' && G.phase === 'lobby' && ['mixto', 'chile', 'general'].includes(arg)) { G.tema = arg; emitir(); }
     else if (cmd === 'modo' && G.phase === 'lobby' && ['presentador', 'auto'].includes(arg)) { G.modo = arg; emitir(); }
     else if (cmd === 'ronda' && G.phase === 'lobby' && ORDEN.includes(arg)) {

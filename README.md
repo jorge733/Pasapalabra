@@ -58,6 +58,13 @@ En el panel del presentador, antes de empezar, eliges:
 
 Consejo: con presentador, abre `/host` en tu celular o en un portátil que puedas tener en la mano, para ver la respuesta sin que los jugadores la vean.
 
+## Dificultad
+
+- **🔥 Difícil** (por defecto): preguntas de historia, ciencia, geografía y literatura (por ejemplo, batallas de la independencia, autores chilenos, química o astronomía). La rueda mezcla dos ruedas difíciles (una general y una chilena) para que cada equipo tenga definiciones distintas.
+- **🙂 Normal**: preguntas de cultura general más sencillas, buenas para jugar con niños.
+
+El contenido difícil está en la sección «NIVEL DIFÍCIL» de [`contenido.js`](contenido.js). Si una prueba no tiene suficientes preguntas difíciles, se completa con las normales.
+
 ## Temática
 
 En el panel del presentador, antes de empezar, puedes elegir:
