@@ -50,6 +50,8 @@
       <button data-m="auto" onclick="h('modo','auto')">📱 Automático</button>
     </div>
     <p class="hint" id="modoHint"></p>
+    <div class="meta">Pruebas antes de la rueda (toca para activar o quitar)</div>
+    <div class="grid" id="rondas"></div>
     <div class="meta">Temática</div>
     <div class="grid" id="temas">
       <button data-t="mixto" onclick="h('tema','mixto')">🎲 Mixto</button>
@@ -87,7 +89,7 @@ const seg = (ms) => Math.max(0, Math.ceil(ms / 1000));
 const sock = io();
 const h = (c, a) => sock.emit('host', c, a);
 sock.on('connect', () => sock.emit('soyHost'));
-const FASES = { lobby: 'Sala de espera', intro1: 'Intro prueba 1', quiz: 'Prueba 1 · Respuesta rápida', intro2: 'Intro prueba 2', oculta: 'Prueba 2 · Palabra oculta', intro3: 'Intro rueda', rueda: 'Rueda final', fin: 'Partida terminada' };
+const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', rueda: 'Rueda final', fin: 'Partida terminada' };
 let S = null, X = null, ultimaLectura = '';
 
 sock.on('state', (s) => { S = s; render(); });
@@ -98,12 +100,16 @@ function render() {
   let e = FASES[s.phase] || s.phase;
   if (s.phase === 'quiz') e += ` (${s.quiz.n}/${s.quiz.total})`;
   if (s.phase === 'oculta') e += ` (${s.oculta.n}/${s.oculta.total})`;
+  if (s.phase === 'vf') e += ` (${s.vf.n}/${s.vf.total})`;
+  if (s.p && ['anagrama', 'quiensoy', 'refran'].includes(s.phase)) e += ` (${s.p.n}/${s.p.total})`;
+  if (s.phase === 'intro') e = s.intro.titulo;
   if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
   $('#estado').textContent = e + (s.paused ? ' · EN PAUSA' : '');
   $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${s.teams[p.team].name})`).join(', ');
   $('#bEmpezar').disabled = s.phase !== 'lobby';
   $('#bPausa').textContent = s.paused ? '▶ Reanudar' : '⏸ Pausa';
   $('#cfg').classList.toggle('hidden', s.phase !== 'lobby');
+  $('#rondas').innerHTML = s.catalogo.map((c, k) => `<button class="${s.rondas.includes(c.id) ? 'sel' : ''}" onclick="h('ronda','${c.id}')">${s.rondas.includes(c.id) ? '✔ ' : ''}${esc(c.titulo)}</button>`).join('');
   document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
   document.querySelectorAll('#modos button').forEach((b) => b.classList.toggle('sel', b.dataset.m === s.modo));
   $('#modoHint').textContent = s.modo === 'presentador'
@@ -127,7 +133,7 @@ const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar',
 
 function renderLectura() {
   const card = $('#lectura');
-  const visible = S && X && S.modo === 'presentador' && ['quiz', 'oculta', 'rueda'].includes(S.phase);
+  const visible = S && X && S.modo === 'presentador' && ['quiz', 'vf', 'oculta', 'anagrama', 'quiensoy', 'refran', 'rueda'].includes(S.phase);
   card.classList.toggle('hidden', !visible);
   if (!visible) return;
   let html = '';
@@ -146,6 +152,25 @@ function renderLectura() {
     else { estado = 'Di la pista en voz alta. Las letras van apareciendo en la tele…'; botones = btn('bNadie', 'nadie', 'Nadie la sabe →', 'N'); }
     html = `<div class="meta">Palabra ${X.n} de ${X.total}</div><div class="leer">Pista: ${esc(X.pista)}</div>
       <div class="resp">Respuesta: ${esc(X.palabra)}</div><div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
+  } else if (X.tipo === 'vf') {
+    html = `<div class="meta">Verdadero o falso · ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
+      <div class="resp" style="color:${X.v ? 'var(--ok)' : 'var(--ko)'}">Respuesta: ${X.v ? 'VERDADERO' : 'FALSO'}</div>
+      <div class="estadoL">${X.stage === 'reveal' ? 'Mostrando la respuesta en la tele…' : `Los equipos responden en el móvil · ${['A', 'B'].map((t) => team(t) + (X.respondido[t] ? ' ✓' : ' …')).join(' ')}`}</div>
+      <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
+  } else if (X.tipo === 'p') {
+    let estado, botones = '';
+    if (X.stage === 'reveal') estado = 'Mostrando la respuesta en la tele…';
+    else if (X.buzz) { estado = `🔔 ${team(X.buzz.team)} pulsó. ¿Ha acertado?`; botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X'); }
+    else {
+      estado = { anagrama: 'Di la pista en voz alta. Las letras revueltas están en la tele.', quiensoy: 'Lee la pista marcada. Saldrá la siguiente automáticamente (o pulsa «Otra pista»).', refran: 'Lee el comienzo del refrán.' }[X.kind];
+      botones = (X.kind === 'quiensoy' && X.numPistas < 3 ? btn('bPaso', 'pista', 'Otra pista', 'P') : '') + btn('bNadie', 'nadie', 'Nadie lo sabe →', 'N');
+    }
+    let leer = '';
+    if (X.kind === 'anagrama') leer = `<div class="leer">Pista: ${esc(X.item.pista)}</div><div class="meta">En la tele: ${esc(X.revuelta)}</div>`;
+    else if (X.kind === 'refran') leer = `<div class="leer">${esc(X.item.inicio)}</div>`;
+    else leer = X.item.pistas.map((p, k) => `<div class="leer" style="font-size:${k === X.numPistas - 1 ? 28 : 20}px;opacity:${k < X.numPistas ? 1 : .35}">${k + 1}. ${esc(p)}${k === X.numPistas - 1 && X.stage === 'play' ? ' ⬅ lee esta' : ''}</div>`).join('');
+    html = `<div class="meta">${esc(X.titulo)} · ${X.n} de ${X.total}</div>${leer}
+      <div class="resp">Respuesta: ${esc(X.respuesta)}</div><div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
   } else if (X.tipo === 'rueda') {
     if (X.stage !== 'play' || !X.letra) {
       const u = X.ultimo || {};
@@ -168,7 +193,8 @@ function renderLectura() {
 // Atajos de teclado: C = correcto, X = incorrecto, P = paso, N = nadie la sabe
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
-  const m = { c: 'ok', x: 'ko', p: 'paso', n: 'nadie' }[e.key.toLowerCase()];
+  let m = { c: 'ok', x: 'ko', p: 'paso', n: 'nadie' }[e.key.toLowerCase()];
+  if (m === 'paso' && X && X.tipo === 'p') m = 'pista';
   if (m && S && S.modo === 'presentador') h('juzgar', m);
 });
 </script>

@@ -4,11 +4,19 @@ Juego de fiesta por equipos para jugar en la tele. La partida se ve en la tele (
 
 ## Cómo se juega
 
-Dos equipos compiten en tres pruebas:
+Dos equipos compiten en varias pruebas cortas para ganar segundos. Después viene **La Rueda Final**, donde cada equipo juega con 100 segundos más los que haya ganado.
 
-1. **Respuesta rápida**: preguntas con 4 opciones. Acertar suma 5 segundos y el equipo más rápido gana 3 más.
-2. **Palabra oculta**: las letras de una palabra van apareciendo. El primer equipo que pulsa «¡La sé!» y la escribe bien gana segundos (más cuanto antes la acierte).
-3. **La Rueda Final**: una palabra por cada letra del abecedario («empieza por…» o «contiene la…»). Cada equipo empieza con 100 segundos más los que ganó antes. Si fallas o dices «Paso», le toca al otro equipo. Gana quien más palabras acierte (en caso de empate, quien menos falle).
+| Prueba | Cómo funciona | Premio |
+|---|---|---|
+| **Respuesta rápida** | Pregunta con 4 opciones | 8 s (con presentador) / 5 + 3 s al más rápido (automático) |
+| **Verdadero o falso** | Los dos equipos responden a la vez en el móvil | 3 s por acierto |
+| **Letras revueltas** | Ordenar las letras para formar la palabra | 8 s |
+| **Palabra oculta** | Las letras van apareciendo poco a poco | de 5 a 15 s (cuanto antes, más) |
+| **¿Quién soy?** | Tres pistas, cada vez más fáciles | 12 / 8 / 5 s según las pistas usadas |
+| **Completa el refrán** | Decir cómo termina el refrán (incluye dichos chilenos) | 8 s |
+| **La Rueda Final** | Una palabra por letra. Si fallas o pasas, le toca al otro equipo | Gana quien más acierte |
+
+El presentador elige en su panel qué pruebas se juegan antes de empezar. Si un equipo pulsa y falla, el otro puede intentarlo.
 
 ## Qué necesitas
 
@@ -62,7 +70,7 @@ En el panel del presentador, antes de empezar, puedes elegir:
 
 Todo el contenido está en [`contenido.js`](contenido.js): preguntas, palabras ocultas y ruedas de letras, con una sección general y otra chilena (`preguntasChile`, `palabrasOcultasChile`, `ruedasChile`). Añade las tuyas siguiendo el mismo formato (por ejemplo, preguntas sobre tu familia o tus amigos). Las respuestas se comparan sin tildes ni mayúsculas, se admite una errata en palabras de 6 letras o más y puedes poner varias respuestas válidas.
 
-Los tiempos y el número de preguntas se cambian en `CONFIG`, al principio de [`server.js`](server.js).
+Los tiempos y el número de rondas de cada prueba se cambian en `CONFIG`, al principio de [`server.js`](server.js).
 
 Si el juego no reconoce una respuesta válida (un sinónimo, por ejemplo), el presentador puede pulsar **«Dar por buena la última respuesta»**.
 

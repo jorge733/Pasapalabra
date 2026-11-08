@@ -234,3 +234,109 @@ exports.ruedasChile = [
     L('Z', 'empieza', 'Ave cantora muy común en los jardines chilenos', 'zorzal'),
   ],
 ];
+
+// =====================================================================
+// PRUEBAS EXTRA
+// =====================================================================
+
+// Verdadero o falso — v: true si la afirmación es verdadera
+exports.verdaderoFalso = [
+  { texto: 'El Sol es una estrella.', v: true },
+  { texto: 'Las arañas son insectos.', v: false },
+  { texto: 'Al nivel del mar, el agua hierve a 100 °C.', v: true },
+  { texto: 'Los murciélagos son aves.', v: false },
+  { texto: 'La Gran Muralla China se ve a simple vista desde la Luna.', v: false },
+  { texto: 'El corazón humano tiene cuatro cavidades.', v: true },
+  { texto: 'Los pingüinos viven en el Polo Norte.', v: false },
+  { texto: 'El diamante está formado por carbono.', v: true },
+  { texto: 'La luz viaja más rápido que el sonido.', v: true },
+  { texto: 'El océano Atlántico es el más grande del mundo.', v: false },
+  { texto: 'Un año normal tiene 52 semanas y un día.', v: true },
+  { texto: 'Las ballenas son peces.', v: false },
+];
+exports.verdaderoFalsoChile = [
+  { texto: 'Chile limita con Bolivia.', v: true },
+  { texto: 'Chile limita con Brasil.', v: false },
+  { texto: 'La capital de Chile es Valparaíso.', v: false },
+  { texto: 'El Congreso Nacional de Chile está en Valparaíso.', v: true },
+  { texto: 'La Isla de Pascua pertenece a Chile.', v: true },
+  { texto: 'El huemul es un ave.', v: false },
+  { texto: 'Chile ganó una Copa Mundial de fútbol.', v: false },
+  { texto: 'El Mundial de fútbol de 1962 se jugó en Chile.', v: true },
+  { texto: 'Gabriela Mistral ganó el Premio Nobel de Literatura.', v: true },
+  { texto: 'La moneda de Chile es el sol.', v: false },
+  { texto: 'El volcán Ojos del Salado está en la frontera entre Chile y Argentina.', v: true },
+  { texto: 'La región de Magallanes está en el norte de Chile.', v: false },
+];
+
+// Letras revueltas — se muestran las letras desordenadas y una pista
+exports.letrasRevueltas = [
+  { pista: 'Animal', palabra: 'Elefante' },
+  { pista: 'Instrumento', palabra: 'Guitarra' },
+  { pista: 'Insecto', palabra: 'Mariposa' },
+  { pista: 'Dulce', palabra: 'Chocolate' },
+  { pista: 'Paisaje', palabra: 'Montaña' },
+  { pista: 'Lugar', palabra: 'Escuela' },
+  { pista: 'Animal', palabra: 'Tortuga' },
+  { pista: 'Parte de la casa', palabra: 'Ventana' },
+  { pista: 'Astronomía', palabra: 'Planeta' },
+  { pista: 'Juguete', palabra: 'Pelota' },
+];
+exports.letrasRevueltasChile = [
+  { pista: 'Comida típica', palabra: 'Humita' },
+  { pista: 'Comida típica', palabra: 'Porotos' },
+  { pista: 'Ciudad', palabra: 'Temuco' },
+  { pista: 'Ciudad', palabra: 'Rancagua' },
+  { pista: 'Fruta', palabra: 'Chirimoya' },
+  { pista: 'Carne seca', palabra: 'Charqui' },
+  { pista: 'Paisaje', palabra: 'Cordillera' },
+  { pista: 'Juguete', palabra: 'Volantín' },
+  { pista: 'Fruto patagónico', palabra: 'Calafate' },
+  { pista: 'Árbol', palabra: 'Araucaria' },
+];
+
+// ¿Quién soy? — 3 pistas, de la más difícil a la más fácil
+exports.quienSoy = [
+  { pistas: ['Soy muy caliente', 'Los planetas giran a mi alrededor', 'Salgo por la mañana y me escondo por la tarde'], respuestas: ['sol', 'el sol'] },
+  { pistas: ['Cambio de forma cada pocos días', 'Influyo en las mareas', 'Ilumino la noche'], respuestas: ['luna', 'la luna'] },
+  { pistas: ['Soy de madera', 'Mi padre era carpintero', 'Me crece la nariz cuando miento'], respuestas: ['pinocho'] },
+  { pistas: ['Tengo una memoria legendaria', 'Mis grandes orejas me ayudan a refrescarme', 'Tengo trompa'], respuestas: ['elefante'] },
+  { pistas: ['Me abro cuando el cielo se nubla', 'Tengo varillas', 'Te protejo de la lluvia'], respuestas: ['paraguas'] },
+  { pistas: ['Tengo manecillas', 'Doy vueltas sin moverme de mi sitio', 'Te digo la hora'], respuestas: ['reloj'] },
+  { pistas: ['Navegué con tres barcos', 'Zarpé desde España en 1492', 'Llegué a América creyendo que eran las Indias'], respuestas: ['cristobal colon', 'colon'] },
+  { pistas: ['Nací en Alemania en 1879', 'Gané el Premio Nobel de Física', 'Mi fórmula más famosa es E = mc²'], respuestas: ['albert einstein', 'einstein'] },
+];
+exports.quienSoyChile = [
+  { pistas: ['Nací en Parral', 'Tuve una casa en Isla Negra', 'Escribí «Veinte poemas de amor y una canción desesperada»'], respuestas: ['pablo neruda', 'neruda'] },
+  { pistas: ['Fui profesora rural', 'Nací en Vicuña', 'Fui la primera latinoamericana en ganar el Nobel de Literatura'], respuestas: ['gabriela mistral', 'mistral'] },
+  { pistas: ['Luché en la batalla de Rancagua', 'Fui Director Supremo', 'Me llaman el padre de la patria chilena'], respuestas: ['bernardo ohiggins', 'ohiggins', "o'higgins"] },
+  { pistas: ['Nací en San Carlos, en Ñuble', 'Fui cantautora, pintora y bordadora', 'Compuse «Gracias a la vida»'], respuestas: ['violeta parra', 'violeta'] },
+  { pistas: ['Fui abogado y marino', 'Combatí en la Guerra del Pacífico', 'Morí abordando el Huáscar en el combate naval de Iquique'], respuestas: ['arturo prat', 'prat'] },
+  { pistas: ['Vivo en Pelotillehue', 'Mi novia se llama Yayita', 'Cuando algo sale mal, exijo una explicación'], respuestas: ['condorito'] },
+  { pistas: ['Estoy en medio del océano Pacífico', 'Mis habitantes originarios son los rapanui', 'Soy famosa por los moáis'], respuestas: ['isla de pascua', 'rapa nui', 'pascua'] },
+  { pistas: ['Nací en Tocopilla', 'Jugué en el Barcelona y en el Arsenal', 'Soy el máximo goleador de la historia de la selección chilena'], respuestas: ['alexis sanchez', 'alexis'] },
+];
+
+// Completa el refrán — se dice el comienzo y hay que decir el final
+exports.refranes = [
+  { inicio: 'Más vale pájaro en mano…', finales: ['que cien volando'] },
+  { inicio: 'A caballo regalado…', finales: ['no se le miran los dientes', 'no se le mira el diente', 'no se le mira los dientes'] },
+  { inicio: 'Camarón que se duerme…', finales: ['se lo lleva la corriente'] },
+  { inicio: 'Dime con quién andas…', finales: ['y te diré quién eres'] },
+  { inicio: 'Perro que ladra…', finales: ['no muerde'] },
+  { inicio: 'En casa de herrero…', finales: ['cuchillo de palo'] },
+  { inicio: 'No por mucho madrugar…', finales: ['amanece más temprano'] },
+  { inicio: 'Al que madruga…', finales: ['dios lo ayuda', 'dios le ayuda'] },
+  { inicio: 'Ojos que no ven…', finales: ['corazón que no siente'] },
+  { inicio: 'Cría cuervos…', finales: ['y te sacarán los ojos'] },
+];
+exports.refranesChile = [
+  { inicio: 'El que se fue a Melipilla…', finales: ['perdió su silla'] },
+  { inicio: 'Al que le quede el poncho…', finales: ['que se lo ponga'] },
+  { inicio: 'El que nace chicharra…', finales: ['muere cantando'] },
+  { inicio: 'Más perdido que…', finales: ['el teniente bello'] },
+  { inicio: 'Más chileno que…', finales: ['los porotos'] },
+  { inicio: 'Donde manda capitán…', finales: ['no manda marinero'] },
+  { inicio: 'Cuando el río suena…', finales: ['piedras trae', 'es porque piedras trae'] },
+  { inicio: 'El que no llora…', finales: ['no mama'] },
+];

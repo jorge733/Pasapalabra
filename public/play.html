@@ -77,7 +77,7 @@ function vista() {
       <div class="grow"></div><h1>¡Estás dentro!</h1><p>Mira la tele. La partida empieza cuando el presentador lo diga.</p>
       <div class="grow"></div><button class="btn sec" onclick="cambiar()">Cambiar de equipo</button>
       <button class="btn sec" onclick="salir()">Cambiar nombre</button>` };
-    case 'intro1': case 'intro2': case 'intro3': return { key: S.phase, html: () => `
+    case 'intro': return { key: 'intro' + S.intro.titulo, html: () => `
       <div class="grow"></div><h1>${esc(S.intro.titulo)}</h1><p>${esc(S.intro.texto)}</p><div class="grow"></div>` };
     case 'quiz': {
       const q = S.quiz;
@@ -111,6 +111,31 @@ function vista() {
       if (o.buzz) return { key: 'ob' + o.n + o.buzz.team, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(o.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
       if (o.bloqueado[mt]) return { key: 'ol' + o.n, html: () => `<div class="grow"></div><h2>Tu equipo falló esta palabra</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
       return { key: 'op' + o.n, html: () => `<p>Palabra ${o.n}/${o.total}${o.pista ? ' · ' + esc(o.pista) : ' · escucha la pista'}</p>
+        <button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
+    }
+    case 'vf': {
+      const v = S.vf;
+      if (v.stage === 'reveal') return { key: 'vr' + v.n, html: () => `<div class="grow"></div><div class="res ${v.gana[mt] ? 'ok' : 'ko'}">${v.gana[mt] ? '¡Correcto! +3 s' : 'Era ' + (v.verdadero ? 'VERDADERO' : 'FALSO')}</div><div class="grow"></div>` };
+      if (v.respondido[mt]) return { key: 'vw' + v.n, html: () => `<div class="grow"></div><h2>Respuesta de tu equipo enviada</h2><p>Esperando…</p><div class="grow"></div>` };
+      return { key: 'va' + v.n, html: () => `<p>Afirmación ${v.n}/${v.total} · ${v.texto ? 'mira la tele' : 'escucha al presentador'}</p>
+        <div class="opts" style="grid-template-columns:1fr">
+          <button style="background:var(--ok);font-size:30px" onclick="sock.emit('vf',true);vibra(30)">✔ Verdadero</button>
+          <button style="background:var(--ko);font-size:30px" onclick="sock.emit('vf',false);vibra(30)">✘ Falso</button></div>` };
+    }
+    case 'anagrama': case 'quiensoy': case 'refran': {
+      const p = S.p, k = p.kind + p.n;
+      if (p.stage === 'reveal') return { key: 'pr' + k, html: () => `<div class="grow"></div>` + (p.ganador
+        ? `<div class="res ${p.ganador.team === mt ? 'ok' : 'ko'}">${p.ganador.team === mt ? '¡Bien! +' + p.ganador.seg + ' s' : 'Acertó ' + esc(equipoNombre(p.ganador.team))}</div>`
+        : '<h2>Nadie lo acertó</h2>') + `<p style="margin-top:10px">${esc(p.respuesta)}</p><div class="grow"></div>` };
+      if (p.buzz && p.buzz.team === mt && S.modo === 'presentador') return { key: 'pm' + k, html: () => `<div class="grow"></div><h1>🔔 ¡Os toca!</h1><h2>Decid la respuesta en voz alta</h2><div class="grow"></div>` };
+      if (p.buzz && p.buzz.team === mt) return { key: 'pa' + k, html: () => `
+        <h2>¡Escribe la respuesta!</h2><div class="reloj" id="cuenta"></div>
+        <form onsubmit="event.preventDefault();sock.emit('oculta',$('#resp').value)"><input id="resp" class="in" autocomplete="off" autofocus>
+        <button class="btn" style="margin-top:12px">Enviar</button></form>`, after: () => $('#resp').focus(),
+        tick: () => { const c = $('#cuenta'); if (c) c.textContent = seg(p.buzz.rem); } };
+      if (p.buzz) return { key: 'pb' + k + p.buzz.team, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(p.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
+      if (p.bloqueado[mt]) return { key: 'pl' + k, html: () => `<div class="grow"></div><h2>Tu equipo falló esta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
+      return { key: 'pp' + k, html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
         <button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
     }
     case 'rueda': {
