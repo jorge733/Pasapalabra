@@ -8,7 +8,14 @@
 <style>
   body{overflow:hidden;font-size:2.2vmin}
   #app{position:fixed;inset:0;display:flex;flex-direction:column}
-  header{display:flex;align-items:center;justify-content:space-between;padding:2vmin 4vmin}
+  header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:2vmin 4vmin}
+  header .score{justify-self:end}
+  #reloj{display:flex;align-items:center;gap:1.5vmin;background:var(--panel);border-radius:999px;padding:.8vmin 3vmin;font-weight:900;font-size:5.5vmin;min-width:20vmin;justify-content:center;border:.5vmin solid var(--pend);transition:background .3s,border-color .3s}
+  #reloj:empty{visibility:hidden}
+  #reloj.bajo{background:var(--ko);border-color:#fff;animation:latido 1s infinite}
+  #reloj.parado{opacity:.55}
+  #reloj small{font-size:2vmin;color:var(--muted);font-weight:800}
+  @keyframes latido{50%{transform:scale(1.08)}}
   .logo{font-weight:900;font-size:4.2vmin;letter-spacing:.02em}
   .logo span{color:var(--B)}
   .score{display:flex;gap:2vmin}
@@ -82,7 +89,7 @@
 </style>
 </head><body>
 <div id="app">
-  <header><div class="logo">Letra<span>manía</span></div><div class="score" id="score"></div></header>
+  <header><div class="logo">Letra<span>manía</span></div><div id="reloj"></div><div class="score" id="score"></div></header>
   <main id="main"></main>
 </div>
 <button id="sonido">🔊 Presiona para activar el sonido</button>
@@ -125,7 +132,18 @@ function score() {
   return ['A', 'B'].map((t) => `<div class="t ${t}"><div class="n">${esc(S.teams[t].name)}</div><div class="v">+${S.teams[t].bonus} s</div></div>`).join('');
 }
 
+let ultimoSeg = null;
+function pintarReloj() {
+  const el = $('#reloj'), r = S && S.reloj;
+  if (!r) { el.innerHTML = ''; el.className = ''; ultimoSeg = null; return; }
+  const n = seg(r.rem);
+  el.innerHTML = `⏱ ${n}${r.parado ? ' <small>EN PAUSA</small>' : ''}`;
+  el.className = (n <= 5 && !r.parado ? 'bajo' : '') + (r.parado ? ' parado' : '');
+  if (n !== ultimoSeg && n <= 5 && n > 0 && !r.parado) tono([1000], .05, 'square'); // tic en los últimos segundos
+  ultimoSeg = n;
+}
 function render() {
+  pintarReloj();
   $('#score').innerHTML = S.phase === 'rueda' || S.phase === 'fin' ? '' : score();
   const m = $('#main');
   let h = '';

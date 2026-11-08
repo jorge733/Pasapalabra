@@ -35,7 +35,7 @@
   .grow{flex:1}
 </style>
 </head><body>
-<div id="top" class="hidden"><span>Letra<b style="color:var(--B)">manía</b></span><span id="yo"></span></div>
+<div id="top" class="hidden"><span>Letra<b style="color:var(--B)">manía</b></span><b id="relojM" style="font-size:22px"></b><span id="yo"></span></div>
 <div id="v"></div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -179,6 +179,9 @@ function render() {
   const t = $('#top');
   if (me) { t.classList.remove('hidden'); t.className = me.team; $('#yo').innerHTML = `${esc(me.name)} · <span class="chip ${me.team}">${esc(equipoNombre(me.team))}</span>`; document.body.className = me.team; }
   else { t.classList.add('hidden'); document.body.className = ''; }
+  const rj = S && S.reloj, n = rj ? Math.max(0, Math.ceil(rj.rem / 1000)) : 0;
+  $('#relojM').textContent = rj ? '⏱ ' + n : '';
+  $('#relojM').style.color = rj && n <= 5 ? 'var(--ko)' : '';
   const v = vista();
   if (v.key !== viewKey) { viewKey = v.key; $('#v').innerHTML = v.html(); v.after && v.after(); }
   v.tick && v.tick();

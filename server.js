@@ -13,6 +13,7 @@ const CONFIG = {
   tiempoBaseRueda: 100,    // segundos base de cada equipo en la rueda final
   preguntasRapidas: 6,     // Respuesta rápida: nº de preguntas
   segPregunta: 15,         //   segundos para responder (modo automático)
+  segPreguntaPresentador: 25, //   segundos por pregunta con presentador (se detiene mientras un equipo responde)
   verdaderoFalso: 6,       // Verdadero o falso: nº de afirmaciones
   segVF: 10,               //   segundos para responder (modo automático)
   segVFPresentador: 15,    //   segundos para responder (con presentador: incluye la lectura)
@@ -227,7 +228,7 @@ function siguientePregunta() {
   const q = r.list[r.i];
   const opts = shuffle(q.opciones.map((t, k) => ({ t, ok: k === 0 }))); // la primera opción es la correcta
   r.q = { texto: q.pregunta, opciones: opts.map((o) => o.t), correcta: opts.findIndex((o) => o.ok) };
-  r.stage = 'ask'; r.rem = CONFIG.segPregunta * 1000; r.elapsed = 0;
+  r.stage = 'ask'; r.rem = (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000; r.elapsed = 0;
   r.resp = { A: null, B: null };
   r.buzz = null; r.bloqueado = { A: false, B: false }; r.gana = {};
 }
@@ -284,6 +285,7 @@ function siguienteOculta() {
   r.palabra = p.palabra.toUpperCase(); r.pista = p.pista;
   r.visibles = [...r.palabra].map((ch) => ch === ' ');
   r.stage = 'play'; r.revealRem = CONFIG.revelarCadaMs; r.buzz = null;
+  r.totalMs = Math.max(1, r.visibles.filter((v) => !v).length - 1) * CONFIG.revelarCadaMs;
   r.bloqueado = { A: false, B: false }; r.ganador = null; r.intento = null;
 }
 function pulsarOculta(team) {
@@ -457,8 +459,9 @@ setInterval(() => {
   if (G.phase === 'intro') { G.rem -= dt; if (G.rem <= 0) iniciarPrueba(G.introDe); return; }
   if (G.phase === 'quiz') {
     if (r.stage === 'ask') {
-      // con presentador no hay cuenta atrás: él decide cuándo pasar a la siguiente
       if (!conPresentador()) { r.rem -= dt; r.elapsed += dt; if (r.rem <= 0) revelarQuiz(); }
+      // con presentador, el reloj se detiene mientras un equipo responde; si se acaba, nadie suma
+      else if (!r.buzz) { r.rem -= dt; if (r.rem <= 0) { r.rem = 5000; r.stage = 'reveal'; emitir('tiempo'); } }
     } else { r.rem -= dt; if (r.rem <= 0) { siguientePregunta(); emitir(); } }
   } else if (G.phase === 'vf') {
     r.rem -= dt;
@@ -546,7 +549,26 @@ function publico() {
     s.rueda = { eq, turno: r.turno, stage: r.stage, ultimo: r.ultimo,
       actual: L && r.stage === 'play' ? { letra: L.letra, tipo: L.tipo, pista: oculto ? null : L.pista } : null };
   } else if (G.phase === 'fin') s.fin = G.fin;
+  s.reloj = reloj();
   return s;
+}
+// Cuenta atrás de la pregunta en curso (null si no hay ninguna); 'parado' = mientras un equipo responde
+function reloj() {
+  const r = G.r;
+  if (!r) return null;
+  if (G.phase === 'quiz' && r.stage === 'ask')
+    return { rem: r.rem, total: (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000, parado: !!r.buzz };
+  if (G.phase === 'vf' && r.stage === 'ask')
+    return { rem: r.rem, total: (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000, parado: false };
+  if (G.phase === 'oculta' && r.stage === 'play') {
+    const ocultas = r.visibles.filter((v) => !v).length;
+    return { rem: Math.max(0, ocultas - 2) * CONFIG.revelarCadaMs + r.revealRem, total: r.totalMs, parado: !!r.buzz };
+  }
+  if (PULSADOR.includes(G.phase) && r.stage === 'play') {
+    if (r.kind === 'quiensoy') return { rem: (3 - r.pistas) * CONFIG.quienSoyCadaMs + r.rem, total: 3 * CONFIG.quienSoyCadaMs, parado: !!r.buzz };
+    return { rem: r.rem, total: CONFIG.segPulsador * 1000, parado: !!r.buzz };
+  }
+  return null;
 }
 // Lo que solo ve el presentador: la pista completa y la respuesta
 function secreto() {
