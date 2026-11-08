@@ -53,7 +53,7 @@ Jugadores (o escanean el QR de la tele):  http://192.168.1.50:3000/play
 
 En el panel del presentador, antes de empezar, eliges:
 
-- **🎙️ Con presentador** (por defecto): como en la tele. El presentador lee en voz alta las preguntas, pistas y definiciones (también se ven en la tele) y en su panel ve la respuesta correcta, que la tele solo muestra al final. Los jugadores pulsan «¡La sé!» en el celular y responden **en voz alta**. El presentador marca **✔ Correcto**, **✘ Incorrecto**, **⏭ Paso** o **Nadie la sabe**. También puede usar el teclado: `C` correcto, `X` incorrecto, `P` paso, `N` nadie la sabe.
+- **🎙️ Con presentador** (por defecto): como en la tele. El presentador lee en voz alta las preguntas, pistas y definiciones (también se ven en la tele) y en su panel ve la respuesta correcta, que la tele solo muestra al final. Los jugadores presionan «¡La sé!» en el celular y responden **en voz alta**. El presentador marca **✔ Correcto**, **✘ Incorrecto**, **⏭ Paso** o **Nadie la sabe**. También puede usar el teclado: `C` correcto, `X` incorrecto, `P` paso, `N` nadie la sabe.
 - **📱 Automático**: las preguntas salen en la tele y los jugadores escriben las respuestas en el celular. El juego corrige solo.
 
 Consejo: con presentador, abre `/host` en tu celular o en un portátil que puedas tener en la mano, para ver la respuesta sin que los jugadores la vean.

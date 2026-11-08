@@ -113,7 +113,7 @@ function render() {
   document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
   document.querySelectorAll('#modos button').forEach((b) => b.classList.toggle('sel', b.dataset.m === s.modo));
   $('#modoHint').textContent = s.modo === 'presentador'
-    ? 'Tú lees las preguntas desde este panel; los jugadores pulsan en el celular y responden en voz alta. Tú marcas Correcto / Incorrecto.'
+    ? 'Tú lees las preguntas desde este panel; los jugadores presionan en el celular y responden en voz alta. Tú marcas Correcto / Incorrecto.'
     : 'Las preguntas salen en la tele y los jugadores escriben las respuestas en el celular. El juego corrige solo.';
   for (const t of ['A', 'B']) if (document.activeElement !== $('#n' + t)) $('#n' + t).value = s.teams[t].name;
 
@@ -141,7 +141,7 @@ function renderLectura() {
     let estado, botones = '';
     if (X.stage === 'reveal') estado = 'Mostrando la respuesta en la tele…';
     else if (X.buzz) { estado = `🔔 ${team(X.buzz.team)} presionó. ¿Ha acertado?`; botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X'); }
-    else { estado = 'Lee la pregunta y las opciones. Esperando a que alguien pulse…'; botones = btn('bNadie', 'nadie', 'Nadie la sabe →', 'N'); }
+    else { estado = 'Lee la pregunta y las opciones. Esperando a que alguien presione…'; botones = btn('bNadie', 'nadie', 'Nadie la sabe →', 'N'); }
     html = `<div class="meta">Pregunta ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
       <div class="ops">${X.opciones.map((o, k) => `<div class="${k === X.correcta ? 'ok' : ''}">${'ABCD'[k]}) ${esc(o)}${k === X.correcta ? ' ✔' : ''}</div>`).join('')}</div>
       <div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
