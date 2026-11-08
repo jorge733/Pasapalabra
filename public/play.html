@@ -2,7 +2,7 @@
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0d0b1f">
-<title>Letramanía · Mando</title>
+<title>Letramanía · Control</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <style>
@@ -83,7 +83,7 @@ function vista() {
       const q = S.quiz;
       if (S.modo === 'presentador') {
         if (q.stage === 'reveal') return { key: 'pqr' + q.n, html: () => `<div class="grow"></div><div class="res ${q.gana[mt] ? 'ok' : 'ko'}">${q.gana[mt] ? '¡Correcto! +' + q.gana[mt] + ' s' : 'Sin puntos esta vez'}</div><div class="grow"></div>` };
-        if (q.buzz && q.buzz.team === mt) return { key: 'pqm' + q.n, html: () => `<div class="grow"></div><h1>🔔 ¡Os toca!</h1><h2>Decid la respuesta en voz alta</h2><div class="grow"></div>` };
+        if (q.buzz && q.buzz.team === mt) return { key: 'pqm' + q.n, html: () => `<div class="grow"></div><h1>🔔 ¡Les toca!</h1><h2>Digan la respuesta en voz alta</h2><div class="grow"></div>` };
         if (q.buzz) return { key: 'pqo' + q.n, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(q.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
         if (q.bloqueado[mt]) return { key: 'pql' + q.n, html: () => `<div class="grow"></div><h2>Tu equipo falló esta pregunta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
         return { key: 'pqb' + q.n, html: () => `<p>Pregunta ${q.n}/${q.total} · escucha al presentador</p><button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡La sé!</button>` };
@@ -102,7 +102,7 @@ function vista() {
       if (o.stage === 'reveal') return { key: 'or' + o.n, html: () => `<div class="grow"></div>` + (o.ganador
         ? `<div class="res ${o.ganador.team === mt ? 'ok' : 'ko'}">${o.ganador.team === mt ? '¡Bien! +' + o.ganador.seg + ' s' : 'Acertó ' + esc(equipoNombre(o.ganador.team))}</div>`
         : '<h2>Nadie la acertó</h2>') + `<div class="grow"></div>` };
-      if (o.buzz && o.buzz.team === mt && S.modo === 'presentador') return { key: 'opm' + o.n, html: () => `<div class="grow"></div><h1>🔔 ¡Os toca!</h1><h2>Decid la palabra en voz alta</h2><div class="grow"></div>` };
+      if (o.buzz && o.buzz.team === mt && S.modo === 'presentador') return { key: 'opm' + o.n, html: () => `<div class="grow"></div><h1>🔔 ¡Les toca!</h1><h2>Digan la palabra en voz alta</h2><div class="grow"></div>` };
       if (o.buzz && o.buzz.team === mt) return { key: 'oa' + o.n, html: () => `
         <h2>¡Escribe la palabra!</h2><p>${esc(o.pista)}</p><div class="reloj" id="cuenta"></div>
         <form onsubmit="event.preventDefault();sock.emit('oculta',$('#resp').value)"><input id="resp" class="in" autocomplete="off" autocapitalize="characters" autofocus>
@@ -127,7 +127,7 @@ function vista() {
       if (p.stage === 'reveal') return { key: 'pr' + k, html: () => `<div class="grow"></div>` + (p.ganador
         ? `<div class="res ${p.ganador.team === mt ? 'ok' : 'ko'}">${p.ganador.team === mt ? '¡Bien! +' + p.ganador.seg + ' s' : 'Acertó ' + esc(equipoNombre(p.ganador.team))}</div>`
         : '<h2>Nadie lo acertó</h2>') + `<p style="margin-top:10px">${esc(p.respuesta)}</p><div class="grow"></div>` };
-      if (p.buzz && p.buzz.team === mt && S.modo === 'presentador') return { key: 'pm' + k, html: () => `<div class="grow"></div><h1>🔔 ¡Os toca!</h1><h2>Decid la respuesta en voz alta</h2><div class="grow"></div>` };
+      if (p.buzz && p.buzz.team === mt && S.modo === 'presentador') return { key: 'pm' + k, html: () => `<div class="grow"></div><h1>🔔 ¡Les toca!</h1><h2>Digan la respuesta en voz alta</h2><div class="grow"></div>` };
       if (p.buzz && p.buzz.team === mt) return { key: 'pa' + k, html: () => `
         <h2>¡Escribe la respuesta!</h2><div class="reloj" id="cuenta"></div>
         <form onsubmit="event.preventDefault();sock.emit('oculta',$('#resp').value)"><input id="resp" class="in" autocomplete="off" autofocus>
@@ -141,7 +141,7 @@ function vista() {
     case 'rueda': {
       const r = S.rueda;
       if (r.turno !== mt) return { key: 'rw' + r.turno, html: () => `<div class="grow"></div><h2>Turno de ${esc(equipoNombre(r.turno))}</h2>
-        <p>Atentos: cuando fallen o pasen, os toca.</p><div class="reloj" id="cuenta"></div><p>segundos te quedan</p><div class="grow"></div>`,
+        <p>Atentos: cuando fallen o pasen, les toca.</p><div class="reloj" id="cuenta"></div><p>segundos te quedan</p><div class="grow"></div>`,
         tick: () => { const c = $('#cuenta'); if (c) c.textContent = seg(r.eq[mt].tiempo); } };
       if (r.stage !== 'play' || !r.actual) {
         const u = r.ultimo || {};
@@ -165,7 +165,7 @@ function vista() {
     }
     case 'fin': {
       const f = S.fin;
-      return { key: 'fin', html: () => `<div class="grow"></div><div class="res ${f.ganador === mt ? 'ok' : f.ganador ? 'ko' : ''}">${f.ganador === mt ? '¡Habéis ganado! 🎉' : f.ganador ? 'Gana ' + esc(equipoNombre(f.ganador)) : '¡Empate!'}</div>
+      return { key: 'fin', html: () => `<div class="grow"></div><div class="res ${f.ganador === mt ? 'ok' : f.ganador ? 'ko' : ''}">${f.ganador === mt ? '¡Ganaron! 🎉' : f.ganador ? 'Gana ' + esc(equipoNombre(f.ganador)) : '¡Empate!'}</div>
         <p>${f.res.map((x) => esc(equipoNombre(x.team)) + ': ' + x.aciertos + (x.aciertos === 1 ? ' acierto' : ' aciertos')).join(' · ')}</p><div class="grow"></div>` };
     }
   }

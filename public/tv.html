@@ -85,7 +85,7 @@
   <header><div class="logo">Letra<span>manía</span></div><div class="score" id="score"></div></header>
   <main id="main"></main>
 </div>
-<button id="sonido">🔊 Pulsa para activar el sonido</button>
+<button id="sonido">🔊 Presiona para activar el sonido</button>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
@@ -134,7 +134,7 @@ function render() {
     h = `<div class="lobby">
       <div><div class="qr"><img src="/qr.svg" alt="QR"></div><div class="url">${esc(S.base)}/play</div></div>
       <div><div class="big" style="text-align:left">Escanea el QR<br>para jugar</div>
-        <div class="sub" style="text-align:left;margin:2vmin 0 0">Elige equipo en tu móvil. El presentador empieza la partida cuando estéis todos.</div>
+        <div class="sub" style="text-align:left;margin:2vmin 0 0">Elige equipo en tu celular. El presentador empieza la partida cuando estén todos.</div>
         <div class="equipos">${['A', 'B'].map((t) => `<div class="equipo ${t}"><h3>${esc(S.teams[t].name)}</h3><ul>${lista(t)}</ul></div>`).join('')}</div>
       </div></div>`;
   } else if (S.intro) {
@@ -144,10 +144,11 @@ function render() {
       <div class="sub" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
   } else if (S.phase === 'quiz' && S.modo === 'presentador' && S.quiz.stage === 'ask') {
     const q = S.quiz;
-    const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : 'Pulsad en el móvil cuando sepáis la respuesta';
+    const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : 'Presionen en el celular cuando sepan la respuesta';
     h = `<div class="q"><div class="pista">Pregunta ${q.n} de ${q.total}</div>
-      <div class="big" style="margin:3vmin 0">🎙️ Escuchad la pregunta</div>
-      <div class="aviso">${aviso}</div>
+      <div class="qtxt">${esc(q.texto)}</div>
+      <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
+      <div class="aviso" style="margin-top:3vmin">${aviso}</div>
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${q.bloqueado[t] ? ' · falló' : ''}</span>`).join('')}</div></div>`;
   } else if (S.phase === 'quiz') {
     const q = S.quiz, rev = q.stage === 'reveal';
@@ -165,7 +166,7 @@ function render() {
     if (o.ganador) aviso = `<span class="${o.ganador.team}" style="color:var(--team)">¡${esc(S.teams[o.ganador.team].name)} acierta! +${o.ganador.seg} s</span>`;
     else if (o.stage === 'reveal') aviso = 'Nadie la acertó';
     else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[o.buzz.team].name) + ' responde!' : esc(S.teams[o.buzz.team].name) + ' responde… ' + seg(o.buzz.rem)}</span>`;
-    else if (S.modo === 'presentador' && !o.pista) aviso = '<span style="color:var(--muted)">🎙️ Escuchad la pista</span>';
+    else if (S.modo === 'presentador' && !o.pista) aviso = '<span style="color:var(--muted)">🎙️ Escuchen la pista</span>';
     else if (o.intento) aviso = `<span style="color:var(--ko)">«${esc(o.intento.texto)}» no es correcta</span>`;
     h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total}${o.pista ? ' · ' + esc(o.pista) : ''}</div>
       <div class="tiles">${o.letras.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>
@@ -173,7 +174,7 @@ function render() {
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${o.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${o.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
   } else if (S.phase === 'vf') {
     const v = S.vf, rev = v.stage === 'reveal';
-    const enunciado = v.texto ? `<div class="qtxt">${esc(v.texto)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchad la afirmación</div>';
+    const enunciado = v.texto ? `<div class="qtxt">${esc(v.texto)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchen la afirmación</div>';
     h = `<div class="q"><div class="pista">Verdadero o falso · ${v.n} de ${v.total}</div>${enunciado}
       ${rev ? `<div class="big" style="font-size:9vmin;color:${v.verdadero ? 'var(--ok)' : 'var(--ko)'}">${v.verdadero ? 'VERDADERO' : 'FALSO'}</div>
                <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${v.gana[t] ? '+' + v.gana[t] + ' s' : v.resp[t] === null ? 'sin respuesta' : 'falló'}</span>`).join('')}</div>`
@@ -189,17 +190,17 @@ function render() {
     let cuerpo = '';
     if (p.kind === 'anagrama') {
       const letras = rev ? [...p.respuesta.replace(/\s/g, '')] : [...p.revuelta];
-      cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b></div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchad la pista</div>')}
+      cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b></div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista</div>')}
         <div class="tiles">${letras.map((ch) => `<div class="tile on" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>`;
     } else if (p.kind === 'quiensoy') {
       const dots = [1, 2, 3].map((k) => `<span style="display:inline-block;width:3vmin;height:3vmin;border-radius:50%;margin:0 .6vmin;background:${k <= p.numPistas ? 'var(--B)' : 'var(--pend)'}"></span>`).join('');
       cuerpo = `<div style="text-align:center;margin:2vmin 0">${dots}</div>` + (p.pistas
         ? `<div style="max-width:120vmin;margin:0 auto">${p.pistas.map((t, k) => `<div class="qtxt" style="font-size:4.4vmin;margin:1.5vmin 0;animation:pop .35s">${k + 1}. ${esc(t)}</div>`).join('')}</div>`
-        : `<div class="big" style="margin:3vmin 0">🎙️ Escuchad la pista ${p.numPistas} de 3</div>`)
+        : `<div class="big" style="margin:3vmin 0">🎙️ Escuchen la pista ${p.numPistas} de 3</div>`)
         + (rev ? `<div class="big" style="color:var(--ok);margin-top:2vmin">${esc(p.respuesta.toUpperCase())}</div>` : '');
     } else {
       cuerpo = rev ? `<div class="qtxt" style="max-width:140vmin;margin:3vmin auto">${esc(p.respuesta)}</div>`
-        : p.inicio ? `<div class="qtxt" style="font-size:7vmin;margin:3vmin 0">${esc(p.inicio)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchad el refrán</div>';
+        : p.inicio ? `<div class="qtxt" style="font-size:7vmin;margin:3vmin 0">${esc(p.inicio)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchen el refrán</div>';
     }
     h = `<div style="width:100%"><div class="pista">${esc(p.titulo)} · ${p.n} de ${p.total}</div>${cuerpo}
       <div class="aviso">${aviso}</div>
@@ -212,7 +213,7 @@ function render() {
       return `<div class="l ${l.estado} ${k === T.idx && r.stage === 'play' ? 'cur' : ''}" style="left:${50 + R * Math.cos(a)}%;top:${50 + R * Math.sin(a)}%">${l.letra}</div>`;
     }).join('');
     const c = r.actual;
-    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra">${c.letra}</div><div class="def">${c.pista ? esc(c.pista) : '<span style="color:var(--muted)">🎙️ Escuchad al presentador</span>'}</div>`
+    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra">${c.letra}</div><div class="def">${c.pista ? esc(c.pista) : '<span style="color:var(--muted)">🎙️ Escuchen al presentador</span>'}</div>`
                      : `<div class="tipo">Turno de</div><div class="def" style="font-size:4vmin;color:var(--team)">${esc(S.teams[t].name)}</div>`;
     const lado = (x) => {
       const E = r.eq[x], ac = E.letras.filter((l) => l.estado === 'acierto').length, fa = E.letras.filter((l) => l.estado === 'fallo').length;

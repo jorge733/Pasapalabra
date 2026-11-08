@@ -1,4 +1,4 @@
-// Letramanía — juego de fiesta: la tele muestra la partida, los móviles son los mandos.
+// Letramanía — juego de fiesta: la tele muestra la partida, los celulares son los controles.
 const express = require('express');
 const http = require('http');
 const os = require('os');
@@ -19,13 +19,13 @@ const CONFIG = {
   palabrasOcultas: 4,      // Palabra oculta: nº de palabras
   revelarCadaMs: 2200,     //   cada cuánto aparece una letra
   porPrueba: 4,            // Letras revueltas, ¿Quién soy? y Completa el refrán: nº de rondas de cada una
-  segPulsador: 30,         //   segundos antes de dar la ronda por perdida si nadie pulsa
+  segPulsador: 30,         //   segundos antes de dar la ronda por perdida si nadie presiona
   quienSoyCadaMs: 10000,   // ¿Quién soy?: cada cuánto sale una pista nueva
-  segParaResponder: 12,    // segundos para escribir la respuesta tras pulsar «¡La sé!» (modo automático)
+  segParaResponder: 12,    // segundos para escribir la respuesta tras presionar «¡La sé!» (modo automático)
 };
 
 // --- Dirección IP de la red local ---
-// Se ignoran adaptadores virtuales (VirtualBox, VMware, WSL, Hyper-V, VPN…) porque los móviles no pueden llegar a ellos.
+// Se ignoran adaptadores virtuales (VirtualBox, VMware, WSL, Hyper-V, VPN…) porque los celulares no pueden llegar a ellos.
 const VIRTUAL = /virtualbox|vmware|vethernet|hyper-v|wsl|docker|loopback|tailscale|zerotier|vpn|bluetooth|host-only/i;
 function candidatas() {
   const out = [];
@@ -109,23 +109,23 @@ function revolver(palabra) {
 const PRUEBAS = {
   quiz: {
     titulo: 'Respuesta rápida',
-    auto: 'Responded en el móvil. Acertar suma 5 segundos y el equipo más rápido gana 3 más.',
-    presentador: 'Escuchad la pregunta. El primer equipo en pulsar responde en voz alta. Acertar suma 8 segundos; si falláis, puede responder el otro equipo.',
+    auto: 'Respondan en el celular. Acertar suma 5 segundos y el equipo más rápido gana 3 más.',
+    presentador: 'Escuchen la pregunta. El primer equipo en presionar responde en voz alta. Acertar suma 8 segundos; si fallan, puede responder el otro equipo.',
   },
   vf: {
     titulo: 'Verdadero o falso',
-    auto: 'Leed la afirmación y pulsad Verdadero o Falso en el móvil. Cada acierto suma 3 segundos.',
-    presentador: 'Escuchad la afirmación y pulsad Verdadero o Falso en el móvil. Cada acierto suma 3 segundos.',
+    auto: 'Lean la afirmación y presionen Verdadero o Falso en el celular. Cada acierto suma 3 segundos.',
+    presentador: 'Escuchen la afirmación y presionen Verdadero o Falso en el celular. Cada acierto suma 3 segundos.',
   },
   anagrama: {
     titulo: 'Letras revueltas',
-    auto: 'Ordenad las letras para formar la palabra. Pulsad «¡La sé!» y escribidla. Acertar suma 8 segundos.',
-    presentador: 'Ordenad las letras de la tele para formar la palabra. Pulsad «¡La sé!» y decidla en voz alta. Acertar suma 8 segundos.',
+    auto: 'Ordenen las letras para formar la palabra. Presionen «¡La sé!» y escríbanla. Acertar suma 8 segundos.',
+    presentador: 'Ordenen las letras de la tele para formar la palabra. Presionen «¡La sé!» y díganla en voz alta. Acertar suma 8 segundos.',
   },
   oculta: {
     titulo: 'Palabra oculta',
-    auto: 'Las letras van apareciendo. Pulsad «¡La sé!» y escribid la palabra. Cuanto antes, más segundos.',
-    presentador: 'Las letras van apareciendo y el presentador da la pista. Pulsad «¡La sé!» y decid la palabra en voz alta. Cuanto antes, más segundos.',
+    auto: 'Las letras van apareciendo. Presionen «¡La sé!» y escriban la palabra. Cuanto antes, más segundos.',
+    presentador: 'Las letras van apareciendo y el presentador da la pista. Presionen «¡La sé!» y digan la palabra en voz alta. Cuanto antes, más segundos.',
   },
   quiensoy: {
     titulo: '¿Quién soy?',
@@ -134,17 +134,17 @@ const PRUEBAS = {
   },
   refran: {
     titulo: 'Completa el refrán',
-    auto: 'Leed el comienzo del refrán, pulsad «¡La sé!» y escribid cómo termina. Acertar suma 8 segundos.',
-    presentador: 'El presentador dice el comienzo del refrán. Pulsad «¡La sé!» y decid cómo termina. Acertar suma 8 segundos.',
+    auto: 'Lean el comienzo del refrán, presionen «¡La sé!» y escriban cómo termina. Acertar suma 8 segundos.',
+    presentador: 'El presentador dice el comienzo del refrán. Presionen «¡La sé!» y digan cómo termina. Acertar suma 8 segundos.',
   },
   rueda: {
     titulo: 'La Rueda Final',
     auto: 'Una palabra por cada letra. Si fallas o dices «Paso», le toca al otro equipo. ¡Gana quien más acierte!',
-    presentador: 'El presentador lee una definición por cada letra. Responded en voz alta o decid «Paso». Si fallas o pasas, le toca al otro equipo. ¡Gana quien más acierte!',
+    presentador: 'El presentador lee una definición por cada letra. Respondan en voz alta o digan «Paso». Si fallas o pasas, le toca al otro equipo. ¡Gana quien más acierte!',
   },
 };
 const ORDEN = ['quiz', 'vf', 'anagrama', 'oculta', 'quiensoy', 'refran']; // la rueda va siempre al final
-const PULSADOR = ['anagrama', 'quiensoy', 'refran']; // pruebas de «pulsa y responde»
+const PULSADOR = ['anagrama', 'quiensoy', 'refran']; // pruebas de «presiona y responde»
 
 // ---------- estado ----------
 const players = {}; // socket.id -> { name, team }
@@ -155,7 +155,7 @@ function nuevaPartida() {
     teams: { A: { name: 'Equipo Violeta', bonus: 0 }, B: { name: 'Equipo Ámbar', bonus: 0 } },
     r: null,
     tema: G ? G.tema : 'mixto',
-    modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el móvil)
+    modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el celular)
     rondas: G ? G.rondas : [...ORDEN], // pruebas elegidas por el presentador
     secuencia: [], paso: -1, introDe: null,
   };
@@ -494,7 +494,7 @@ function publico() {
     const k = G.introDe, P = PRUEBAS[k];
     s.intro = { prueba: k, titulo: k === 'rueda' ? P.titulo : `Prueba ${G.paso + 1} de ${G.secuencia.length - 1} · ${P.titulo}`, texto: conPresentador() ? P.presentador : P.auto };
   }
-  const oculto = conPresentador(); // con presentador, las pistas solo se ven en su panel
+  const oculto = false; // las preguntas y pistas se ven en la tele en ambos modos (las respuestas, nunca hasta el final)
   const r = G.r;
   if (G.phase === 'quiz') {
     const ver = !oculto || r.stage === 'reveal';
@@ -613,7 +613,7 @@ io.on('connection', (sock) => {
 });
 
 server.on('error', (e) => {
-  if (e.code === 'EADDRINUSE') console.error(`\n  El puerto ${PORT} ya está en uso: probablemente el juego ya está abierto en otra ventana.\n  Ciérrala (o pulsa Ctrl + C en ella) y vuelve a ejecutar npm start.\n`);
+  if (e.code === 'EADDRINUSE') console.error(`\n  El puerto ${PORT} ya está en uso: probablemente el juego ya está abierto en otra ventana.\n  Ciérrala (o presiona Ctrl + C en ella) y vuelve a ejecutar npm start.\n`);
   else console.error('\n  Error al arrancar el servidor:', e.message, '\n');
   process.exit(1);
 });
@@ -624,10 +624,10 @@ elegirIP().then((ip) => {
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`\n  LETRAMANÍA lista\n`);
     console.log(`  Tele (envía esta pestaña al Chromecast): ${BASE}/tv`);
-    console.log(`  Presentador (en tu ordenador):            ${BASE}/host`);
+    console.log(`  Presentador (en tu computador):           ${BASE}/host`);
     console.log(`  Jugadores (o escanean el QR de la tele):  ${BASE}/play\n`);
     const otras = candidatas().filter((c) => c.ip !== IP);
     if (otras.length) console.log(`  (Otras redes del equipo: ${otras.map((c) => `${c.ip} [${c.nombre}]`).join(', ')})\n`);
-    console.log('  Deja esta ventana ABIERTA mientras jugáis. Para cerrar el juego pulsa Ctrl + C.\n');
+    console.log('  Deja esta ventana ABIERTA mientras juegan. Para cerrar el juego presiona Ctrl + C.\n');
   });
 });
