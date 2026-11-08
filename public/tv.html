@@ -142,6 +142,13 @@ function render() {
       ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
     h = `<div><div class="big">${esc(S.intro.titulo)}</div><div class="sub">${esc(S.intro.texto)}</div>${extra}
       <div class="sub" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
+  } else if (S.phase === 'quiz' && S.modo === 'presentador' && S.quiz.stage === 'ask') {
+    const q = S.quiz;
+    const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : 'Pulsad en el móvil cuando sepáis la respuesta';
+    h = `<div class="q"><div class="pista">Pregunta ${q.n} de ${q.total}</div>
+      <div class="big" style="margin:3vmin 0">🎙️ Escuchad la pregunta</div>
+      <div class="aviso">${aviso}</div>
+      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${q.bloqueado[t] ? ' · falló' : ''}</span>`).join('')}</div></div>`;
   } else if (S.phase === 'quiz') {
     const q = S.quiz, rev = q.stage === 'reveal';
     const quien = (k) => rev ? ['A', 'B'].filter((t) => q.resp[t] && q.resp[t].opt === k).map((t) => `<span class="chip ${t}" style="font-size:2.4vmin">${esc(S.teams[t].name)}</span>`).join(' ') : '';
@@ -157,9 +164,10 @@ function render() {
     let aviso = '';
     if (o.ganador) aviso = `<span class="${o.ganador.team}" style="color:var(--team)">¡${esc(S.teams[o.ganador.team].name)} acierta! +${o.ganador.seg} s</span>`;
     else if (o.stage === 'reveal') aviso = 'Nadie la acertó';
-    else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">${esc(S.teams[o.buzz.team].name)} responde… ${seg(o.buzz.rem)}</span>`;
+    else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[o.buzz.team].name) + ' responde!' : esc(S.teams[o.buzz.team].name) + ' responde… ' + seg(o.buzz.rem)}</span>`;
+    else if (S.modo === 'presentador' && !o.pista) aviso = '<span style="color:var(--muted)">🎙️ Escuchad la pista</span>';
     else if (o.intento) aviso = `<span style="color:var(--ko)">«${esc(o.intento.texto)}» no es correcta</span>`;
-    h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total} · ${esc(o.pista)}</div>
+    h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total}${o.pista ? ' · ' + esc(o.pista) : ''}</div>
       <div class="tiles">${o.letras.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>
       <div class="aviso">${aviso}</div>
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${o.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${o.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
@@ -171,7 +179,7 @@ function render() {
       return `<div class="l ${l.estado} ${k === T.idx && r.stage === 'play' ? 'cur' : ''}" style="left:${50 + R * Math.cos(a)}%;top:${50 + R * Math.sin(a)}%">${l.letra}</div>`;
     }).join('');
     const c = r.actual;
-    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra">${c.letra}</div><div class="def">${esc(c.pista)}</div>`
+    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra">${c.letra}</div><div class="def">${c.pista ? esc(c.pista) : '<span style="color:var(--muted)">🎙️ Escuchad al presentador</span>'}</div>`
                      : `<div class="tipo">Turno de</div><div class="def" style="font-size:4vmin;color:var(--team)">${esc(S.teams[t].name)}</div>`;
     const lado = (x) => {
       const E = r.eq[x], ac = E.letras.filter((l) => l.estado === 'acierto').length, fa = E.letras.filter((l) => l.estado === 'fallo').length;

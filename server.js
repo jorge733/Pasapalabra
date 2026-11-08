@@ -96,6 +96,7 @@ function nuevaPartida() {
     teams: { A: { name: 'Equipo Violeta', bonus: 0 }, B: { name: 'Equipo Ámbar', bonus: 0 } },
     r: null, log: [],
     tema: G ? G.tema : 'mixto',
+    modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el móvil)
   };
 }
 nuevaPartida();
@@ -117,6 +118,13 @@ const INTROS = {
   intro2: { titulo: 'Prueba 2 · Palabra oculta', texto: 'Las letras van apareciendo. Pulsad «¡La sé!» y escribid la palabra. Cuanto antes, más segundos.', next: 'oculta' },
   intro3: { titulo: 'La Rueda Final', texto: 'Una palabra por cada letra. Si fallas o dices «Paso», le toca al otro equipo. ¡Gana quien más acierte!', next: 'rueda' },
 };
+// Textos de las intros en el modo «Con presentador»
+const INTROS_PRESENTADOR = {
+  intro1: 'Escuchad la pregunta. El primer equipo en pulsar su móvil responde en voz alta. Acertar suma 8 segundos; si falláis, puede responder el otro equipo.',
+  intro2: 'Las letras van apareciendo y el presentador da la pista. Pulsad «¡La sé!» y decid la palabra en voz alta. Cuanto antes, más segundos.',
+  intro3: 'El presentador lee una definición por cada letra. Responded en voz alta o decid «Paso». Si fallas o pasas, le toca al otro equipo. ¡Gana quien más acierte!',
+};
+const conPresentador = () => G.modo === 'presentador';
 
 function irA(phase) {
   G.phase = phase;
@@ -143,10 +151,18 @@ function siguientePregunta() {
   r.q = { texto: q.pregunta, opciones: opts.map((o) => o.t), correcta: opts.findIndex((o) => o.ok) };
   r.stage = 'ask'; r.rem = CONFIG.segPregunta * 1000; r.elapsed = 0;
   r.resp = { A: null, B: null };
+  r.buzz = null; r.bloqueado = { A: false, B: false }; r.gana = {};
+}
+// Modo presentador: el primer equipo que pulsa responde en voz alta
+function pulsarQuiz(team) {
+  const r = G.r;
+  if (G.phase !== 'quiz' || !conPresentador() || r.stage !== 'ask' || r.buzz || r.bloqueado[team]) return;
+  r.buzz = { team };
+  emitir('buzz');
 }
 function responderQuiz(team, opt) {
   const r = G.r;
-  if (G.phase !== 'quiz' || r.stage !== 'ask' || r.resp[team]) return;
+  if (G.phase !== 'quiz' || conPresentador() || r.stage !== 'ask' || r.resp[team]) return;
   r.resp[team] = { opt, ms: r.elapsed, ok: opt === r.q.correcta };
   if (r.resp.A && r.resp.B) revelarQuiz(); else emitir();
 }
@@ -183,16 +199,18 @@ function pulsarOculta(team) {
 }
 function responderOculta(team, texto) {
   const r = G.r;
-  if (G.phase !== 'oculta' || !r.buzz || r.buzz.team !== team) return;
+  if (G.phase !== 'oculta' || conPresentador() || !r.buzz || r.buzz.team !== team) return;
   r.intento = { team, texto };
-  if (coincide(texto, [r.palabra])) {
-    const seg = Math.max(5, 15 - r.visibles.filter((v, k) => v && r.palabra[k] !== ' ').length);
-    G.teams[team].bonus += seg;
-    r.ganador = { team, seg };
-    r.stage = 'reveal'; r.rem = 4500; r.buzz = null;
-    r.visibles = r.visibles.map(() => true);
-    emitir('ok');
-  } else fallarOculta(team);
+  if (coincide(texto, [r.palabra])) acertarOculta(team); else fallarOculta(team);
+}
+function acertarOculta(team) {
+  const r = G.r;
+  const seg = Math.max(5, 15 - r.visibles.filter((v, k) => v && r.palabra[k] !== ' ').length);
+  G.teams[team].bonus += seg;
+  r.ganador = { team, seg };
+  r.stage = 'reveal'; r.rem = 4500; r.buzz = null;
+  r.visibles = r.visibles.map(() => true);
+  emitir('ok');
 }
 function fallarOculta(team) {
   const r = G.r;
@@ -218,7 +236,7 @@ function siguientePendiente(T, desde) {
   return -1;
 }
 const puedeJugar = (T) => T.tiempo > 0 && T.letras.some((l) => l.estado === 'pendiente');
-function responderRueda(team, texto, paso) {
+function responderRueda(team, texto, paso, forzado) {
   const r = G.r;
   if (G.phase !== 'rueda' || r.stage !== 'play' || r.turno !== team) return;
   const T = r.eq[team];
@@ -229,13 +247,34 @@ function responderRueda(team, texto, paso) {
     r.stage = 'feedback'; r.rem = 1500;
     return emitir('paso');
   }
-  const ok = coincide(texto, L.respuestas);
+  const ok = forzado !== undefined ? forzado : coincide(texto, L.respuestas);
   L.estado = ok ? 'acierto' : 'fallo';
   r.ultimo = { team, letra: L.letra, idx: T.idx, tipo: ok ? 'acierto' : 'fallo', dada: texto, correcta: L.respuestas[0], t: Date.now() };
   T.idx = siguientePendiente(T, T.idx);
   if (!ok) { r.stage = 'feedback'; r.rem = 3500; }
   else if (T.idx === -1) { r.stage = 'feedback'; r.rem = 2500; }
   emitir(ok ? 'ok' : 'fail');
+}
+// Decisión del presentador: 'ok', 'ko', 'paso' (rueda) o 'nadie' (nadie la sabe)
+function juzgar(res) {
+  const r = G.r;
+  if (!r || !conPresentador() || G.paused) return;
+  if (G.phase === 'quiz' && r.stage === 'ask') {
+    if (res === 'nadie') { r.buzz = null; r.stage = 'reveal'; r.rem = 5000; return emitir('reveal'); }
+    if (!r.buzz) return;
+    const t = r.buzz.team;
+    r.buzz = null;
+    if (res === 'ok') { r.gana = { [t]: 8 }; G.teams[t].bonus += 8; r.stage = 'reveal'; r.rem = 5000; return emitir('ok'); }
+    if (res === 'ko') { r.bloqueado[t] = true; if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; } return emitir('fail'); }
+  } else if (G.phase === 'oculta' && r.stage === 'play') {
+    if (res === 'nadie') { r.buzz = null; r.stage = 'reveal'; r.rem = 4000; r.visibles = r.visibles.map(() => true); return emitir('reveal'); }
+    if (!r.buzz) return;
+    if (res === 'ok') return acertarOculta(r.buzz.team);
+    if (res === 'ko') return fallarOculta(r.buzz.team);
+  } else if (G.phase === 'rueda' && r.stage === 'play') {
+    if (res === 'paso') return responderRueda(r.turno, '', true);
+    if (res === 'ok' || res === 'ko') return responderRueda(r.turno, '', false, res === 'ok');
+  }
 }
 function trasFeedback() {
   const r = G.r;
@@ -263,12 +302,13 @@ setInterval(() => {
   const r = G.r;
   if (INTROS[G.phase]) { G.rem -= dt; if (G.rem <= 0) irA(INTROS[G.phase].next); return; }
   if (G.phase === 'quiz') {
-    r.rem -= dt;
-    if (r.stage === 'ask') { r.elapsed += dt; if (r.rem <= 0) revelarQuiz(); }
-    else if (r.rem <= 0) { siguientePregunta(); emitir(); }
+    if (r.stage === 'ask') {
+      // con presentador no hay cuenta atrás: él decide cuándo pasar a la siguiente
+      if (!conPresentador()) { r.rem -= dt; r.elapsed += dt; if (r.rem <= 0) revelarQuiz(); }
+    } else { r.rem -= dt; if (r.rem <= 0) { siguientePregunta(); emitir(); } }
   } else if (G.phase === 'oculta') {
     if (r.stage === 'play') {
-      if (r.buzz) { r.buzz.rem -= dt; if (r.buzz.rem <= 0) fallarOculta(r.buzz.team); }
+      if (r.buzz) { if (!conPresentador()) { r.buzz.rem -= dt; if (r.buzz.rem <= 0) fallarOculta(r.buzz.team); } }
       else {
         r.revealRem -= dt;
         if (r.revealRem <= 0) {
@@ -293,18 +333,20 @@ setInterval(() => { if (!['lobby', 'fin'].includes(G.phase)) emitir(); }, 500);
 // ---------- estado público (sin respuestas) ----------
 function publico() {
   const s = {
-    phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, tiempoBase: CONFIG.tiempoBaseRueda,
+    phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, modo: G.modo, tiempoBase: CONFIG.tiempoBaseRueda,
     teams: G.teams,
     players: Object.values(players),
-    intro: INTROS[G.phase] || null,
+    intro: INTROS[G.phase] ? { ...INTROS[G.phase], texto: conPresentador() ? INTROS_PRESENTADOR[G.phase] : INTROS[G.phase].texto } : null,
   };
+  const oculto = conPresentador(); // con presentador, las pistas solo se ven en su panel
   const r = G.r;
   if (G.phase === 'quiz') {
-    s.quiz = { n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, stage: r.stage, rem: r.rem,
-      respondido: { A: !!r.resp.A, B: !!r.resp.B } };
+    const ver = !oculto || r.stage === 'reveal';
+    s.quiz = { n: r.i + 1, total: r.list.length, texto: ver ? r.q.texto : null, opciones: ver ? r.q.opciones : null, stage: r.stage, rem: r.rem,
+      respondido: { A: !!r.resp.A, B: !!r.resp.B }, buzz: r.buzz, bloqueado: r.bloqueado };
     if (r.stage === 'reveal') Object.assign(s.quiz, { correcta: r.q.correcta, resp: r.resp, gana: r.gana });
   } else if (G.phase === 'oculta') {
-    s.oculta = { n: r.i + 1, total: r.list.length, pista: r.pista, stage: r.stage,
+    s.oculta = { n: r.i + 1, total: r.list.length, pista: !oculto || r.stage === 'reveal' ? r.pista : null, stage: r.stage,
       letras: [...r.palabra].map((ch, k) => (ch === ' ' ? ' ' : r.visibles[k] ? ch : '')),
       buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento };
   } else if (G.phase === 'rueda') {
@@ -316,11 +358,26 @@ function publico() {
     const T = r.eq[r.turno];
     const L = T.idx >= 0 ? T.letras[T.idx] : null;
     s.rueda = { eq, turno: r.turno, stage: r.stage, ultimo: r.ultimo,
-      actual: L && r.stage === 'play' ? { letra: L.letra, tipo: L.tipo, pista: L.pista } : null };
+      actual: L && r.stage === 'play' ? { letra: L.letra, tipo: L.tipo, pista: oculto ? null : L.pista } : null };
   } else if (G.phase === 'fin') s.fin = G.fin;
   return s;
 }
-function emitir(evento) { io.emit('state', publico(), evento || null); }
+// Lo que solo ve el presentador: la pista completa y la respuesta
+function secreto() {
+  const r = G.r;
+  if (!r) return null;
+  if (G.phase === 'quiz') return { tipo: 'quiz', n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, correcta: r.q.correcta, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };
+  if (G.phase === 'oculta') return { tipo: 'oculta', n: r.i + 1, total: r.list.length, pista: r.pista, palabra: r.palabra, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };
+  if (G.phase === 'rueda') {
+    const T = r.eq[r.turno], L = T.idx >= 0 ? T.letras[T.idx] : null;
+    return { tipo: 'rueda', turno: r.turno, stage: r.stage, tiempo: T.tiempo, letra: L && L.letra, tipoLetra: L && L.tipo, pista: L && L.pista, respuestas: L && L.respuestas, ultimo: r.ultimo };
+  }
+  return null;
+}
+function emitir(evento) {
+  io.emit('state', publico(), evento || null);
+  io.to('hosts').emit('secreto', secreto());
+}
 
 // ---------- conexiones ----------
 io.on('connection', (sock) => {
@@ -335,9 +392,10 @@ io.on('connection', (sock) => {
   sock.on('disconnect', () => { if (players[sock.id]) { delete players[sock.id]; emitir(); } });
   const team = () => players[sock.id] && players[sock.id].team;
   sock.on('quiz', (opt) => team() && responderQuiz(team(), Number(opt)));
-  sock.on('buzz', () => team() && pulsarOculta(team()));
+  sock.on('buzz', () => team() && (G.phase === 'quiz' ? pulsarQuiz(team()) : pulsarOculta(team())));
   sock.on('oculta', (txt) => team() && responderOculta(team(), txt));
-  sock.on('rueda', ({ texto, paso }) => team() && responderRueda(team(), texto, !!paso));
+  sock.on('rueda', ({ texto, paso } = {}) => team() && (paso || !conPresentador()) && responderRueda(team(), texto, !!paso));
+  sock.on('soyHost', () => { sock.join('hosts'); sock.emit('secreto', secreto()); });
 
   // controles del presentador
   sock.on('host', (cmd, arg) => {
@@ -346,6 +404,8 @@ io.on('connection', (sock) => {
     else if (cmd === 'pausa') { G.paused = !G.paused; emitir(); }
     else if (cmd === 'nueva') { nuevaPartida(); emitir(); }
     else if (cmd === 'tema' && G.phase === 'lobby' && ['mixto', 'chile', 'general'].includes(arg)) { G.tema = arg; emitir(); }
+    else if (cmd === 'modo' && G.phase === 'lobby' && ['presentador', 'auto'].includes(arg)) { G.modo = arg; emitir(); }
+    else if (cmd === 'juzgar') juzgar(arg);
     else if (cmd === 'irRueda') irA('intro3');
     else if (cmd === 'nombre' && arg && G.teams[arg.team]) { G.teams[arg.team].name = String(arg.name).slice(0, 20); emitir(); }
     else if (cmd === 'darPorBuena' && G.phase === 'rueda') {

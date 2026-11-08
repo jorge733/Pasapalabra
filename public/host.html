@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/style.css">
 <style>
   body{font-size:17px}
-  .wrap{max-width:720px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
   h1{margin:0;font-weight:900}
   .card{background:var(--panel);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
   .card h3{margin:0;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.1em}
@@ -18,34 +18,62 @@
   .names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .names input{padding:10px;border-radius:10px;border:3px solid var(--team);background:var(--bg);color:var(--ink);width:100%}
   code{background:var(--bg);padding:2px 6px;border-radius:6px}
-  #ultimo{font-size:18px;font-weight:800}
   a{color:var(--B)}
+  .hint{margin:0;color:var(--muted);font-size:14px}
+
+  /* tarjeta de lectura */
+  #lectura{border:3px solid var(--B)}
+  .meta{color:var(--muted);font-weight:800}
+  .leer{font-size:30px;font-weight:900;line-height:1.25}
+  .letraG{font-size:64px;font-weight:900;line-height:1;color:var(--team)}
+  .resp{font-size:22px;font-weight:900;color:var(--ok)}
+  .ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ops div{background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:800;font-size:19px}
+  .ops div.ok{background:#14532d;outline:2px solid var(--ok)}
+  .estadoL{font-size:20px;font-weight:900;padding:10px 14px;border-radius:10px;background:var(--bg)}
+  .juicio{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .juicio button{padding:20px 10px;font-size:22px;font-weight:900}
+  .bOk{background:#15803d}.bKo{background:#b91c1c}.bPaso{background:#4f46e5}.bNadie{background:#475569}
+  kbd{background:rgba(0,0,0,.35);border-radius:6px;padding:1px 6px;font-size:13px;margin-left:6px}
 </style>
 </head><body><div class="wrap">
   <h1>Letra<span style="color:var(--B)">manía</span> · Presentador</h1>
+
+  <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="lecturaBody"></div></div>
+
   <div class="card"><h3>Estado</h3><div id="estado" style="font-weight:800;font-size:20px"></div><div id="jug" style="color:var(--muted)"></div></div>
-  <div class="card"><h3>Temática de las preguntas</h3>
+
+  <div class="card" id="cfg"><h3>Antes de empezar</h3>
+    <div class="meta">Modo de juego</div>
+    <div class="grid" id="modos">
+      <button data-m="presentador" onclick="h('modo','presentador')">🎙️ Con presentador</button>
+      <button data-m="auto" onclick="h('modo','auto')">📱 Automático</button>
+    </div>
+    <p class="hint" id="modoHint"></p>
+    <div class="meta">Temática</div>
     <div class="grid" id="temas">
       <button data-t="mixto" onclick="h('tema','mixto')">🎲 Mixto</button>
       <button data-t="chile" onclick="h('tema','chile')">🇨🇱 Solo Chile</button>
       <button data-t="general" onclick="h('tema','general')">🌍 General</button>
     </div>
-    <p style="margin:0;color:var(--muted);font-size:14px">Se elige antes de empezar la partida.</p>
   </div>
+
   <div class="card"><h3>Controles</h3>
     <div class="grid">
       <button class="go" id="bEmpezar" onclick="h('empezar')">▶ Empezar partida</button>
       <button id="bPausa" onclick="h('pausa')">⏸ Pausa</button>
-      <button onclick="h('saltar')">⏭ Saltar a lo siguiente</button>
+      <button onclick="h('saltar')">⏭ Saltar a la siguiente prueba</button>
       <button onclick="h('irRueda')">🔤 Ir directo a la Rueda</button>
       <button class="warn" onclick="confirm('¿Empezar una partida nueva? Se pierde la actual.') && h('nueva')">↺ Nueva partida</button>
     </div>
   </div>
+
   <div class="card" id="juez"><h3>Juez de la rueda</h3>
-    <div id="ultimo">—</div>
-    <button id="bBuena" class="go" style="padding:14px;font-weight:900;background:#15803d" onclick="h('darPorBuena')" disabled>✔ Dar por buena la última respuesta</button>
-    <p style="margin:0;color:var(--muted);font-size:14px">Si alguien escribió una respuesta válida que el juego no reconoció (sinónimo, errata…), márcala aquí.</p>
+    <div id="ultimo" style="font-size:18px;font-weight:800">—</div>
+    <button id="bBuena" style="padding:14px;font-weight:900;background:#15803d" onclick="h('darPorBuena')" disabled>✔ Dar por buena la última respuesta</button>
+    <p class="hint">Si alguien escribió una respuesta válida que el juego no reconoció (sinónimo, errata…), márcala aquí.</p>
   </div>
+
   <div class="card"><h3>Nombres de equipo</h3>
     <div class="names"><input class="A" id="nA" onchange="h('nombre',{team:'A',name:this.value})"><input class="B" id="nB" onchange="h('nombre',{team:'B',name:this.value})"></div>
   </div>
@@ -55,26 +83,93 @@
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const seg = (ms) => Math.max(0, Math.ceil(ms / 1000));
 const sock = io();
 const h = (c, a) => sock.emit('host', c, a);
+sock.on('connect', () => sock.emit('soyHost'));
 const FASES = { lobby: 'Sala de espera', intro1: 'Intro prueba 1', quiz: 'Prueba 1 · Respuesta rápida', intro2: 'Intro prueba 2', oculta: 'Prueba 2 · Palabra oculta', intro3: 'Intro rueda', rueda: 'Rueda final', fin: 'Partida terminada' };
-sock.on('state', (s) => {
+let S = null, X = null, ultimaLectura = '';
+
+sock.on('state', (s) => { S = s; render(); });
+sock.on('secreto', (x) => { X = x; renderLectura(); });
+
+function render() {
+  const s = S;
   let e = FASES[s.phase] || s.phase;
   if (s.phase === 'quiz') e += ` (${s.quiz.n}/${s.quiz.total})`;
   if (s.phase === 'oculta') e += ` (${s.oculta.n}/${s.oculta.total})`;
   if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
   $('#estado').textContent = e + (s.paused ? ' · EN PAUSA' : '');
-  $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${p.team === 'A' ? s.teams.A.name : s.teams.B.name})`).join(', ');
+  $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${s.teams[p.team].name})`).join(', ');
   $('#bEmpezar').disabled = s.phase !== 'lobby';
-  document.querySelectorAll('#temas button').forEach((b) => { b.classList.toggle('sel', b.dataset.t === s.tema); b.disabled = s.phase !== 'lobby'; });
   $('#bPausa').textContent = s.paused ? '▶ Reanudar' : '⏸ Pausa';
+  $('#cfg').classList.toggle('hidden', s.phase !== 'lobby');
+  document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
+  document.querySelectorAll('#modos button').forEach((b) => b.classList.toggle('sel', b.dataset.m === s.modo));
+  $('#modoHint').textContent = s.modo === 'presentador'
+    ? 'Tú lees las preguntas desde este panel; los jugadores pulsan en el móvil y responden en voz alta. Tú marcas Correcto / Incorrecto.'
+    : 'Las preguntas salen en la tele y los jugadores escriben las respuestas en el móvil. El juego corrige solo.';
   for (const t of ['A', 'B']) if (document.activeElement !== $('#n' + t)) $('#n' + t).value = s.teams[t].name;
+
+  // juez (solo modo automático)
+  $('#juez').classList.toggle('hidden', s.modo === 'presentador' || s.phase !== 'rueda');
   const u = s.phase === 'rueda' && s.rueda.ultimo;
   if (u && (u.tipo === 'fallo' || u.tipo === 'corregida')) {
     $('#ultimo').innerHTML = `${esc(s.teams[u.team].name)} · letra ${u.letra}: escribió «${esc(u.dada)}» (esperada: ${esc(u.correcta)})${u.tipo === 'corregida' ? ' → dada por buena ✔' : ''}`;
     $('#bBuena').disabled = u.tipo !== 'fallo';
   } else { $('#ultimo').textContent = '—'; $('#bBuena').disabled = true; }
   $('#links').innerHTML = `Tele: <a href="/tv" target="_blank">${esc(s.base)}/tv</a><br>Jugadores: <code>${esc(s.base)}/play</code>`;
+  renderLectura();
+}
+
+const team = (t) => `<span class="chip ${t}">${esc(S.teams[t].name)}</span>`;
+const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar','${res}')">${txt}<kbd>${key}</kbd></button>`;
+
+function renderLectura() {
+  const card = $('#lectura');
+  const visible = S && X && S.modo === 'presentador' && ['quiz', 'oculta', 'rueda'].includes(S.phase);
+  card.classList.toggle('hidden', !visible);
+  if (!visible) return;
+  let html = '';
+  if (X.tipo === 'quiz') {
+    let estado, botones = '';
+    if (X.stage === 'reveal') estado = 'Mostrando la respuesta en la tele…';
+    else if (X.buzz) { estado = `🔔 ${team(X.buzz.team)} pulsó. ¿Ha acertado?`; botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X'); }
+    else { estado = 'Lee la pregunta y las opciones. Esperando a que alguien pulse…'; botones = btn('bNadie', 'nadie', 'Nadie la sabe →', 'N'); }
+    html = `<div class="meta">Pregunta ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
+      <div class="ops">${X.opciones.map((o, k) => `<div class="${k === X.correcta ? 'ok' : ''}">${'ABCD'[k]}) ${esc(o)}${k === X.correcta ? ' ✔' : ''}</div>`).join('')}</div>
+      <div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
+  } else if (X.tipo === 'oculta') {
+    let estado, botones = '';
+    if (X.stage === 'reveal') estado = 'Mostrando la palabra en la tele…';
+    else if (X.buzz) { estado = `🔔 ${team(X.buzz.team)} pulsó. ¿Ha acertado?`; botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X'); }
+    else { estado = 'Di la pista en voz alta. Las letras van apareciendo en la tele…'; botones = btn('bNadie', 'nadie', 'Nadie la sabe →', 'N'); }
+    html = `<div class="meta">Palabra ${X.n} de ${X.total}</div><div class="leer">Pista: ${esc(X.pista)}</div>
+      <div class="resp">Respuesta: ${esc(X.palabra)}</div><div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
+  } else if (X.tipo === 'rueda') {
+    if (X.stage !== 'play' || !X.letra) {
+      const u = X.ultimo || {};
+      const msg = { acierto: '✔ Correcto', fallo: `✘ Incorrecto — era «${esc(u.correcta || '')}»`, paso: '⏭ Paso', tiempo: '⏰ Se acabó el tiempo' }[u.tipo] || '…';
+      html = `<div class="estadoL">${msg}</div><p class="hint">Enseguida aparece la siguiente letra…</p>`;
+    } else {
+      const otras = X.respuestas.slice(1);
+      html = `<div class="meta">Turno de ${team(X.turno)} · <span id="relojH"></span> s</div>
+        <div class="${X.turno}"><span class="meta">${X.tipoLetra === 'empieza' ? 'Empieza por' : 'Contiene la'}</span> <span class="letraG">${X.letra}</span></div>
+        <div class="leer">${esc(X.pista)}</div>
+        <div class="resp">Respuesta: ${esc(X.respuestas[0])}${otras.length ? ` <span class="meta">(también: ${otras.map(esc).join(', ')})</span>` : ''}</div>
+        <div class="juicio">${btn('bOk', 'ok', '✔ Correcto', 'C')}${btn('bKo', 'ko', '✘ Incorrecto', 'X')}${btn('bPaso', 'paso', '⏭ Paso', 'P')}</div>`;
+    }
+  }
+  // Redibuja solo si cambia (evita parpadeos y clics perdidos); el reloj de la rueda se actualiza igual
+  if (html !== ultimaLectura) { ultimaLectura = html; $('#lecturaBody').innerHTML = html; }
+  const rh = $('#relojH'); if (rh && X.tiempo != null) rh.textContent = seg(X.tiempo);
+}
+
+// Atajos de teclado: C = correcto, X = incorrecto, P = paso, N = nadie la sabe
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
+  const m = { c: 'ok', x: 'ko', p: 'paso', n: 'nadie' }[e.key.toLowerCase()];
+  if (m && S && S.modo === 'presentador') h('juzgar', m);
 });
 </script>
 </body></html>

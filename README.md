@@ -41,6 +41,15 @@ Jugadores (o escanean el QR de la tele):  http://192.168.1.50:3000/play
 >
 > Si la dirección detectada no es la buena (por ejemplo, si tienes VPN), puedes indicarla tú: `HOST_IP=192.168.1.50 npm start` (en Windows PowerShell: `$env:HOST_IP="192.168.1.50"; npm start`).
 
+## Modo de juego
+
+En el panel del presentador, antes de empezar, eliges:
+
+- **🎙️ Con presentador** (por defecto): como en la tele. El presentador lee las preguntas, pistas y definiciones desde su panel (la tele **no** las muestra) y ve la respuesta correcta. Los jugadores pulsan «¡La sé!» en el móvil y responden **en voz alta**. El presentador marca **✔ Correcto**, **✘ Incorrecto**, **⏭ Paso** o **Nadie la sabe**. También puede usar el teclado: `C` correcto, `X` incorrecto, `P` paso, `N` nadie la sabe.
+- **📱 Automático**: las preguntas salen en la tele y los jugadores escriben las respuestas en el móvil. El juego corrige solo.
+
+Consejo: con presentador, abre `/host` en tu móvil o en un portátil que puedas tener en la mano, para leer sin que los jugadores vean la respuesta.
+
 ## Temática
 
 En el panel del presentador, antes de empezar, puedes elegir:
