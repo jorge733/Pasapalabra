@@ -213,7 +213,7 @@ function render() {
       return `<div class="l ${l.estado} ${k === T.idx && r.stage === 'play' ? 'cur' : ''}" style="left:${50 + R * Math.cos(a)}%;top:${50 + R * Math.sin(a)}%">${l.letra}</div>`;
     }).join('');
     const c = r.actual;
-    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra">${c.letra}</div><div class="def">${c.pista ? esc(c.pista) : '<span style="color:var(--muted)">🎙️ Escuchen al presentador</span>'}</div>`
+    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra" style="font-size:20vmin">${c.letra}</div>`
                      : `<div class="tipo">Turno de</div><div class="def" style="font-size:4vmin;color:var(--team)">${esc(S.teams[t].name)}</div>`;
     const lado = (x) => {
       const E = r.eq[x], ac = E.letras.filter((l) => l.estado === 'acierto').length, fa = E.letras.filter((l) => l.estado === 'fallo').length;
