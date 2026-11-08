@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Letramanía · Presentador</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  body{font-size:17px}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+  h1{margin:0;font-weight:900}
+  .card{background:var(--panel);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .card h3{margin:0;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.1em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .grid button{padding:14px;font-weight:900;background:#4338ca}
+  .grid button.warn{background:#b91c1c}.grid button.go{background:#15803d}
+  button:disabled{opacity:.35;cursor:default}
+  .names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .names input{padding:10px;border-radius:10px;border:3px solid var(--team);background:var(--bg);color:var(--ink);width:100%}
+  code{background:var(--bg);padding:2px 6px;border-radius:6px}
+  #ultimo{font-size:18px;font-weight:800}
+  a{color:var(--B)}
+</style>
+</head><body><div class="wrap">
+  <h1>Letra<span style="color:var(--B)">manía</span> · Presentador</h1>
+  <div class="card"><h3>Estado</h3><div id="estado" style="font-weight:800;font-size:20px"></div><div id="jug" style="color:var(--muted)"></div></div>
+  <div class="card"><h3>Controles</h3>
+    <div class="grid">
+      <button class="go" id="bEmpezar" onclick="h('empezar')">▶ Empezar partida</button>
+      <button id="bPausa" onclick="h('pausa')">⏸ Pausa</button>
+      <button onclick="h('saltar')">⏭ Saltar a lo siguiente</button>
+      <button onclick="h('irRueda')">🔤 Ir directo a la Rueda</button>
+      <button class="warn" onclick="confirm('¿Empezar una partida nueva? Se pierde la actual.') && h('nueva')">↺ Nueva partida</button>
+    </div>
+  </div>
+  <div class="card" id="juez"><h3>Juez de la rueda</h3>
+    <div id="ultimo">—</div>
+    <button id="bBuena" class="go" style="padding:14px;font-weight:900;background:#15803d" onclick="h('darPorBuena')" disabled>✔ Dar por buena la última respuesta</button>
+    <p style="margin:0;color:var(--muted);font-size:14px">Si alguien escribió una respuesta válida que el juego no reconoció (sinónimo, errata…), márcala aquí.</p>
+  </div>
+  <div class="card"><h3>Nombres de equipo</h3>
+    <div class="names"><input class="A" id="nA" onchange="h('nombre',{team:'A',name:this.value})"><input class="B" id="nB" onchange="h('nombre',{team:'B',name:this.value})"></div>
+  </div>
+  <div class="card"><h3>Enlaces</h3><div id="links"></div></div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sock = io();
+const h = (c, a) => sock.emit('host', c, a);
+const FASES = { lobby: 'Sala de espera', intro1: 'Intro prueba 1', quiz: 'Prueba 1 · Respuesta rápida', intro2: 'Intro prueba 2', oculta: 'Prueba 2 · Palabra oculta', intro3: 'Intro rueda', rueda: 'Rueda final', fin: 'Partida terminada' };
+sock.on('state', (s) => {
+  let e = FASES[s.phase] || s.phase;
+  if (s.phase === 'quiz') e += ` (${s.quiz.n}/${s.quiz.total})`;
+  if (s.phase === 'oculta') e += ` (${s.oculta.n}/${s.oculta.total})`;
+  if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
+  $('#estado').textContent = e + (s.paused ? ' · EN PAUSA' : '');
+  $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${p.team === 'A' ? s.teams.A.name : s.teams.B.name})`).join(', ');
+  $('#bEmpezar').disabled = s.phase !== 'lobby';
+  $('#bPausa').textContent = s.paused ? '▶ Reanudar' : '⏸ Pausa';
+  for (const t of ['A', 'B']) if (document.activeElement !== $('#n' + t)) $('#n' + t).value = s.teams[t].name;
+  const u = s.phase === 'rueda' && s.rueda.ultimo;
+  if (u && (u.tipo === 'fallo' || u.tipo === 'corregida')) {
+    $('#ultimo').innerHTML = `${esc(s.teams[u.team].name)} · letra ${u.letra}: escribió «${esc(u.dada)}» (esperada: ${esc(u.correcta)})${u.tipo === 'corregida' ? ' → dada por buena ✔' : ''}`;
+    $('#bBuena').disabled = u.tipo !== 'fallo';
+  } else { $('#ultimo').textContent = '—'; $('#bBuena').disabled = true; }
+  $('#links').innerHTML = `Tele: <a href="/tv" target="_blank">${esc(s.base)}/tv</a><br>Jugadores: <code>${esc(s.base)}/play</code>`;
+});
+</script>
+</body></html>

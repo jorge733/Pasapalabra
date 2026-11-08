@@ -1,0 +1,14 @@
+:root{
+  --bg:#0d0b1f; --bg2:#1a1640; --panel:#221d4d; --ink:#f4f2ff; --muted:#a9a3d6;
+  --A:#8b5cf6; --B:#f59e0b; --ok:#22c55e; --ko:#ef4444; --pend:#3b3577;
+  --o0:#e11d48; --o1:#2563eb; --o2:#16a34a; --o3:#d97706;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(ellipse at top,var(--bg2),var(--bg) 70%);color:var(--ink);
+  font-family:"Nunito","Segoe UI",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;color:#fff}
+input{font:inherit}
+.A{--team:var(--A)} .B{--team:var(--B)}
+.chip{display:inline-block;padding:.25em .8em;border-radius:999px;background:var(--team);color:#111;font-weight:800}
+.hidden{display:none!important}

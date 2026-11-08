@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Letramanía · Tele</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  body{overflow:hidden;font-size:2.2vmin}
+  #app{position:fixed;inset:0;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;padding:2vmin 4vmin}
+  .logo{font-weight:900;font-size:4.2vmin;letter-spacing:.02em}
+  .logo span{color:var(--B)}
+  .score{display:flex;gap:2vmin}
+  .score .t{background:var(--panel);border-left:1vmin solid var(--team);border-radius:1.5vmin;padding:1vmin 2.2vmin;min-width:22vmin}
+  .score .n{font-size:2vmin;color:var(--muted);font-weight:800}
+  .score .v{font-size:4vmin;font-weight:900}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:0 4vmin 4vmin;position:relative}
+  .big{font-size:6vmin;font-weight:900;text-align:center;line-height:1.15}
+  .sub{font-size:3vmin;color:var(--muted);text-align:center;max-width:70vw;margin:2vmin auto 0;line-height:1.4}
+
+  /* lobby */
+  .lobby{display:grid;grid-template-columns:auto 1fr;gap:6vmin;align-items:center}
+  .qr{background:#fff;padding:2vmin;border-radius:2vmin;width:42vmin}
+  .qr img{width:100%;display:block}
+  .url{font-size:2.6vmin;color:var(--muted);margin-top:1.5vmin;text-align:center}
+  .equipos{display:grid;grid-template-columns:1fr 1fr;gap:3vmin;margin-top:4vmin}
+  .equipo{background:var(--panel);border-top:1vmin solid var(--team);border-radius:2vmin;padding:2vmin 3vmin;min-height:24vmin}
+  .equipo h3{margin:0 0 1vmin;font-size:3.2vmin;color:var(--team)}
+  .equipo li{font-size:3vmin;font-weight:800;list-style:none;margin:.5vmin 0}
+  .equipo ul{padding:0;margin:0}
+
+  /* quiz */
+  .q{width:min(90vw,150vmin)}
+  .qtxt{font-size:5.4vmin;font-weight:900;text-align:center;margin-bottom:4vmin;line-height:1.2}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:2.5vmin}
+  .opt{padding:3vmin;border-radius:2vmin;font-size:4vmin;font-weight:900;display:flex;gap:2vmin;align-items:center;transition:opacity .3s,transform .3s}
+  .opt .k{width:6vmin;height:6vmin;border-radius:50%;background:rgba(0,0,0,.25);display:grid;place-items:center;flex:none}
+  .opt.dim{opacity:.25}.opt.win{transform:scale(1.04);outline:.6vmin solid #fff}
+  .o0{background:var(--o0)}.o1{background:var(--o1)}.o2{background:var(--o2)}.o3{background:var(--o3)}
+  .bar{height:1.4vmin;background:var(--pend);border-radius:1vmin;overflow:hidden;margin-top:4vmin}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--B),var(--ko));transition:width .5s linear}
+  .estado{display:flex;justify-content:center;gap:3vmin;margin-top:3vmin;font-size:3vmin;font-weight:800}
+  .estado .chip{opacity:.35}.estado .chip.on{opacity:1}
+
+  /* oculta */
+  .pista{font-size:3.4vmin;color:var(--muted);text-align:center;font-weight:800;text-transform:uppercase;letter-spacing:.2em}
+  .tiles{display:flex;gap:1.2vmin;justify-content:center;margin:4vmin 0;flex-wrap:wrap}
+  .tile{width:9vmin;height:11vmin;border-radius:1.4vmin;background:var(--panel);border:.4vmin solid var(--pend);display:grid;place-items:center;font-size:7vmin;font-weight:900}
+  .tile.on{background:#fff;color:var(--bg);border-color:#fff;animation:pop .35s}
+  .tile.sp{background:none;border:0;width:4vmin}
+  @keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
+  .aviso{font-size:4.4vmin;font-weight:900;text-align:center;min-height:6vmin}
+
+  /* rueda */
+  .rueda-wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:3vmin;width:100%}
+  .rueda{position:relative;width:78vmin;height:78vmin}
+  .rueda .l{position:absolute;width:6.6vmin;height:6.6vmin;margin:-3.3vmin;border-radius:50%;display:grid;place-items:center;
+    font-weight:900;font-size:3.4vmin;background:var(--team);color:#111;transition:background .3s,transform .3s}
+  .rueda .l.acierto{background:var(--ok);color:#fff}
+  .rueda .l.fallo{background:var(--ko);color:#fff}
+  .rueda .l.cur{transform:scale(1.35);box-shadow:0 0 0 .5vmin #fff,0 0 4vmin var(--team)}
+  .centro{position:absolute;inset:14vmin;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5vmin}
+  .centro .tipo{font-size:2.6vmin;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+  .centro .letra{font-size:12vmin;font-weight:900;line-height:1;color:var(--team)}
+  .centro .def{font-size:3.2vmin;font-weight:800;line-height:1.25;margin-top:1.5vmin}
+  .lado{background:var(--panel);border-radius:2vmin;padding:2.5vmin;border-top:1vmin solid var(--team);text-align:center;opacity:.5;transition:opacity .3s}
+  .lado.on{opacity:1}
+  .lado .nom{font-weight:900;font-size:3vmin;color:var(--team)}
+  .lado .reloj{font-size:9vmin;font-weight:900}
+  .lado .cnt{font-size:2.8vmin;font-weight:800;color:var(--muted)}
+  .mini{display:flex;flex-wrap:wrap;gap:.5vmin;justify-content:center;margin-top:1.5vmin}
+  .mini b{width:2.6vmin;height:2.6vmin;border-radius:50%;background:var(--team);font-size:1.4vmin;display:grid;place-items:center;color:#111}
+  .mini b.acierto{background:var(--ok)}.mini b.fallo{background:var(--ko)}
+  .flash{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9vmin;font-weight:900;padding:2vmin 6vmin;border-radius:3vmin;
+    background:var(--c);color:#fff;box-shadow:0 2vmin 8vmin rgba(0,0,0,.6);text-align:center;animation:popc .3s;z-index:5}
+  @keyframes popc{from{transform:translate(-50%,-50%) scale(.6)}to{transform:translate(-50%,-50%) scale(1)}}
+  .flash small{display:block;font-size:3.6vmin;font-weight:800;margin-top:1vmin}
+
+  .pausa{position:fixed;inset:0;background:rgba(0,0,0,.7);display:grid;place-items:center;font-size:8vmin;font-weight:900;z-index:9}
+  #sonido{position:fixed;bottom:2vmin;right:2vmin;background:var(--panel);padding:1.5vmin 2.5vmin;font-size:2.2vmin;z-index:10}
+</style>
+</head><body>
+<div id="app">
+  <header><div class="logo">Letra<span>manía</span></div><div class="score" id="score"></div></header>
+  <main id="main"></main>
+</div>
+<button id="sonido">🔊 Pulsa para activar el sonido</button>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const seg = (ms) => Math.max(0, Math.ceil(ms / 1000));
+const LETRAS_OPC = ['A', 'B', 'C', 'D'];
+
+// --- sonido sintetizado ---
+let ac = null;
+$('#sonido').onclick = () => { ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); };
+function tono(fs, d = .15, tipo = 'sine') {
+  if (!ac) return;
+  fs.forEach((f, i) => {
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * d;
+    o.type = tipo; o.frequency.value = f; g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + d * 1.8);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d * 2);
+  });
+}
+const SFX = {
+  ok: () => tono([660, 880, 1320], .1), fail: () => tono([300, 200], .22, 'sawtooth'),
+  paso: () => tono([500, 400], .12, 'triangle'), buzz: () => tono([880], .25, 'square'),
+  reveal: () => tono([440, 660], .12), turno: () => tono([700], .08), tiempo: () => tono([400, 300, 200], .25, 'sawtooth'),
+  join: () => tono([880, 1100], .06), fin: () => tono([523, 659, 784, 1047, 784, 1047], .14),
+};
+
+const sock = io();
+let S = null, flashHasta = 0;
+sock.on('state', (s, ev) => {
+  S = s;
+  if (ev && SFX[ev]) SFX[ev]();
+  if (s.phase === 'rueda' && s.rueda.ultimo && ['ok', 'fail', 'paso', 'tiempo'].includes(ev)) flashHasta = Date.now() + (ev === 'ok' ? 900 : 2600);
+  render();
+});
+
+function score() {
+  if (!S || S.phase === 'lobby') return '';
+  return ['A', 'B'].map((t) => `<div class="t ${t}"><div class="n">${esc(S.teams[t].name)}</div><div class="v">+${S.teams[t].bonus} s</div></div>`).join('');
+}
+
+function render() {
+  $('#score').innerHTML = S.phase === 'rueda' || S.phase === 'fin' ? '' : score();
+  const m = $('#main');
+  let h = '';
+  if (S.phase === 'lobby') {
+    const lista = (t) => S.players.filter((p) => p.team === t).map((p) => `<li>${esc(p.name)}</li>`).join('') || '<li style="color:var(--muted)">Esperando jugadores…</li>';
+    h = `<div class="lobby">
+      <div><div class="qr"><img src="/qr.svg" alt="QR"></div><div class="url">${esc(S.base)}/play</div></div>
+      <div><div class="big" style="text-align:left">Escanea el QR<br>para jugar</div>
+        <div class="sub" style="text-align:left;margin:2vmin 0 0">Elige equipo en tu móvil. El presentador empieza la partida cuando estéis todos.</div>
+        <div class="equipos">${['A', 'B'].map((t) => `<div class="equipo ${t}"><h3>${esc(S.teams[t].name)}</h3><ul>${lista(t)}</ul></div>`).join('')}</div>
+      </div></div>`;
+  } else if (S.intro) {
+    const extra = S.phase === 'intro3'
+      ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
+    h = `<div><div class="big">${esc(S.intro.titulo)}</div><div class="sub">${esc(S.intro.texto)}</div>${extra}
+      <div class="sub" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
+  } else if (S.phase === 'quiz') {
+    const q = S.quiz, rev = q.stage === 'reveal';
+    const quien = (k) => rev ? ['A', 'B'].filter((t) => q.resp[t] && q.resp[t].opt === k).map((t) => `<span class="chip ${t}" style="font-size:2.4vmin">${esc(S.teams[t].name)}</span>`).join(' ') : '';
+    h = `<div class="q"><div class="pista">Pregunta ${q.n} de ${q.total}</div>
+      <div class="qtxt">${esc(q.texto)}</div>
+      <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k} ${rev ? (k === q.correcta ? 'win' : 'dim') : ''}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span>${quien(k)}</div>`).join('')}</div>
+      ${rev ? `<div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${q.gana[t] ? '+' + q.gana[t] + ' s' : '—'}</span>`).join('')}</div>`
+            : `<div class="bar"><i style="width:${(q.rem / 150).toFixed(1)}%"></i></div>
+               <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${q.respondido[t] ? '✓' : '…'}</span>`).join('')}</div>`}
+    </div>`;
+  } else if (S.phase === 'oculta') {
+    const o = S.oculta;
+    let aviso = '';
+    if (o.ganador) aviso = `<span class="${o.ganador.team}" style="color:var(--team)">¡${esc(S.teams[o.ganador.team].name)} acierta! +${o.ganador.seg} s</span>`;
+    else if (o.stage === 'reveal') aviso = 'Nadie la acertó';
+    else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">${esc(S.teams[o.buzz.team].name)} responde… ${seg(o.buzz.rem)}</span>`;
+    else if (o.intento) aviso = `<span style="color:var(--ko)">«${esc(o.intento.texto)}» no es correcta</span>`;
+    h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total} · ${esc(o.pista)}</div>
+      <div class="tiles">${o.letras.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>
+      <div class="aviso">${aviso}</div>
+      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${o.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${o.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
+  } else if (S.phase === 'rueda') {
+    const r = S.rueda, t = r.turno, T = r.eq[t];
+    const n = T.letras.length, R = 44;
+    const letras = T.letras.map((l, k) => {
+      const a = -Math.PI / 2 + (2 * Math.PI * k) / n;
+      return `<div class="l ${l.estado} ${k === T.idx && r.stage === 'play' ? 'cur' : ''}" style="left:${50 + R * Math.cos(a)}%;top:${50 + R * Math.sin(a)}%">${l.letra}</div>`;
+    }).join('');
+    const c = r.actual;
+    const centro = c ? `<div class="tipo">${c.tipo === 'empieza' ? 'Empieza por' : 'Contiene la'}</div><div class="letra">${c.letra}</div><div class="def">${esc(c.pista)}</div>`
+                     : `<div class="tipo">Turno de</div><div class="def" style="font-size:4vmin;color:var(--team)">${esc(S.teams[t].name)}</div>`;
+    const lado = (x) => {
+      const E = r.eq[x], ac = E.letras.filter((l) => l.estado === 'acierto').length, fa = E.letras.filter((l) => l.estado === 'fallo').length;
+      return `<div class="lado ${x} ${x === t ? 'on' : ''}"><div class="nom">${esc(S.teams[x].name)}</div><div class="reloj">${seg(E.tiempo)}</div>
+        <div class="cnt">✅ ${ac} &nbsp; ❌ ${fa}</div><div class="mini">${E.letras.map((l) => `<b class="${l.estado}">${l.letra}</b>`).join('')}</div></div>`;
+    };
+    let flash = '';
+    const u = r.ultimo;
+    if (u && Date.now() < flashHasta) {
+      if (u.tipo === 'acierto') flash = `<div class="flash" style="--c:var(--ok)">¡Correcto!</div>`;
+      else if (u.tipo === 'fallo') flash = `<div class="flash" style="--c:var(--ko)">Incorrecto<small>Era: ${esc(u.correcta.toUpperCase())}</small></div>`;
+      else if (u.tipo === 'paso') flash = `<div class="flash" style="--c:#6366f1">¡Paso!</div>`;
+      else if (u.tipo === 'tiempo') flash = `<div class="flash" style="--c:var(--ko)">¡Se acabó el tiempo!</div>`;
+    }
+    h = `<div class="rueda-wrap">${lado('A')}<div class="rueda ${t}">${letras}<div class="centro">${centro}</div>${flash}</div>${lado('B')}</div>`;
+  } else if (S.phase === 'fin') {
+    const f = S.fin;
+    h = `<div><div class="big">${f.ganador ? `<span class="${f.ganador}" style="color:var(--team)">¡Gana ${esc(S.teams[f.ganador].name)}!</span>` : '¡Empate!'}</div>
+      <div class="equipos" style="max-width:100vmin;margin:5vmin auto 0">${f.res.map((x) => `<div class="equipo ${x.team}" style="min-height:0;text-align:center">
+        <h3>${esc(S.teams[x.team].name)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">${x.fallos} fallos · ${seg(x.tiempo)} s restantes</div></div>`).join('')}</div></div>`;
+  }
+  if (S.paused) h += '<div class="pausa">⏸ Pausa</div>';
+  m.innerHTML = h;
+}
+setInterval(() => { if (S && S.phase === 'rueda' && flashHasta && Date.now() > flashHasta) { flashHasta = 0; render(); } }, 200);
+</script>
+</body></html>
