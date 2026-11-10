@@ -29,6 +29,22 @@ const CONFIG = {
   segPensar: 3,            // segundos al empezar cada pregunta en que el botón «¡Lo sé!» está bloqueado (para pensar)
   segParaResponder: 12,    // segundos para escribir la respuesta tras presionar «¡Lo sé!» (modo automático)
 };
+// Modo Kids (7 a 12 años): más tiempo para leer, pensar y escribir.
+const CONFIG_KIDS = {
+  ...CONFIG,
+  tiempoBaseRueda: 130,
+  segPregunta: 22,
+  segPreguntaPresentador: 30,
+  segVF: 15,
+  segVFPresentador: 20,
+  revelarCadaMs: 2800,
+  segCifra: 35,
+  segPulsador: 40,
+  quienSoyCadaMs: 13000,
+  segRebote: 7,
+  segParaResponder: 20,
+};
+const cfg = () => (G && G.dificultad === 'kids' ? CONFIG_KIDS : CONFIG);
 
 // --- Dirección IP de la red local ---
 // Se ignoran adaptadores virtuales (VirtualBox, VMware, WSL, Hyper-V, VPN…) porque los celulares no pueden llegar a ellos.
@@ -188,7 +204,7 @@ function nuevaPartida() {
     teams: { A: { name: 'Equipo Violeta', bonus: 0 }, B: { name: 'Equipo Ámbar', bonus: 0 } },
     r: null,
     tema: G ? G.tema : 'mixto',
-    dificultad: G ? G.dificultad : 'dificil', // 'normal' o 'dificil'
+    dificultad: G ? G.dificultad : 'dificil', // 'kids', 'normal' o 'dificil'
     musicaFondo: G ? G.musicaFondo : true,   // música de fondo en la sala de espera y en la rueda
     modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el celular)
     rondas: G ? G.rondas : [...ORDEN], // pruebas elegidas por el presentador
@@ -230,11 +246,13 @@ function elegirSinRepetir(categoria, candidatos, n) {
   return elegidos;
 }
 
+const SUFIJO = { dificil: 'Dificil', kids: 'Kids' }; // contenido propio de cada dificultad (p. ej. preguntasRapidasKids)
+
 // La rueda se arma letra a letra con todas las definiciones disponibles para esa letra,
 // dando una distinta a cada equipo y evitando las que ya salieron en partidas anteriores.
 function ruedasParaPartida() {
-  const dif = G.dificultad === 'dificil';
-  const dificiles = dif ? pool(C.ruedasDificil || [], C.ruedasChileDificil || []) : [];
+  const suf = SUFIJO[G.dificultad];
+  const dificiles = suf ? pool(C['ruedas' + suf] || [], C['ruedasChile' + suf] || []) : [];
   const normales = pool(C.ruedas, C.ruedasChile);
   const A = [], B = [];
   C.ruedas[0].forEach((base, j) => {
@@ -246,9 +264,11 @@ function ruedasParaPartida() {
   });
   return [A, B];
 }
-// Toma n elementos de una prueba según tema y dificultad, sin repetir lo ya jugado
+// Toma n elementos de una prueba según tema y dificultad, sin repetir lo ya jugado.
+// «Difícil» y «Kids» usan su propio contenido; si no alcanza, se completa con el normal.
 function tomar(general, chile, n) {
-  const dificiles = G.dificultad === 'dificil' ? pool(C[general + 'Dificil'] || [], C[chile + 'Dificil'] || []) : [];
+  const suf = SUFIJO[G.dificultad];
+  const dificiles = suf ? pool(C[general + suf] || [], C[chile + suf] || []) : [];
   const normales = pool(C[general] || [], C[chile] || []);
   const candidatos = dificiles.length >= n ? dificiles : [...dificiles, ...normales];
   return elegirSinRepetir(`${general}|${G.dificultad}|${G.tema}`, candidatos, n);
@@ -269,14 +289,14 @@ function avanzar() {
 }
 function iniciarPrueba(k) {
   G.phase = k;
-  const n = CONFIG.porPrueba;
-  if (k === 'quiz') { G.r = { list: tomar('preguntasRapidas', 'preguntasChile', CONFIG.preguntasRapidas), i: -1 }; siguientePregunta(); }
-  else if (k === 'vf') { G.r = { kind: k, list: tomar('verdaderoFalso', 'verdaderoFalsoChile', CONFIG.verdaderoFalso), i: -1 }; siguienteVF(); }
-  else if (k === 'antes') { G.r = { kind: k, list: tomar('queFueAntes', 'queFueAntesChile', CONFIG.queFueAntes), i: -1 }; siguienteVF(); }
-  else if (k === 'cifra') { G.r = { list: tomar('cifras', 'cifrasChile', CONFIG.cifras), i: -1 }; siguienteCifra(); }
+  const n = cfg().porPrueba;
+  if (k === 'quiz') { G.r = { list: tomar('preguntasRapidas', 'preguntasChile', cfg().preguntasRapidas), i: -1 }; siguientePregunta(); }
+  else if (k === 'vf') { G.r = { kind: k, list: tomar('verdaderoFalso', 'verdaderoFalsoChile', cfg().verdaderoFalso), i: -1 }; siguienteVF(); }
+  else if (k === 'antes') { G.r = { kind: k, list: tomar('queFueAntes', 'queFueAntesChile', cfg().queFueAntes), i: -1 }; siguienteVF(); }
+  else if (k === 'cifra') { G.r = { list: tomar('cifras', 'cifrasChile', cfg().cifras), i: -1 }; siguienteCifra(); }
   else if (k === 'adivinanza') { G.r = { kind: k, list: tomar('adivinanzas', 'adivinanzasChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'siglas') { G.r = { kind: k, list: tomar('siglas', 'siglasChile', n), i: -1 }; siguientePulsador(); }
-  else if (k === 'oculta') { G.r = { list: tomar('palabrasOcultas', 'palabrasOcultasChile', CONFIG.palabrasOcultas), i: -1 }; siguienteOculta(); }
+  else if (k === 'oculta') { G.r = { list: tomar('palabrasOcultas', 'palabrasOcultasChile', cfg().palabrasOcultas), i: -1 }; siguienteOculta(); }
   else if (k === 'anagrama') { G.r = { kind: k, list: tomar('letrasRevueltas', 'letrasRevueltasChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'quiensoy') { G.r = { kind: k, list: tomar('quienSoy', 'quienSoyChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'refran') { G.r = { kind: k, list: tomar('refranes', 'refranesChile', n), i: -1 }; siguientePulsador(); }
@@ -292,10 +312,10 @@ function siguientePregunta() {
   const q = r.list[r.i];
   const opts = shuffle(q.opciones.map((t, k) => ({ t, ok: k === 0 }))); // la primera opción es la correcta
   r.q = { texto: q.pregunta, opciones: opts.map((o) => o.t), correcta: opts.findIndex((o) => o.ok) };
-  r.stage = 'ask'; r.rem = (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000; r.elapsed = 0;
+  r.stage = 'ask'; r.rem = (conPresentador() ? cfg().segPreguntaPresentador : cfg().segPregunta) * 1000; r.elapsed = 0;
   r.resp = { A: null, B: null };
   r.buzz = null; r.bloqueado = { A: false, B: false }; r.gana = {};
-  r.espera = conPresentador() ? CONFIG.segPensar * 1000 : 0; // con presentador se presiona «¡Lo sé!»
+  r.espera = conPresentador() ? cfg().segPensar * 1000 : 0; // con presentador se presiona «¡Lo sé!»
 }
 function pulsarQuiz(team) {
   const r = G.r;
@@ -328,7 +348,7 @@ function siguienteVF() {
   r.item = r.kind === 'antes'
     ? { texto: '¿Qué ocurrió antes?', opciones: [it.a, it.b], correcta: it.antes === 'a' ? 0 : 1, detalle: `${it.a}: ${it.anioA} · ${it.b}: ${it.anioB}` }
     : { texto: it.texto, opciones: ['Verdadero', 'Falso'], correcta: it.v ? 0 : 1, detalle: null };
-  r.stage = 'ask'; r.rem = (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000;
+  r.stage = 'ask'; r.rem = (conPresentador() ? cfg().segVFPresentador : cfg().segVF) * 1000;
   r.resp = { A: null, B: null }; r.gana = {};
 }
 function responderVF(team, k) {
@@ -360,7 +380,7 @@ function siguienteCifra() {
   r.i++;
   if (r.i >= r.list.length) return avanzar();
   r.item = r.list[r.i];
-  r.stage = 'ask'; r.rem = CONFIG.segCifra * 1000;
+  r.stage = 'ask'; r.rem = cfg().segCifra * 1000;
   r.resp = { A: null, B: null }; r.gana = {};
 }
 function responderCifra(team, valor) {
@@ -393,15 +413,15 @@ function siguienteOculta() {
   const p = r.list[r.i];
   r.palabra = p.palabra.toUpperCase(); r.pista = p.pista;
   r.visibles = [...r.palabra].map((ch) => ch === ' ');
-  r.stage = 'play'; r.revealRem = CONFIG.revelarCadaMs; r.buzz = null;
-  r.totalMs = Math.max(1, r.visibles.filter((v) => !v).length - 1) * CONFIG.revelarCadaMs;
+  r.stage = 'play'; r.revealRem = cfg().revelarCadaMs; r.buzz = null;
+  r.totalMs = Math.max(1, r.visibles.filter((v) => !v).length - 1) * cfg().revelarCadaMs;
   r.bloqueado = { A: false, B: false }; r.ganador = null; r.intento = null;
-  r.espera = CONFIG.segPensar * 1000;
+  r.espera = cfg().segPensar * 1000;
 }
 function pulsarOculta(team) {
   const r = G.r;
   if (r.stage !== 'play' || r.buzz || r.bloqueado[team] || r.espera > 0) return;
-  r.buzz = { team, rem: CONFIG.segParaResponder * 1000 };
+  r.buzz = { team, rem: cfg().segParaResponder * 1000 };
   emitir('buzz');
 }
 function responderOculta(team, texto) {
@@ -425,8 +445,8 @@ function fallarOculta(team) {
   if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 4000; r.visibles = r.visibles.map(() => true); }
   else {
     // el otro equipo tiene al menos unos segundos para presionar antes de que se acabe la palabra
-    const quedan = Math.max(0, r.visibles.filter((v) => !v).length - 2) * CONFIG.revelarCadaMs + r.revealRem;
-    if (quedan < CONFIG.segRebote * 1000) r.revealRem += CONFIG.segRebote * 1000 - quedan;
+    const quedan = Math.max(0, r.visibles.filter((v) => !v).length - 2) * cfg().revelarCadaMs + r.revealRem;
+    if (quedan < cfg().segRebote * 1000) r.revealRem += cfg().segRebote * 1000 - quedan;
   }
   emitir('fail');
 }
@@ -450,14 +470,14 @@ function siguientePulsador() {
   r.item = r.list[r.i];
   r.stage = 'play'; r.buzz = null; r.bloqueado = { A: false, B: false }; r.ganador = null; r.intento = null;
   r.pistas = 1;
-  r.rem = r.kind === 'quiensoy' ? CONFIG.quienSoyCadaMs : CONFIG.segPulsador * 1000; // tiempo hasta la siguiente pista o hasta rendirse
+  r.rem = r.kind === 'quiensoy' ? cfg().quienSoyCadaMs : cfg().segPulsador * 1000; // tiempo hasta la siguiente pista o hasta rendirse
   if (r.kind === 'anagrama') r.revuelta = revolver(r.item.palabra);
-  r.espera = CONFIG.segPensar * 1000;
+  r.espera = cfg().segPensar * 1000;
 }
 function pulsarP(team) {
   const r = G.r;
   if (r.stage !== 'play' || r.buzz || r.bloqueado[team] || r.espera > 0) return;
-  r.buzz = { team, rem: CONFIG.segParaResponder * 1000 };
+  r.buzz = { team, rem: cfg().segParaResponder * 1000 };
   emitir('buzz');
 }
 function responderP(team, texto) {
@@ -480,8 +500,8 @@ function fallarP(team) {
   if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; }
   else {
     // el otro equipo tiene al menos unos segundos para presionar
-    const quedan = (r.kind === 'quiensoy' ? (3 - r.pistas) * CONFIG.quienSoyCadaMs : 0) + r.rem;
-    if (quedan < CONFIG.segRebote * 1000) r.rem += CONFIG.segRebote * 1000 - quedan;
+    const quedan = (r.kind === 'quiensoy' ? (3 - r.pistas) * cfg().quienSoyCadaMs : 0) + r.rem;
+    if (quedan < cfg().segRebote * 1000) r.rem += cfg().segRebote * 1000 - quedan;
   }
   emitir('fail');
 }
@@ -493,7 +513,7 @@ function iniciarRueda() {
   const mk = (set, team) => ({
     letras: set.map((l) => ({ ...l, estado: 'pendiente' })),
     idx: 0,
-    tiempo: (CONFIG.tiempoBaseRueda + G.teams[team].bonus) * 1000,
+    tiempo: (cfg().tiempoBaseRueda + G.teams[team].bonus) * 1000,
   });
   const ordenA = G.teams.A.bonus <= G.teams.B.bonus; // empieza quien tiene menos tiempo
   G.r = { eq: { A: mk(sets[0], 'A'), B: mk(sets[1 % sets.length], 'B') }, turno: ordenA ? 'A' : 'B', stage: 'play', ultimo: null };
@@ -555,7 +575,7 @@ function juzgar(res) {
     if (res === 'ko') {
       r.bloqueado[t] = true;
       if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; }
-      else r.rem = Math.max(r.rem, CONFIG.segRebote * 1000); // el otro equipo tiene tiempo para presionar
+      else r.rem = Math.max(r.rem, cfg().segRebote * 1000); // el otro equipo tiene tiempo para presionar
       return emitir('fail');
     }
   } else if (ELECCION.includes(G.phase) && r.stage === 'ask') {
@@ -569,7 +589,7 @@ function juzgar(res) {
     if (res === 'ko') return fallarOculta(r.buzz.team);
   } else if (PULSADOR.includes(G.phase) && r.stage === 'play') {
     if (res === 'nadie') return rendirP();
-    if (res === 'pista' && r.kind === 'quiensoy' && !r.buzz && r.pistas < 3) { r.pistas++; r.rem = CONFIG.quienSoyCadaMs; return emitir('reveal'); }
+    if (res === 'pista' && r.kind === 'quiensoy' && !r.buzz && r.pistas < 3) { r.pistas++; r.rem = cfg().quienSoyCadaMs; return emitir('reveal'); }
     if (!r.buzz) return;
     if (res === 'ok') return acertarP(r.buzz.team);
     if (res === 'ko') return fallarP(r.buzz.team);
@@ -610,7 +630,7 @@ setInterval(() => {
       else {
         r.revealRem -= dt;
         if (r.revealRem <= 0) {
-          r.revealRem = CONFIG.revelarCadaMs;
+          r.revealRem = cfg().revelarCadaMs;
           const ocultas = r.visibles.map((v, k) => (v ? -1 : k)).filter((k) => k >= 0);
           // deja siempre una letra sin revelar hasta el final
           if (ocultas.length > 1) { r.visibles[ocultas[Math.floor(Math.random() * ocultas.length)]] = true; emitir(); }
@@ -624,7 +644,7 @@ setInterval(() => {
       else {
         r.rem -= dt;
         if (r.rem <= 0) {
-          if (r.kind === 'quiensoy' && r.pistas < 3) { r.pistas++; r.rem = CONFIG.quienSoyCadaMs; emitir('reveal'); }
+          if (r.kind === 'quiensoy' && r.pistas < 3) { r.pistas++; r.rem = cfg().quienSoyCadaMs; emitir('reveal'); }
           else rendirP();
         }
       }
@@ -642,7 +662,7 @@ setInterval(() => { if (!['lobby', 'fin'].includes(G.phase)) emitir(); }, 500);
 // ---------- estado público (sin respuestas) ----------
 function publico() {
   const s = {
-    phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, modo: G.modo, tiempoBase: CONFIG.tiempoBaseRueda,
+    phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, modo: G.modo, tiempoBase: cfg().tiempoBaseRueda,
     dificultad: G.dificultad, musicaFondo: G.musicaFondo, rondas: G.rondas, catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo })),
     teams: G.teams,
     players: Object.values(players),
@@ -662,7 +682,7 @@ function publico() {
   } else if (ELECCION.includes(G.phase)) {
     const rev = r.stage === 'reveal';
     s.vf = { kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, stage: r.stage, rem: r.rem,
-      total_ms: (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000,
+      total_ms: (conPresentador() ? cfg().segVFPresentador : cfg().segVF) * 1000,
       texto: r.item.texto, opciones: r.item.opciones, respondido: { A: r.resp.A !== null, B: r.resp.B !== null },
       correcta: rev ? r.item.correcta : null, detalle: rev ? r.item.detalle : null, resp: rev ? r.resp : null, gana: rev ? r.gana : null };
   } else if (G.phase === 'cifra') {
@@ -703,19 +723,19 @@ function reloj() {
   const r = G.r;
   if (!r) return null;
   if (r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && ['quiz', 'oculta', ...PULSADOR].includes(G.phase))
-    return { rem: r.espera, total: CONFIG.segPensar * 1000, parado: false, pensar: true };
+    return { rem: r.espera, total: cfg().segPensar * 1000, parado: false, pensar: true };
   if (G.phase === 'quiz' && r.stage === 'ask')
-    return { rem: r.rem, total: (conPresentador() ? CONFIG.segPreguntaPresentador : CONFIG.segPregunta) * 1000, parado: !!r.buzz };
-  if (G.phase === 'cifra' && r.stage === 'ask') return { rem: r.rem, total: CONFIG.segCifra * 1000, parado: false };
+    return { rem: r.rem, total: (conPresentador() ? cfg().segPreguntaPresentador : cfg().segPregunta) * 1000, parado: !!r.buzz };
+  if (G.phase === 'cifra' && r.stage === 'ask') return { rem: r.rem, total: cfg().segCifra * 1000, parado: false };
   if (ELECCION.includes(G.phase) && r.stage === 'ask')
-    return { rem: r.rem, total: (conPresentador() ? CONFIG.segVFPresentador : CONFIG.segVF) * 1000, parado: false };
+    return { rem: r.rem, total: (conPresentador() ? cfg().segVFPresentador : cfg().segVF) * 1000, parado: false };
   if (G.phase === 'oculta' && r.stage === 'play') {
     const ocultas = r.visibles.filter((v) => !v).length;
-    return { rem: Math.max(0, ocultas - 2) * CONFIG.revelarCadaMs + r.revealRem, total: r.totalMs, parado: !!r.buzz };
+    return { rem: Math.max(0, ocultas - 2) * cfg().revelarCadaMs + r.revealRem, total: r.totalMs, parado: !!r.buzz };
   }
   if (PULSADOR.includes(G.phase) && r.stage === 'play') {
-    if (r.kind === 'quiensoy') return { rem: (3 - r.pistas) * CONFIG.quienSoyCadaMs + r.rem, total: 3 * CONFIG.quienSoyCadaMs, parado: !!r.buzz };
-    return { rem: r.rem, total: CONFIG.segPulsador * 1000, parado: !!r.buzz };
+    if (r.kind === 'quiensoy') return { rem: (3 - r.pistas) * cfg().quienSoyCadaMs + r.rem, total: 3 * cfg().quienSoyCadaMs, parado: !!r.buzz };
+    return { rem: r.rem, total: cfg().segPulsador * 1000, parado: !!r.buzz };
   }
   return null;
 }
@@ -789,7 +809,7 @@ io.on('connection', (sock) => {
     else if (cmd === 'pausa') { G.paused = !G.paused; emitir(); }
     else if (cmd === 'musica') { G.musicaFondo = !G.musicaFondo; emitir(); }
     else if (cmd === 'nueva') { nuevaPartida(); emitir(); }
-    else if (cmd === 'dificultad' && G.phase === 'lobby' && ['normal', 'dificil'].includes(arg)) { G.dificultad = arg; emitir(); }
+    else if (cmd === 'dificultad' && G.phase === 'lobby' && ['kids', 'normal', 'dificil'].includes(arg)) { G.dificultad = arg; emitir(); }
     else if (cmd === 'tema' && G.phase === 'lobby' && ['mixto', 'chile', 'general'].includes(arg)) { G.tema = arg; emitir(); }
     else if (cmd === 'modo' && G.phase === 'lobby' && ['presentador', 'auto'].includes(arg)) { G.modo = arg; emitir(); }
     else if (cmd === 'ronda' && G.phase === 'lobby' && ORDEN.includes(arg)) {

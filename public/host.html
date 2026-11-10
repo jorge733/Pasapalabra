@@ -68,9 +68,11 @@
     <div class="grid" id="rondas"></div>
     <div class="meta">Dificultad</div>
     <div class="grid" id="difs">
+      <button data-d="kids" onclick="h('dificultad','kids')">🧒 Kids (7-12)</button>
       <button data-d="normal" onclick="h('dificultad','normal')">🙂 Normal</button>
       <button data-d="dificil" onclick="h('dificultad','dificil')">🔥 Difícil</button>
     </div>
+    <p class="hint" id="difHint"></p>
     <div class="meta">Temática</div>
     <div class="grid" id="temas">
       <button data-t="mixto" onclick="h('tema','mixto')">🎲 Mixto</button>
@@ -147,6 +149,7 @@ function render() {
   $('#cfg').classList.toggle('hidden', s.phase !== 'lobby');
   $('#rondas').innerHTML = s.catalogo.map((c, k) => `<button class="${s.rondas.includes(c.id) ? 'sel' : ''}" onclick="h('ronda','${c.id}')">${s.rondas.includes(c.id) ? '✔ ' : ''}${esc(c.titulo)}</button>`).join('');
   document.querySelectorAll('#difs button').forEach((b) => b.classList.toggle('sel', b.dataset.d === s.dificultad));
+  $('#difHint').textContent = { kids: 'Preguntas pensadas para niños de 7 a 12 años, con más tiempo para pensar y responder.', normal: 'Cultura general sencilla.', dificil: 'Historia, ciencia, geografía y literatura para expertos.' }[s.dificultad] || '';
   document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
   document.querySelectorAll('#modos button').forEach((b) => b.classList.toggle('sel', b.dataset.m === s.modo));
   $('#modoHint').textContent = s.modo === 'presentador'
