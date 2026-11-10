@@ -175,7 +175,11 @@ const LETRAS_OPC = ['A', 'B', 'C', 'D'];
 
 // --- sonido sintetizado ---
 let ac = null;
-$('#sonido').onclick = () => { ac = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' }); // búfer grande: sin cortes al transmitir ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); controlarBucle(); };
+// búfer de audio grande ('playback'): evita cortes y chicharreo al transmitir la pestaña al Chromecast
+$('#sonido').onclick = () => {
+  ac = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
+  ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); controlarBucle();
+};
 function tono(fs, d = .15, tipo = 'sine') {
   if (!ac) return;
   fs.forEach((f, i) => {
