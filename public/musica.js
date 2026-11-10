@@ -5,8 +5,13 @@
 
   function crear(ac, destino, grabacion) {
     const master = ac.createGain();
-    master.gain.value = grabacion ? 1 : 0.55;
-    if (!grabacion) master.connect(destino || ac.destination);
+    master.gain.value = grabacion ? 1 : 0.5;
+    if (!grabacion) {
+      // limitador: evita que el sonido se sature (y chicharree) aunque suenen varias cosas a la vez
+      const lim = ac.createDynamicsCompressor();
+      lim.threshold.value = -12; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.003; lim.release.value = 0.25;
+      master.connect(lim); lim.connect(destino || ac.destination);
+    }
     let ruido = null;
     function bufRuido() {
       if (ruido) return ruido;
@@ -39,6 +44,12 @@
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
       o.connect(g).connect(dst); o.start(t); o.stop(t + 0.2);
     }
+    function golpe(t, vol = 0.2, dst = master) { // bombo suave y más agudo, apto para parlantes pequeños
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.08);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      o.connect(g).connect(dst); o.start(t); o.stop(t + 0.14);
+    }
     function ruidoF(t, dur, vol, filtro, dst = master) {
       const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
       s.buffer = bufRuido(); f.type = 'highpass'; f.frequency.value = filtro;
@@ -58,7 +69,7 @@
         const o = ac.createOscillator(), g = ac.createGain();
         o.type = 'sine'; o.frequency.value = midi(n) * mult;
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(v, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(v, t + 0.015);
         g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
         o.connect(g).connect(dst); o.start(t); o.stop(t + dur + 0.02);
       });
@@ -80,11 +91,10 @@
             [69, 72, 74, null, 72, 69, 67, null],
             [67, null, 71, 74, null, 72, null, null],
           ];
-          bombo(t, 0.16, dst); bombo(t + 2 * b + c, 0.1, dst);
-          piano(t, bajos[k], b * 1.8, 0.16, dst);
-          piano(t + 2 * b, bajos[k] + 7, b * 1.6, 0.11, dst);
+          piano(t, bajos[k] + 12, b * 1.8, 0.12, dst);       // bajo una octava más arriba: los parlantes de la tele no vibran
+          piano(t + 2 * b, bajos[k] + 19, b * 1.6, 0.08, dst);
           for (const p of [1, 2.5, 3]) acordes[k].forEach((n) => piano(t + p * b, n, b * 0.9, 0.04, dst));
-          acordes[k].forEach((n) => suave(t, n - 12, 4 * b, 0.012, dst));
+          acordes[k].forEach((n) => suave(t, n, 4 * b, 0.01, dst));
           if (vuelta === 1) melodias[k].forEach((n, e) => { if (n != null) piano(t + e * c, n, c * 2.2, 0.06, dst); });
         },
       },
@@ -95,8 +105,8 @@
           const s = b / 4, k = i % 4, vuelta = Math.floor(i / 4) % 2;
           const acordes = [[57, 60, 64], [53, 57, 60], [55, 59, 62], [52, 56, 59]];
           const bajos = [33, 29, 31, 28];
-          for (let e = 0; e < 8; e++) nota(t + e * (b / 2), bajos[k], b * 0.4, 'triangle', 0.12, dst); // bajo pulsante
-          for (let p = 0; p < 4; p++) { if (p % 2 === 0) bombo(t + p * b, 0.3, dst); else caja(t + p * b, 0.04, dst); }
+          for (let e = 0; e < 8; e++) piano(t + e * (b / 2), bajos[k] + 12, b * 0.45, 0.1, dst); // bajo pulsante (sin graves extremos)
+          for (let p = 0; p < 4; p++) { if (p % 2 === 0) golpe(t + p * b, 0.14, dst); else caja(t + p * b, 0.03, dst); }
           for (let e = 0; e < 8; e++) piano(t + e * (b / 2), e % 2 ? 93 : 88, 0.05, 0.012, dst); // tic-tac suave (sin ruido)
           acordes[k].forEach((n) => suave(t, n, 4 * b, 0.018, dst));
           if (vuelta === 1) { // arpegio en la segunda vuelta
@@ -119,7 +129,8 @@
       const lp = off.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = B.filtro; lp.Q.value = 0.4;
       const eco = off.createDelay(1); eco.delayTime.value = B.pulso * 0.75;
       const fb = off.createGain(); fb.gain.value = B.eco;
-      salida.connect(lp); lp.connect(off.destination);
+      const hp = off.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 120; hp.Q.value = 0.5; // corta los graves extremos
+      salida.connect(hp); hp.connect(lp); lp.connect(off.destination);
       lp.connect(eco); eco.connect(fb); fb.connect(eco); fb.connect(off.destination);
       for (let i = 0; i < COMPASES * 2; i++) sub._compas(tipo, i * 4 * B.pulso, i, salida);
       grabados[tipo] = off.startRendering().then((buf) => {
