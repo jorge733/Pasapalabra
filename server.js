@@ -285,8 +285,8 @@ function avanzar() {
   G.paso++;
   if (G.paso >= G.secuencia.length) return terminar();
   G.phase = 'intro'; G.introDe = G.secuencia[G.paso]; G.r = null;
-  // la primera presentación dura lo que la cortina musical de Letramanía (~16 s); las demás, 7 s
-  G.rem = G.paso === 0 && G.introDe !== 'rueda' ? 16000 : 7000;
+  // cada presentación dura lo que la cortina musical de Letramanía (~16 s)
+  G.rem = 16000;
   emitir();
 }
 function iniciarPrueba(k) {

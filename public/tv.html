@@ -264,9 +264,7 @@ function tocarMusica(s) {
   if (introPrevia === s.intro.titulo) return; // ya sonó para esta presentación
   introPrevia = s.intro.titulo;
   if (!sonidoActivo) return; // el sonido aún no está activado
-  if (s.intro.prueba === 'rueda') tocarPista('redoble');
-  else if (/^Prueba 1 de/.test(s.intro.titulo)) tocarPista('intro');
-  else tocarPista('cortina');
+  tocarPista('intro'); // la cortina de Letramanía suena en la presentación de cada prueba
 }
 sock.on('state', (s, ev) => {
   tocarMusica(s);
