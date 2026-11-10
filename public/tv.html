@@ -167,7 +167,6 @@
 <button id="sonido">🔊 Presiona para activar el sonido</button>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/vendor/idiomorph.js"></script>
-<script src="/musica.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -178,7 +177,7 @@ const LETRAS_OPC = ['A', 'B', 'C', 'D'];
 let ac = null;
 $('#sonido').onclick = () => {
   ac = new (window.AudioContext || window.webkitAudioContext)();
-  ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); controlarBucle();
+  ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); activarPistas(); controlarBucle();
 };
 function tono(fs, d = .15, tipo = 'sine') {
   if (!ac) return;
@@ -197,30 +196,77 @@ const SFX = {
 
 const sock = io();
 let S = null, flashHasta = 0;
-// ---------- música de intro (original, generada en el navegador) ----------
-let musica = null, introPrevia = null;
-// Música de fondo: sala de espera y Rueda Final (se detiene en pausa o si el presentador la apaga)
-let bucleActual = null, tipoBucle = null;
+// ---------- música (archivos de audio en /audio, generados con scripts/generar-musica.js) ----------
+// La tele solo reproduce archivos: no sintetiza nada, así suena limpia incluso en navegadores de televisores.
+let sonidoActivo = false, introPrevia = null;
+const PISTAS = {};
+function pista(nombre) {
+  if (!PISTAS[nombre]) {
+    const bucle = nombre === 'pregunta' || nombre === 'rueda';
+    const a = new Audio('/audio/' + nombre + (bucle ? '.wav' : '.mp3'));
+    a.preload = 'auto'; a.loop = bucle;
+    PISTAS[nombre] = a;
+  }
+  return PISTAS[nombre];
+}
+// Al activar el sonido: se cargan y «desbloquean» todas las pistas (los navegadores lo exigen tras un toque)
+function activarPistas() {
+  sonidoActivo = true;
+  for (const n of ['intro', 'cortina', 'redoble', 'pregunta', 'rueda']) {
+    const a = pista(n); a.muted = true;
+    a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; });
+  }
+}
+function tocarPista(nombre) {
+  const a = pista(nombre);
+  try { a.currentTime = 0; } catch (e) {}
+  a.volume = 1; a.muted = false;
+  a.play().catch(() => {});
+}
+function fundido(a, hasta, ms, alTerminar) {
+  clearInterval(a._fundido);
+  const desde = a.volume, pasos = Math.max(1, Math.round(ms / 50));
+  let i = 0;
+  a._fundido = setInterval(() => {
+    i++; a.volume = Math.max(0, Math.min(1, desde + ((hasta - desde) * i) / pasos));
+    if (i >= pasos) { clearInterval(a._fundido); if (alTerminar) alTerminar(); }
+  }, 50);
+}
+// Música de fondo: durante las preguntas y en la Rueda Final (se detiene en pausa o si el presentador la apaga)
+let bucleActual = null, tipoBucle = null, esperaBucle = null;
 function controlarBucle() {
-  if (!ac || !S) return;
-  if (!musica) { musica = MusicaLetramania.crear(ac); musica.preparar(); }
+  if (!sonidoActivo || !S) return;
   const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran'];
-  // la sala de espera va sin música de fondo; suena durante las preguntas y en la rueda
+  // la sala de espera va sin música de fondo
   const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) ? 'pregunta' : null;
   if (quiero === tipoBucle) return;
-  if (bucleActual) bucleActual.parar();
-  bucleActual = quiero ? musica.bucle(quiero) : null;
-  tipoBucle = quiero;
+  if (bucleActual) { const v = bucleActual; fundido(v, 0, 800, () => v.pause()); }
+  bucleActual = null; tipoBucle = quiero;
+  clearTimeout(esperaBucle);
+  if (!quiero) return;
+  // si todavía suena la intro, la cortina o el redoble, el bucle entra cuando terminen
+  const restante = Math.max(0, ...['intro', 'cortina', 'redoble'].map((n) => {
+    const p = PISTAS[n];
+    return p && !p.paused && !p.ended && p.duration ? (p.duration - p.currentTime) * 1000 : 0;
+  }));
+  esperaBucle = setTimeout(() => {
+    if (tipoBucle !== quiero) return; // mientras tanto cambió la fase
+    const a = pista(quiero);
+    a.muted = false; a.volume = 0;
+    try { a.currentTime = 0; } catch (e) {}
+    a.play().catch(() => {});
+    fundido(a, 1, 1500);
+    bucleActual = a;
+  }, restante);
 }
 function tocarMusica(s) {
   if (s.phase !== 'intro') { introPrevia = null; return; }
   if (introPrevia === s.intro.titulo) return; // ya sonó para esta presentación
   introPrevia = s.intro.titulo;
-  if (!ac) return; // el sonido aún no está activado
-  if (!musica) musica = MusicaLetramania.crear(ac);
-  if (s.intro.prueba === 'rueda') musica.redoble();
-  else if (/^Prueba 1 de/.test(s.intro.titulo)) musica.intro();
-  else musica.cortina();
+  if (!sonidoActivo) return; // el sonido aún no está activado
+  if (s.intro.prueba === 'rueda') tocarPista('redoble');
+  else if (/^Prueba 1 de/.test(s.intro.titulo)) tocarPista('intro');
+  else tocarPista('cortina');
 }
 sock.on('state', (s, ev) => {
   tocarMusica(s);

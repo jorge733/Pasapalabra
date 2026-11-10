@@ -4,7 +4,8 @@
   "description": "Juego de fiesta para la tele (Chromecast) con los móviles como mandos",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "musica": "node scripts/generar-musica.js"
   },
   "author": "",
   "license": "MIT",
