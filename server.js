@@ -26,7 +26,7 @@ const CONFIG = {
   segPulsador: 30,         //   segundos antes de dar la ronda por perdida si nadie presiona
   quienSoyCadaMs: 10000,   // ¿Quién soy?: cada cuánto sale una pista nueva
   segRebote: 5,            // si un equipo falla, el otro tiene al menos estos segundos para presionar «¡Lo sé!»
-  segPensar: 5,            // segundos al empezar cada pregunta en que el botón «¡Lo sé!» está bloqueado (para pensar)
+  segPensar: 3,            // segundos al empezar cada pregunta en que el botón «¡Lo sé!» está bloqueado (para pensar)
   segParaResponder: 12,    // segundos para escribir la respuesta tras presionar «¡Lo sé!» (modo automático)
 };
 
