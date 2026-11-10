@@ -72,6 +72,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 const pub = (f) => path.join(__dirname, 'public', f);
 app.get('/', (_, res) => res.sendFile(pub('index.html')));
+app.get('/favicon.ico', (_, res) => res.type('image/png').sendFile(pub('favicon-32.png'))); // navegadores que piden /favicon.ico
 app.get('/tv', (_, res) => res.sendFile(pub('tv.html')));
 app.get('/play', (_, res) => res.sendFile(pub('play.html')));
 app.get('/host', (_, res) => res.sendFile(pub('host.html')));

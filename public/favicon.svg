@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="f" cx="50%" cy="40%" r="65%">
+      <stop offset="0" stop-color="#2a2366"/>
+      <stop offset="1" stop-color="#0d0b1f"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#f)"/>
+  <!-- rueda de letras: 12 círculos alternando violeta y ámbar, uno destacado en verde -->
+  <g transform="translate(32 32)">
+    <g fill="#8b5cf6">
+      <circle cx="0" cy="-22" r="4.6" fill="#22c55e"/>
+      <circle cx="11" cy="-19.05" r="4.2" fill="#f59e0b"/>
+      <circle cx="19.05" cy="-11" r="4.2"/>
+      <circle cx="22" cy="0" r="4.2" fill="#f59e0b"/>
+      <circle cx="19.05" cy="11" r="4.2"/>
+      <circle cx="11" cy="19.05" r="4.2" fill="#f59e0b"/>
+      <circle cx="0" cy="22" r="4.2"/>
+      <circle cx="-11" cy="19.05" r="4.2" fill="#f59e0b"/>
+      <circle cx="-19.05" cy="11" r="4.2"/>
+      <circle cx="-22" cy="0" r="4.2" fill="#f59e0b"/>
+      <circle cx="-19.05" cy="-11" r="4.2"/>
+      <circle cx="-11" cy="-19.05" r="4.2" fill="#f59e0b"/>
+    </g>
+    <circle r="13" fill="#221d4d"/>
+    <path d="M-5 -8 h4.4 v11.6 h7.2 v4.4 h-11.6 z" fill="#f4f2ff"/>
+  </g>
+</svg>
