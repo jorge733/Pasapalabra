@@ -167,6 +167,7 @@
 <button id="sonido">🔊 Presiona para activar el sonido</button>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/vendor/idiomorph.js"></script>
+<script src="/musica.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -193,7 +194,20 @@ const SFX = {
 
 const sock = io();
 let S = null, flashHasta = 0;
+// ---------- música de intro (original, generada en el navegador) ----------
+let musica = null, introPrevia = null;
+function tocarMusica(s) {
+  if (s.phase !== 'intro') { introPrevia = null; return; }
+  if (introPrevia === s.intro.titulo) return; // ya sonó para esta presentación
+  introPrevia = s.intro.titulo;
+  if (!ac) return; // el sonido aún no está activado
+  if (!musica) musica = MusicaLetramania.crear(ac);
+  if (s.intro.prueba === 'rueda') musica.redoble();
+  else if (/^Prueba 1 de/.test(s.intro.titulo)) musica.intro();
+  else musica.cortina();
+}
 sock.on('state', (s, ev) => {
+  tocarMusica(s);
   S = s;
   if (ev && SFX[ev]) SFX[ev]();
   if (s.phase === 'rueda' && s.rueda.ultimo && ['ok', 'fail', 'paso', 'tiempo'].includes(ev)) flashHasta = Date.now() + (ev === 'ok' ? 900 : 2600);
