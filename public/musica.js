@@ -3,10 +3,10 @@
 (function () {
   const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
-  function crear(ac, destino) {
+  function crear(ac, destino, grabacion) {
     const master = ac.createGain();
-    master.gain.value = 0.55;
-    master.connect(destino || ac.destination);
+    master.gain.value = grabacion ? 1 : 0.55;
+    if (!grabacion) master.connect(destino || ac.destination);
     let ruido = null;
     function bufRuido() {
       if (ruido) return ruido;
@@ -52,13 +52,26 @@
       notas.forEach((n) => { nota(t, n, dur, 'sawtooth', vol, dst); nota(t, n + 12, dur, 'square', vol * 0.5, dst); });
     }
 
-    // --- bucles de fondo: se programan unos segundos por adelantado y se detienen con un fundido ---
+    // piano eléctrico suave: fundamental + octava, con caída natural
+    function piano(t, n, dur, vol, dst = master) {
+      [[1, vol], [2, vol * 0.25]].forEach(([mult, v]) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = midi(n) * mult;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(v, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g).connect(dst); o.start(t); o.stop(t + dur + 0.02);
+      });
+    }
+
+    // --- bucles de fondo ---
+    // Cada bucle dura 8 compases; se «graba» una vez a un búfer y se repite sin cortes.
     const BUCLES = {
-      // Sala de espera: relajada, 100 pulsos por minuto (Do – La m – Fa – Sol)
+      // Sala de espera: relajada y cálida, 96 pulsos por minuto (Do – La m – Fa – Sol)
       sala: {
-        pulso: 60 / 100, volumen: 0.75,
+        pulso: 60 / 96, volumen: 0.9, filtro: 3200, eco: 0.28,
         compas(t, i, b, dst) {
-          const c = b / 2, k = i % 4, vuelta = Math.floor(i / 4);
+          const c = b / 2, k = i % 4, vuelta = Math.floor(i / 4) % 2;
           const acordes = [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]];
           const bajos = [36, 33, 29, 31];
           const melodias = [
@@ -67,68 +80,87 @@
             [69, 72, 74, null, 72, 69, 67, null],
             [67, null, 71, 74, null, 72, null, null],
           ];
-          bombo(t, 0.28, dst); bombo(t + 2 * b, 0.22, dst);
-          nota(t, bajos[k], b * 1.6, 'triangle', 0.13, dst);
-          nota(t + 2 * b, bajos[k] + 7, b * 1.4, 'triangle', 0.1, dst);
-          for (const p of [1, 3]) acordes[k].forEach((n) => nota(t + p * b, n, b * 0.5, 'triangle', 0.035, dst));
-          for (let e = 0; e < 8; e++) charles(t + e * c, e % 2 ? 0.02 : 0.03, dst);
-          suave(t, acordes[k][0] - 12, 4 * b, 0.03, dst);
-          if (vuelta % 2 === 1) melodias[k].forEach((n, e) => { if (n != null) nota(t + e * c, n, c * 1.6, 'sine', 0.05, dst); });
+          bombo(t, 0.16, dst); bombo(t + 2 * b + c, 0.1, dst);
+          piano(t, bajos[k], b * 1.8, 0.16, dst);
+          piano(t + 2 * b, bajos[k] + 7, b * 1.6, 0.11, dst);
+          for (const p of [1, 2.5, 3]) acordes[k].forEach((n) => piano(t + p * b, n, b * 0.9, 0.04, dst));
+          acordes[k].forEach((n) => suave(t, n - 12, 4 * b, 0.012, dst));
+          if (vuelta === 1) melodias[k].forEach((n, e) => { if (n != null) piano(t + e * c, n, c * 2.2, 0.06, dst); });
         },
       },
       // Rueda Final: tensa y constante, 128 pulsos por minuto (La m – Fa – Sol – Mi)
       rueda: {
-        pulso: 60 / 128, volumen: 0.6,
+        pulso: 60 / 128, volumen: 0.7, filtro: 4500, eco: 0.12,
         compas(t, i, b, dst) {
-          const s = b / 4, k = i % 4, vuelta = Math.floor(i / 4);
+          const s = b / 4, k = i % 4, vuelta = Math.floor(i / 4) % 2;
           const acordes = [[57, 60, 64], [53, 57, 60], [55, 59, 62], [52, 56, 59]];
           const bajos = [33, 29, 31, 28];
-          for (let e = 0; e < 8; e++) nota(t + e * (b / 2), bajos[k], b * 0.4, 'triangle', 0.13, dst); // bajo pulsante
-          for (let p = 0; p < 4; p++) { if (p % 2 === 0) bombo(t + p * b, 0.32, dst); else caja(t + p * b, 0.07, dst); }
-          for (let e = 0; e < 16; e++) charles(t + e * s, e % 4 === 2 ? 0.035 : 0.015, dst); // tic-tac
+          for (let e = 0; e < 8; e++) nota(t + e * (b / 2), bajos[k], b * 0.4, 'triangle', 0.12, dst); // bajo pulsante
+          for (let p = 0; p < 4; p++) { if (p % 2 === 0) bombo(t + p * b, 0.3, dst); else caja(t + p * b, 0.04, dst); }
+          for (let e = 0; e < 8; e++) piano(t + e * (b / 2), e % 2 ? 93 : 88, 0.05, 0.012, dst); // tic-tac suave (sin ruido)
           acordes[k].forEach((n) => suave(t, n, 4 * b, 0.018, dst));
-          if (vuelta % 2 === 1) { // arpegio en las vueltas impares
+          if (vuelta === 1) { // arpegio en la segunda vuelta
             const arp = [...acordes[k], acordes[k][0] + 12];
-            for (let e = 0; e < 16; e++) nota(t + e * s, arp[e % 4] + 12, s * 0.8, 'square', 0.018, dst);
+            for (let e = 0; e < 16; e++) piano(t + e * s, arp[e % 4] + 12, s * 1.5, 0.03, dst);
           }
         },
       },
     };
+    const COMPASES = 8;
+    const grabados = {};
+    // Graba el bucle en un búfer: se tocan 16 compases y se guardan los 8 últimos,
+    // que ya incluyen las colas de las notas anteriores, así el empalme no se nota.
+    function grabar(tipo) {
+      if (grabados[tipo]) return grabados[tipo];
+      const B = BUCLES[tipo], sr = ac.sampleRate, largo = COMPASES * 4 * B.pulso;
+      const off = new OfflineAudioContext(2, Math.ceil(sr * largo * 2), sr);
+      const sub = crear(off, null, true); // instrumentos conectados al contexto de grabación
+      const salida = off.createGain(); salida.gain.value = B.volumen;
+      const lp = off.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = B.filtro; lp.Q.value = 0.4;
+      const eco = off.createDelay(1); eco.delayTime.value = B.pulso * 0.75;
+      const fb = off.createGain(); fb.gain.value = B.eco;
+      salida.connect(lp); lp.connect(off.destination);
+      lp.connect(eco); eco.connect(fb); fb.connect(eco); fb.connect(off.destination);
+      for (let i = 0; i < COMPASES * 2; i++) sub._compas(tipo, i * 4 * B.pulso, i, salida);
+      grabados[tipo] = off.startRendering().then((buf) => {
+        const ini = Math.floor(sr * largo), n = Math.floor(sr * largo);
+        const loop = ac.createBuffer(2, n, sr);
+        for (let ch = 0; ch < 2; ch++) loop.getChannelData(ch).set(buf.getChannelData(ch).subarray(ini, ini + n));
+        return loop;
+      });
+      return grabados[tipo];
+    }
     function bucle(tipo) {
-      const B = BUCLES[tipo];
-      if (!B) return { parar() {} };
+      if (!BUCLES[tipo]) return { parar() {} };
       const out = ac.createGain();
       out.gain.setValueAtTime(0.0001, ac.currentTime);
-      out.gain.linearRampToValueAtTime(B.volumen, ac.currentTime + 2); // entra con fundido
       out.connect(master);
-      const largo = 4 * B.pulso;
-      let siguiente = ac.currentTime + 0.1, i = 0, vivo = true;
-      const programar = () => { while (vivo && siguiente < ac.currentTime + 2.5) { B.compas(siguiente, i++, B.pulso, out); siguiente += largo; } };
-      programar();
-      const id = setInterval(programar, 200);
+      let fuente = null, vivo = true;
+      grabar(tipo).then((buf) => {
+        if (!vivo) return;
+        fuente = ac.createBufferSource(); fuente.buffer = buf; fuente.loop = true;
+        fuente.connect(out); fuente.start();
+        out.gain.setValueAtTime(0.0001, ac.currentTime);
+        out.gain.linearRampToValueAtTime(1, ac.currentTime + 2); // entra con fundido
+      });
       return {
         parar() {
           if (!vivo) return;
-          vivo = false; clearInterval(id);
+          vivo = false;
           const t = ac.currentTime;
           out.gain.cancelScheduledValues(t);
-          out.gain.setValueAtTime(out.gain.value, t);
+          out.gain.setValueAtTime(Math.max(out.gain.value, 0.0001), t);
           out.gain.linearRampToValueAtTime(0.0001, t + 0.8); // sale con fundido
-          setTimeout(() => out.disconnect(), 3000);
+          setTimeout(() => { try { fuente && fuente.stop(); } catch (e) {} out.disconnect(); }, 1200);
         },
       };
     }
+    // Devuelve el búfer grabado (para escucharlo o probarlo)
+    const muestra = (tipo) => grabar(tipo);
+    const _compas = (tipo, t, i, dst) => BUCLES[tipo].compas(t, i, BUCLES[tipo].pulso, dst);
 
-    // Programa n compases seguidos de un bucle (para escucharlo o probarlo sin tiempo real)
-    function muestra(tipo, n) {
-      const B = BUCLES[tipo], out = ac.createGain();
-      out.gain.value = B.volumen; out.connect(master);
-      const t0 = ac.currentTime + 0.05;
-      for (let i = 0; i < n; i++) B.compas(t0 + i * 4 * B.pulso, i, B.pulso, out);
-      return n * 4 * B.pulso;
-    }
     return {
-      bucle, muestra,
+      bucle, muestra, _compas, preparar() { grabar('sala'); grabar('rueda'); },
       // Intro completa (~10 s): al empezar la partida
       intro() {
         const t0 = ac.currentTime + 0.05, b = 60 / 150, c = b / 2;

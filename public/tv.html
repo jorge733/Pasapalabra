@@ -200,7 +200,7 @@ let musica = null, introPrevia = null;
 let bucleActual = null, tipoBucle = null;
 function controlarBucle() {
   if (!ac || !S) return;
-  if (!musica) musica = MusicaLetramania.crear(ac);
+  if (!musica) { musica = MusicaLetramania.crear(ac); musica.preparar(); }
   const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'lobby' ? 'sala' : S.phase === 'rueda' ? 'rueda' : null;
   if (quiero === tipoBucle) return;
   if (bucleActual) bucleActual.parar();
