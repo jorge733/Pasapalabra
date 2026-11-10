@@ -1,5 +1,5 @@
 // Música original de Letramanía, generada con Web Audio (sin archivos de audio).
-// Composición propia: progresión Do – Do – La m – Fa – Sol – Do a 150 pulsos por minuto.
+// Todas las melodías y ritmos son composiciones propias del juego.
 (function () {
   const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
@@ -15,34 +15,121 @@
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       return ruido;
     }
-    function nota(t, n, dur, tipo = 'square', vol = 0.1) {
+    // --- instrumentos (dst = adónde se conecta el sonido) ---
+    function nota(t, n, dur, tipo = 'square', vol = 0.1, dst = master) {
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = tipo; o.frequency.value = midi(n);
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
       g.gain.exponentialRampToValueAtTime(vol * 0.6, t + dur * 0.5);
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(master); o.start(t); o.stop(t + dur + 0.02);
+      o.connect(g).connect(dst); o.start(t); o.stop(t + dur + 0.02);
     }
-    function bombo(t, vol = 0.6) {
+    function suave(t, n, dur, vol, dst = master) { // nota con ataque lento (colchón de fondo)
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = midi(n);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol, t + dur * 0.3);
+      g.gain.linearRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(dst); o.start(t); o.stop(t + dur + 0.02);
+    }
+    function bombo(t, vol = 0.6, dst = master) {
       const o = ac.createOscillator(), g = ac.createGain();
       o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.15);
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-      o.connect(g).connect(master); o.start(t); o.stop(t + 0.2);
+      o.connect(g).connect(dst); o.start(t); o.stop(t + 0.2);
     }
-    function ruidoF(t, dur, vol, filtro) {
+    function ruidoF(t, dur, vol, filtro, dst = master) {
       const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
       s.buffer = bufRuido(); f.type = 'highpass'; f.frequency.value = filtro;
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      s.connect(f).connect(g).connect(master); s.start(t); s.stop(t + dur + 0.02);
+      s.connect(f).connect(g).connect(dst); s.start(t); s.stop(t + dur + 0.02);
     }
-    const caja = (t, vol = 0.28) => ruidoF(t, 0.13, vol, 1500);
-    const charles = (t) => ruidoF(t, 0.04, 0.05, 7000);
-    const platillo = (t) => ruidoF(t, 1.2, 0.18, 5000);
-    function acorde(t, notas, dur, vol = 0.07) { notas.forEach((n) => { nota(t, n, dur, 'sawtooth', vol); nota(t, n + 12, dur, 'square', vol * 0.5); }); }
+    const caja = (t, vol = 0.28, dst) => ruidoF(t, 0.13, vol, 1500, dst);
+    const charles = (t, vol = 0.05, dst) => ruidoF(t, 0.04, vol, 7000, dst);
+    const platillo = (t, dst) => ruidoF(t, 1.2, 0.18, 5000, dst);
+    function acorde(t, notas, dur, vol = 0.07, dst = master) {
+      notas.forEach((n) => { nota(t, n, dur, 'sawtooth', vol, dst); nota(t, n + 12, dur, 'square', vol * 0.5, dst); });
+    }
 
+    // --- bucles de fondo: se programan unos segundos por adelantado y se detienen con un fundido ---
+    const BUCLES = {
+      // Sala de espera: relajada, 100 pulsos por minuto (Do – La m – Fa – Sol)
+      sala: {
+        pulso: 60 / 100, volumen: 0.75,
+        compas(t, i, b, dst) {
+          const c = b / 2, k = i % 4, vuelta = Math.floor(i / 4);
+          const acordes = [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]];
+          const bajos = [36, 33, 29, 31];
+          const melodias = [
+            [72, null, 74, 76, null, 79, null, 76],
+            [76, null, 74, 72, null, 69, null, null],
+            [69, 72, 74, null, 72, 69, 67, null],
+            [67, null, 71, 74, null, 72, null, null],
+          ];
+          bombo(t, 0.28, dst); bombo(t + 2 * b, 0.22, dst);
+          nota(t, bajos[k], b * 1.6, 'triangle', 0.13, dst);
+          nota(t + 2 * b, bajos[k] + 7, b * 1.4, 'triangle', 0.1, dst);
+          for (const p of [1, 3]) acordes[k].forEach((n) => nota(t + p * b, n, b * 0.5, 'triangle', 0.035, dst));
+          for (let e = 0; e < 8; e++) charles(t + e * c, e % 2 ? 0.02 : 0.03, dst);
+          suave(t, acordes[k][0] - 12, 4 * b, 0.03, dst);
+          if (vuelta % 2 === 1) melodias[k].forEach((n, e) => { if (n != null) nota(t + e * c, n, c * 1.6, 'sine', 0.05, dst); });
+        },
+      },
+      // Rueda Final: tensa y constante, 128 pulsos por minuto (La m – Fa – Sol – Mi)
+      rueda: {
+        pulso: 60 / 128, volumen: 0.6,
+        compas(t, i, b, dst) {
+          const s = b / 4, k = i % 4, vuelta = Math.floor(i / 4);
+          const acordes = [[57, 60, 64], [53, 57, 60], [55, 59, 62], [52, 56, 59]];
+          const bajos = [33, 29, 31, 28];
+          for (let e = 0; e < 8; e++) nota(t + e * (b / 2), bajos[k], b * 0.4, 'triangle', 0.13, dst); // bajo pulsante
+          for (let p = 0; p < 4; p++) { if (p % 2 === 0) bombo(t + p * b, 0.32, dst); else caja(t + p * b, 0.07, dst); }
+          for (let e = 0; e < 16; e++) charles(t + e * s, e % 4 === 2 ? 0.035 : 0.015, dst); // tic-tac
+          acordes[k].forEach((n) => suave(t, n, 4 * b, 0.018, dst));
+          if (vuelta % 2 === 1) { // arpegio en las vueltas impares
+            const arp = [...acordes[k], acordes[k][0] + 12];
+            for (let e = 0; e < 16; e++) nota(t + e * s, arp[e % 4] + 12, s * 0.8, 'square', 0.018, dst);
+          }
+        },
+      },
+    };
+    function bucle(tipo) {
+      const B = BUCLES[tipo];
+      if (!B) return { parar() {} };
+      const out = ac.createGain();
+      out.gain.setValueAtTime(0.0001, ac.currentTime);
+      out.gain.linearRampToValueAtTime(B.volumen, ac.currentTime + 2); // entra con fundido
+      out.connect(master);
+      const largo = 4 * B.pulso;
+      let siguiente = ac.currentTime + 0.1, i = 0, vivo = true;
+      const programar = () => { while (vivo && siguiente < ac.currentTime + 2.5) { B.compas(siguiente, i++, B.pulso, out); siguiente += largo; } };
+      programar();
+      const id = setInterval(programar, 200);
+      return {
+        parar() {
+          if (!vivo) return;
+          vivo = false; clearInterval(id);
+          const t = ac.currentTime;
+          out.gain.cancelScheduledValues(t);
+          out.gain.setValueAtTime(out.gain.value, t);
+          out.gain.linearRampToValueAtTime(0.0001, t + 0.8); // sale con fundido
+          setTimeout(() => out.disconnect(), 3000);
+        },
+      };
+    }
+
+    // Programa n compases seguidos de un bucle (para escucharlo o probarlo sin tiempo real)
+    function muestra(tipo, n) {
+      const B = BUCLES[tipo], out = ac.createGain();
+      out.gain.value = B.volumen; out.connect(master);
+      const t0 = ac.currentTime + 0.05;
+      for (let i = 0; i < n; i++) B.compas(t0 + i * 4 * B.pulso, i, B.pulso, out);
+      return n * 4 * B.pulso;
+    }
     return {
-      // Intro completa (~8 s): se toca al empezar la partida
+      bucle, muestra,
+      // Intro completa (~10 s): al empezar la partida
       intro() {
         const t0 = ac.currentTime + 0.05, b = 60 / 150, c = b / 2;
         const melodia = [

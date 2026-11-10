@@ -83,6 +83,7 @@
     <div class="grid">
       <button class="go" id="bEmpezar" onclick="h('empezar')">▶ Empezar partida</button>
       <button id="bPausa" onclick="h('pausa')">⏸ Pausa</button>
+      <button id="bMusica" onclick="h('musica')">🎵 Música de fondo: Sí</button>
       <button onclick="h('saltar')">⏭ Saltar a la siguiente prueba</button>
       <button onclick="h('irRueda')">🔤 Ir directo a la Rueda</button>
       <button class="warn" onclick="confirm('¿Empezar una partida nueva? Se pierde la actual.') && h('nueva')">↺ Nueva partida</button>
@@ -142,6 +143,7 @@ function render() {
   $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${s.teams[p.team].name})`).join(', ');
   $('#bEmpezar').disabled = s.phase !== 'lobby';
   $('#bPausa').textContent = s.paused ? '▶ Reanudar' : '⏸ Pausa';
+  $('#bMusica').textContent = s.musicaFondo ? '🎵 Música de fondo: Sí' : '🔇 Música de fondo: No';
   $('#cfg').classList.toggle('hidden', s.phase !== 'lobby');
   $('#rondas').innerHTML = s.catalogo.map((c, k) => `<button class="${s.rondas.includes(c.id) ? 'sel' : ''}" onclick="h('ronda','${c.id}')">${s.rondas.includes(c.id) ? '✔ ' : ''}${esc(c.titulo)}</button>`).join('');
   document.querySelectorAll('#difs button').forEach((b) => b.classList.toggle('sel', b.dataset.d === s.dificultad));

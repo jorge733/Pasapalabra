@@ -176,7 +176,7 @@ const LETRAS_OPC = ['A', 'B', 'C', 'D'];
 
 // --- sonido sintetizado ---
 let ac = null;
-$('#sonido').onclick = () => { ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); };
+$('#sonido').onclick = () => { ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); $('#sonido').remove(); tono([523, 659, 784], .12); controlarBucle(); };
 function tono(fs, d = .15, tipo = 'sine') {
   if (!ac) return;
   fs.forEach((f, i) => {
@@ -196,6 +196,17 @@ const sock = io();
 let S = null, flashHasta = 0;
 // ---------- música de intro (original, generada en el navegador) ----------
 let musica = null, introPrevia = null;
+// Música de fondo: sala de espera y Rueda Final (se detiene en pausa o si el presentador la apaga)
+let bucleActual = null, tipoBucle = null;
+function controlarBucle() {
+  if (!ac || !S) return;
+  if (!musica) musica = MusicaLetramania.crear(ac);
+  const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'lobby' ? 'sala' : S.phase === 'rueda' ? 'rueda' : null;
+  if (quiero === tipoBucle) return;
+  if (bucleActual) bucleActual.parar();
+  bucleActual = quiero ? musica.bucle(quiero) : null;
+  tipoBucle = quiero;
+}
 function tocarMusica(s) {
   if (s.phase !== 'intro') { introPrevia = null; return; }
   if (introPrevia === s.intro.titulo) return; // ya sonó para esta presentación
@@ -208,6 +219,7 @@ function tocarMusica(s) {
 }
 sock.on('state', (s, ev) => {
   tocarMusica(s);
+  S = s; controlarBucle();
   S = s;
   if (ev && SFX[ev]) SFX[ev]();
   if (s.phase === 'rueda' && s.rueda.ultimo && ['ok', 'fail', 'paso', 'tiempo'].includes(ev)) flashHasta = Date.now() + (ev === 'ok' ? 900 : 2600);

@@ -189,6 +189,7 @@ function nuevaPartida() {
     r: null,
     tema: G ? G.tema : 'mixto',
     dificultad: G ? G.dificultad : 'dificil', // 'normal' o 'dificil'
+    musicaFondo: G ? G.musicaFondo : true,   // música de fondo en la sala de espera y en la rueda
     modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el celular)
     rondas: G ? G.rondas : [...ORDEN], // pruebas elegidas por el presentador
     secuencia: [], paso: -1, introDe: null,
@@ -642,7 +643,7 @@ setInterval(() => { if (!['lobby', 'fin'].includes(G.phase)) emitir(); }, 500);
 function publico() {
   const s = {
     phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, modo: G.modo, tiempoBase: CONFIG.tiempoBaseRueda,
-    dificultad: G.dificultad, rondas: G.rondas, catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo })),
+    dificultad: G.dificultad, musicaFondo: G.musicaFondo, rondas: G.rondas, catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo })),
     teams: G.teams,
     players: Object.values(players),
     intro: null,
@@ -786,6 +787,7 @@ io.on('connection', (sock) => {
       else avanzar();
     }
     else if (cmd === 'pausa') { G.paused = !G.paused; emitir(); }
+    else if (cmd === 'musica') { G.musicaFondo = !G.musicaFondo; emitir(); }
     else if (cmd === 'nueva') { nuevaPartida(); emitir(); }
     else if (cmd === 'dificultad' && G.phase === 'lobby' && ['normal', 'dificil'].includes(arg)) { G.dificultad = arg; emitir(); }
     else if (cmd === 'tema' && G.phase === 'lobby' && ['mixto', 'chile', 'general'].includes(arg)) { G.tema = arg; emitir(); }
