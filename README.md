@@ -99,8 +99,9 @@ Consejo: con presentador, abre `/host` en tu celular o en un portátil que pueda
 
 - **🔥 Difícil** (por defecto): preguntas de historia, ciencia, geografía y literatura (por ejemplo, batallas de la independencia, autores chilenos, química o astronomía). La rueda mezcla dos ruedas difíciles (una general y una chilena) para que cada equipo tenga definiciones distintas.
 - **🙂 Normal**: preguntas de cultura general más sencillas, buenas para jugar con niños.
+- **🧒 Kids (7-12)**: preguntas pensadas para niños de 7 a 12 años en todas las pruebas: animales, el cuerpo, números, cuentos, adivinanzas clásicas, abreviaturas fáciles (TV, km, Dr.) y una rueda final con palabras conocidas. Hay más tiempo para pensar y responder, y la rueda parte con 130 segundos en vez de 100.
 
-El contenido difícil está en la sección «NIVEL DIFÍCIL» de [`contenido.js`](contenido.js). Si una prueba no tiene suficientes preguntas difíciles, se completa con las normales.
+El contenido difícil está en la sección «NIVEL DIFÍCIL» de [`contenido.js`](contenido.js) y el de Kids en [`contenido-kids.js`](contenido-kids.js). Si una prueba no tiene suficientes preguntas de ese nivel, se completa con las normales. Los tiempos del modo Kids se cambian en `CONFIG_KIDS`, en [`server.js`](server.js).
 
 ## Temática
 
@@ -132,6 +133,7 @@ Si el juego no reconoce una respuesta válida (un sinónimo, por ejemplo), el pr
 |---|---|
 | `server.js` | Servidor (Express + Socket.IO): lógica de la partida y reloj |
 | `contenido.js` | Preguntas, palabras y ruedas |
+| `contenido-kids.js` | Contenido del modo Kids (7 a 12 años) |
 | `public/tv.html` | Pantalla de la tele |
 | `public/play.html` | Control del celular |
 | `public/host.html` | Panel del presentador |

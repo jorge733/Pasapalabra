@@ -614,3 +614,6 @@ exports.ruedasChileDificil = [
 // =====================================================================
 const EXTRA = require('./contenido-extra');
 for (const [k, v] of Object.entries(EXTRA)) exports[k] = [...(exports[k] || []), ...v];
+// Modo Kids (niños de 7 a 12 años)
+const KIDS = require('./contenido-kids');
+for (const [k, v] of Object.entries(KIDS)) exports[k] = [...(exports[k] || []), ...v];
