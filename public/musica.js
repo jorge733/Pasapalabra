@@ -98,6 +98,23 @@
           if (vuelta === 1) melodias[k].forEach((n, e) => { if (n != null) piano(t + e * c, n, c * 2.2, 0.06, dst); });
         },
       },
+      // Preguntas: suspenso suave «para pensar», 110 pulsos por minuto (Re m – Si♭ – Do – La)
+      pregunta: {
+        pulso: 60 / 110, volumen: 1.6, filtro: 3800, eco: 0.15,
+        compas(t, i, b, dst) {
+          const c = b / 2, k = i % 4, vuelta = Math.floor(i / 4) % 2;
+          const acordes = [[62, 65, 69], [58, 62, 65], [60, 64, 67], [57, 61, 64]];
+          const bajos = [50, 46, 48, 45];
+          for (let e = 0; e < 8; e++) piano(t + e * c, bajos[k], c * 0.9, e % 2 ? 0.06 : 0.09, dst); // pulso de bajo
+          golpe(t, 0.07, dst); golpe(t + 2 * b, 0.05, dst);
+          for (let e = 1; e < 8; e += 2) piano(t + e * c, e % 4 === 1 ? 86 : 81, 0.06, 0.012, dst); // tic suave
+          acordes[k].forEach((n) => suave(t, n, 4 * b, 0.014, dst));
+          if (vuelta === 1) { // arpegio en la segunda vuelta
+            const arp = [acordes[k][0], acordes[k][1], acordes[k][2], acordes[k][1]];
+            for (let e = 0; e < 8; e++) piano(t + e * c, arp[e % 4] + 12, c * 1.4, 0.025, dst);
+          }
+        },
+      },
       // Rueda Final: tensa y constante, 128 pulsos por minuto (La m – Fa – Sol – Mi)
       rueda: {
         pulso: 60 / 128, volumen: 0.7, filtro: 4500, eco: 0.12,
@@ -171,7 +188,7 @@
     const _compas = (tipo, t, i, dst) => BUCLES[tipo].compas(t, i, BUCLES[tipo].pulso, dst);
 
     return {
-      bucle, muestra, _compas, preparar() { grabar('sala'); grabar('rueda'); },
+      bucle, muestra, _compas, preparar() { grabar('pregunta'); grabar('rueda'); },
       // Intro completa (~10 s): al empezar la partida
       intro() {
         const t0 = ac.currentTime + 0.05, b = 60 / 150, c = b / 2;

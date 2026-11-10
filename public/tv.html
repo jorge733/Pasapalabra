@@ -203,8 +203,10 @@ let musica = null, introPrevia = null;
 let bucleActual = null, tipoBucle = null;
 function controlarBucle() {
   if (!ac || !S) return;
-  if (!musica) musica = MusicaLetramania.crear(ac);
-  const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : null; // la sala de espera va sin música de fondo
+  if (!musica) { musica = MusicaLetramania.crear(ac); musica.preparar(); }
+  const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran'];
+  // la sala de espera va sin música de fondo; suena durante las preguntas y en la rueda
+  const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) ? 'pregunta' : null;
   if (quiero === tipoBucle) return;
   if (bucleActual) bucleActual.parar();
   bucleActual = quiero ? musica.bucle(quiero) : null;
