@@ -22,12 +22,12 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'letramania-musica-'));
   await pagina.addScriptTag({ content: fs.readFileSync(path.join(RAIZ, 'public', 'musica.js'), 'utf8') });
 
   // { nombre, tipo: 'pieza' (se toca una vez) o 'bucle' (se repite sin cortes) }
-  // La intro (public/audio/intro.mp3) es la cortina musical grabada de Letramanía: no se genera aquí.
+  // La intro (public/audio/intro.mp3) y el fondo de la Rueda Final (public/audio/rueda.wav)
+  // son grabaciones de Letramanía: no se generan aquí.
   const piezas = [
     { nombre: 'cortina', tipo: 'pieza' },
     { nombre: 'redoble', tipo: 'pieza' },
     { nombre: 'pregunta', tipo: 'bucle' },
-    { nombre: 'rueda', tipo: 'bucle' },
   ];
   for (const p of piezas) {
     const wavBase64 = await pagina.evaluate(async ({ nombre, tipo }) => {
