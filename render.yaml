@@ -1,0 +1,14 @@
+# Configuración para publicar el juego en Render.com (plan gratuito).
+# Al usar el botón «Deploy to Render» del README, Render pedirá la clave del presentador.
+services:
+  - type: web
+    name: letramania
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: CLAVE_PRESENTADOR
+        sync: false
+      - key: NODE_VERSION
+        value: "22"

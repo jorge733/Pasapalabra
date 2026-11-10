@@ -36,7 +36,16 @@
   .bOk{background:#15803d}.bKo{background:#b91c1c}.bPaso{background:#4f46e5}.bNadie{background:#475569}
   kbd{background:rgba(0,0,0,.35);border-radius:6px;padding:1px 6px;font-size:13px;margin-left:6px}
 </style>
-</head><body><div class="wrap">
+</head><body>
+<div id="claveBox" class="hidden" style="position:fixed;inset:0;z-index:50;background:rgba(13,11,31,.96);display:grid;place-items:center;padding:16px">
+  <form onsubmit="event.preventDefault();enviarClave()" style="background:var(--panel);border-radius:16px;padding:24px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:12px">
+    <h2 style="margin:0">🔒 Panel del presentador</h2>
+    <p id="claveMsg" style="margin:0;color:var(--muted)"></p>
+    <input id="claveIn" type="password" autocomplete="current-password" placeholder="Clave" style="padding:14px;border-radius:10px;border:3px solid var(--pend);background:var(--bg);color:var(--ink);font-size:20px">
+    <button style="padding:14px;font-weight:900;background:#15803d;font-size:18px">Entrar</button>
+  </form>
+</div>
+<div class="wrap">
   <h1>Letra<span style="color:var(--B)">manía</span> · Presentador</h1>
 
   <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="pensarH" class="estadoL hidden" style="background:#78350f"></div><div id="lecturaBody"></div></div>
@@ -93,7 +102,20 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const seg = (ms) => Math.max(0, Math.ceil(ms / 1000));
 const sock = io();
 const h = (c, a) => sock.emit('host', c, a);
-sock.on('connect', () => sock.emit('soyHost'));
+// Clave del presentador (solo si el juego está en internet con clave)
+let clave = ''; try { clave = localStorage.getItem('letramania-clave') || ''; } catch (e) {}
+sock.on('connect', () => sock.emit('soyHost', clave));
+sock.on('claveIncorrecta', (habiaClave) => {
+  $('#claveBox').classList.remove('hidden');
+  $('#claveMsg').textContent = habiaClave ? 'Clave incorrecta. Inténtalo de nuevo.' : 'Escribe la clave del presentador para manejar la partida.';
+  $('#claveIn').focus();
+});
+sock.on('hostOk', () => $('#claveBox').classList.add('hidden'));
+function enviarClave() {
+  clave = $('#claveIn').value.trim();
+  try { localStorage.setItem('letramania-clave', clave); } catch (e) {}
+  sock.emit('soyHost', clave);
+}
 const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', rueda: 'Rueda final', fin: 'Partida terminada' };
 let S = null, X = null, ultimaLectura = '';
 

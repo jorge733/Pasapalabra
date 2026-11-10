@@ -62,6 +62,10 @@ async function elegirIP() {
 }
 let IP = 'localhost';
 let BASE = `http://${IP}:${PORT}`;
+// En internet (Render u otro servicio) se usa la dirección pública para el QR y los enlaces.
+const URL_PUBLICA = (process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || '').replace(/\/+$/, '');
+// Clave del panel del presentador (recomendada en internet). Si no se define, el panel queda abierto (uso en casa).
+const CLAVE = String(process.env.CLAVE_PRESENTADOR || '').trim();
 
 const app = express();
 const server = http.createServer(app);
@@ -764,10 +768,15 @@ io.on('connection', (sock) => {
     else if (PULSADOR.includes(G.phase)) responderP(t, txt);
   });
   sock.on('rueda', ({ texto, paso } = {}) => team() && (paso || !conPresentador()) && responderRueda(team(), texto, !!paso));
-  sock.on('soyHost', () => { sock.join('hosts'); sock.emit('secreto', secreto()); });
+  sock.on('soyHost', (clave) => {
+    if (CLAVE && String(clave || '').trim() !== CLAVE) return sock.emit('claveIncorrecta', !!clave);
+    sock.data.esHost = true;
+    sock.join('hosts'); sock.emit('hostOk'); sock.emit('secreto', secreto());
+  });
 
   // controles del presentador
   sock.on('host', (cmd, arg) => {
+    if (CLAVE && !sock.data.esHost) return; // sin la clave no se puede manejar la partida
     const enJuego = !['lobby', 'fin'].includes(G.phase);
     if (cmd === 'empezar' && G.phase === 'lobby') empezar();
     else if (cmd === 'saltar' && enJuego) {
@@ -803,10 +812,15 @@ server.on('error', (e) => {
   process.exit(1);
 });
 
-elegirIP().then((ip) => {
-  IP = ip;
-  BASE = `http://${IP}:${PORT}`;
+(URL_PUBLICA ? Promise.resolve(null) : elegirIP()).then((ip) => {
+  if (URL_PUBLICA) BASE = URL_PUBLICA;
+  else { IP = ip; BASE = `http://${IP}:${PORT}`; }
   server.listen(PORT, '0.0.0.0', () => {
+    if (URL_PUBLICA) {
+      console.log(`Letramanía en línea: ${BASE}  (tele: /tv · presentador: /host · jugadores: /play)`);
+      console.log(CLAVE ? 'Panel del presentador protegido con clave.' : 'AVISO: define CLAVE_PRESENTADOR para proteger el panel del presentador.');
+      return;
+    }
     console.log(`\n  LETRAMANÍA lista\n`);
     console.log(`  Tele (envía esta pestaña al Chromecast): ${BASE}/tv`);
     console.log(`  Presentador (en tu computador):           ${BASE}/host`);

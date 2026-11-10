@@ -2,6 +2,27 @@
 
 Juego de fiesta por equipos para jugar en la tele. La partida se ve en la tele (a través del Chromecast) y cada jugador usa su **celular como control**: escanea un QR y listo, sin instalar nada.
 
+## Jugar por internet (sin Wi-Fi compartido y sin terminal)
+
+Puedes publicar el juego gratis en [Render](https://render.com). Así los jugadores entran desde el celular **con datos móviles o cualquier Wi-Fi**, y no necesitas tener un computador con la terminal abierta.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jorge733/Pasapalabra)
+
+1. Crea una cuenta en Render entrando con tu cuenta de GitHub.
+2. Presiona el botón de arriba. Render leerá el archivo `render.yaml` de este repositorio.
+3. Cuando pida **`CLAVE_PRESENTADOR`**, escribe una clave inventada por ti: se pedirá al abrir el panel del presentador para que nadie más pueda manejar la partida.
+4. Presiona **Deploy** y espera unos minutos. Render te dará una dirección como `https://letramania-xxxx.onrender.com`.
+5. Para jugar: abre `…/tv` en la pantalla que vas a transmitir, `…/host` en tu celular (con la clave) y los jugadores escanean el QR.
+
+Cada vez que se suban cambios a GitHub, Render actualiza el juego solo.
+
+**Ten en cuenta (plan gratuito):**
+- Si nadie usa el juego durante 15 minutos, se «duerme». La primera vez que lo abras después, tarda **alrededor de un minuto** en cargar. Abre la página de la tele un rato antes de empezar.
+- Mientras se juega no se duerme.
+- El historial de preguntas usadas se borra cuando Render reinicia el juego, así que a veces podrían repetirse preguntas.
+
+**Para ver la tele sin computador:** con un celular Android, abre `…/tv` en Chrome y, en la app **Google Home**, elige tu Chromecast → **Transmitir mi pantalla**. Desde un computador, también puedes usar Chrome → ⋮ → **Transmitir… → Transmitir pestaña**, sin abrir ninguna terminal.
+
 ## Actualizar a una versión nueva
 
 En la carpeta del juego, con el juego detenido (`Ctrl + C`):
