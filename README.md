@@ -121,7 +121,7 @@ Cuantas más preguntas añadas en `contenido.js`, más tardarán en repetirse.
 
 ## Personalizarlo
 
-Todo el contenido está en [`contenido.js`](contenido.js) y [`contenido-extra.js`](contenido-extra.js): preguntas, palabras ocultas y ruedas de letras, con una sección general y otra chilena (`preguntasChile`, `palabrasOcultasChile`, `ruedasChile`). Añade las tuyas siguiendo el mismo formato (por ejemplo, preguntas sobre tu familia o tus amigos). Las respuestas se comparan sin tildes ni mayúsculas, se admite una errata en palabras de 6 letras o más y puedes poner varias respuestas válidas.
+Todo el contenido está en [`contenido.js`](contenido.js), [`contenido-extra.js`](contenido-extra.js) y [`contenido-variedad.js`](contenido-variedad.js) (cine, música, deportes, tecnología, mitología, cocina…): preguntas, palabras ocultas y ruedas de letras, con una sección general y otra chilena (`preguntasChile`, `palabrasOcultasChile`, `ruedasChile`). Añade las tuyas siguiendo el mismo formato (por ejemplo, preguntas sobre tu familia o tus amigos). Las respuestas se comparan sin tildes ni mayúsculas, se admite una errata en palabras de 6 letras o más y puedes poner varias respuestas válidas.
 
 Los tiempos y el número de rondas de cada prueba se cambian en `CONFIG`, al principio de [`server.js`](server.js).
 
@@ -133,6 +133,7 @@ Si el juego no reconoce una respuesta válida (un sinónimo, por ejemplo), el pr
 |---|---|
 | `server.js` | Servidor (Express + Socket.IO): lógica de la partida y reloj |
 | `contenido.js` | Preguntas, palabras y ruedas |
+| `contenido-variedad.js` | Más preguntas de temas variados para todas las pruebas y niveles |
 | `contenido-kids.js` | Contenido del modo Kids (7 a 12 años) |
 | `public/tv.html` | Pantalla de la tele |
 | `public/play.html` | Control del celular |
