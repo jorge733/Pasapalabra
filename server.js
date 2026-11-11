@@ -87,11 +87,20 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const pub = (f) => path.join(__dirname, 'public', f);
-app.get('/', (_, res) => res.sendFile(pub('index.html')));
+// Las páginas llevan etiquetas Open Graph (vista previa al compartir el enlace en WhatsApp, redes, etc.),
+// que exigen direcciones absolutas: se reemplaza __BASE__ por la dirección pública o la del propio pedido.
+const paginas = {};
+const pagina = (f) => (req, res) => {
+  const html = (paginas[f] ??= fs.readFileSync(pub(f), 'utf8'));
+  const base = URL_PUBLICA || `${req.protocol}://${req.get('host')}`;
+  res.type('html').set('Cache-Control', 'no-cache').send(html.replaceAll('__BASE__', base));
+};
+app.get('/', pagina('index.html'));
 app.get('/favicon.ico', (_, res) => res.type('image/png').sendFile(pub('favicon-32.png'))); // navegadores que piden /favicon.ico
-app.get('/tv', (_, res) => res.sendFile(pub('tv.html')));
-app.get('/play', (_, res) => res.sendFile(pub('play.html')));
-app.get('/host', (_, res) => res.sendFile(pub('host.html')));
+app.get('/tv', pagina('tv.html'));
+app.get('/play', pagina('play.html'));
+app.get('/host', pagina('host.html'));
+app.get(/^\/(index|tv|play|host)\.html$/, (req, res) => res.redirect(301, req.params[0] === 'index' ? '/' : '/' + req.params[0]));
 app.get('/info', (_, res) => res.json({ base: BASE, play: BASE + '/play' }));
 app.get('/qr.svg', async (_, res) => {
   res.type('image/svg+xml').send(await QR.toString(BASE + '/play', { type: 'svg', margin: 1 }));

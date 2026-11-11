@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "musica": "node scripts/generar-musica.js"
+    "musica": "node scripts/generar-musica.js",
+    "og": "node scripts/generar-og.js"
   },
   "author": "",
   "license": "MIT",

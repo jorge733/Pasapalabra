@@ -1,0 +1,54 @@
+<!doctype html>
+<!-- Plantilla de la imagen para compartir (Open Graph, 1200×630). Se convierte en public/og-image.png con: node scripts/generar-og.js -->
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d0b1f;--bg2:#2a2366;--panel:#221d4d;--ink:#f4f2ff;--muted:#a9a3d6;--A:#8b5cf6;--B:#f59e0b;--ok:#22c55e;--ko:#ef4444;--pend:#3b3577}
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1200px;height:630px;overflow:hidden}
+  body{background:radial-gradient(ellipse 90% 110% at 78% 40%,var(--bg2),var(--bg) 70%);color:var(--ink);font-family:"Nunito",sans-serif;position:relative}
+  .txt{position:absolute;left:80px;top:0;bottom:0;width:580px;display:flex;flex-direction:column;justify-content:center}
+  .tag{display:inline-flex;align-self:flex-start;gap:10px;align-items:center;background:rgba(139,92,246,.18);border:2px solid rgba(139,92,246,.5);color:#d8cbff;font-weight:800;font-size:22px;padding:8px 18px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  h1{margin:26px 0 0;font-weight:900;font-size:112px;line-height:.95;letter-spacing:-.02em}
+  h1 span{color:var(--B)}
+  p{margin:26px 0 0;font-size:32px;line-height:1.3;color:var(--muted);font-weight:700}
+  p b{color:var(--ink);font-weight:900}
+  .chips{display:flex;gap:14px;margin-top:38px}
+  .chip{display:flex;align-items:center;gap:10px;background:var(--panel);border-left:8px solid var(--c);border-radius:14px;padding:12px 20px;font-size:24px;font-weight:900}
+  .rueda{position:absolute;right:60px;top:50%;width:460px;height:460px;margin-top:-230px}
+  .l{position:absolute;width:46px;height:46px;margin:-23px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:23px;color:#fff;background:var(--A);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .l.b{background:var(--B);color:#1a1300}
+  .l.ok{background:var(--ok)}
+  .l.ko{background:var(--ko)}
+  .l.p{background:var(--pend);color:var(--muted)}
+  .l.cur{transform:scale(1.45);box-shadow:0 0 0 5px #fff,0 0 40px var(--B);background:var(--B);color:#1a1300;z-index:2}
+  .centro{position:absolute;left:50%;top:50%;width:250px;height:250px;margin:-125px;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 6px var(--pend),0 20px 60px rgba(0,0,0,.4)}
+  .centro .n{font-size:96px;font-weight:900;line-height:1}
+  .centro .s{font-size:22px;color:var(--muted);font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+</style></head><body>
+<div class="txt">
+  <div class="tag">📺 Juego de fiesta para la tele</div>
+  <h1>Letra<span>manía</span></h1>
+  <p>Dos equipos, la tele como tablero y <b>tu celular como control</b>. Escanea el QR y a jugar.</p>
+  <div class="chips">
+    <div class="chip" style="--c:var(--A)">Equipo A</div>
+    <div class="chip" style="--c:var(--B)">Equipo B</div>
+    <div class="chip" style="--c:var(--ok)">Sin instalar nada</div>
+  </div>
+</div>
+<div class="rueda" id="r"><div class="centro"><div class="n">87</div><div class="s">segundos</div></div></div>
+<script>
+  const letras = 'ABCDEFGHIJLMNÑOPQRSTUVXYZ'.split('');
+  const estado = (i) => i < 7 ? (i === 3 ? 'ko' : 'ok') : i === 7 ? 'cur' : i % 4 === 0 ? 'b' : i % 5 === 0 ? 'p' : '';
+  const r = document.getElementById('r'), R = 200;
+  letras.forEach((t, i) => {
+    const a = (i / letras.length) * 2 * Math.PI - Math.PI / 2;
+    const d = document.createElement('div');
+    d.className = 'l ' + estado(i);
+    d.textContent = t;
+    d.style.left = (230 + R * Math.cos(a)) + 'px';
+    d.style.top = (230 + R * Math.sin(a)) + 'px';
+    r.appendChild(d);
+  });
+</script>
+</body></html>
