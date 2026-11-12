@@ -620,3 +620,6 @@ for (const [k, v] of Object.entries(VARIEDAD)) exports[k] = [...(exports[k] || [
 // Modo Kids (niños de 7 a 12 años)
 const KIDS = require('./contenido-kids');
 for (const [k, v] of Object.entries(KIDS)) exports[k] = [...(exports[k] || []), ...v];
+// Más definiciones para la Rueda Final
+const RUEDAS = require('./contenido-ruedas');
+for (const [k, v] of Object.entries(RUEDAS)) exports[k] = [...(exports[k] || []), ...v];
