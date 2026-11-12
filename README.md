@@ -51,7 +51,7 @@ Dos equipos compiten en varias pruebas cortas para ganar segundos. Después vien
 | **¿Quién soy?** | Tres pistas, cada vez más fáciles | 12 / 8 / 5 s según las pistas usadas |
 | **Adivinanzas** | Adivinanzas tradicionales | 8 s |
 | **Completa el refrán** | Decir cómo termina el refrán (incluye dichos chilenos) | 8 s |
-| **La Rueda Final** | Una palabra por letra. Si fallas o pasas, le toca al otro equipo | Gana quien más acierte |
+| **La Rueda Final** | Una palabra por letra (25 letras: sin K ni W). Si fallas o pasas, le toca al otro equipo | Gana quien más acierte |
 
 El presentador elige en su panel qué pruebas se juegan antes de empezar. Si un equipo presiona y falla, el otro puede intentarlo.
 

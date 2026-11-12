@@ -259,12 +259,15 @@ const SUFIJO = { dificil: 'Dificil', kids: 'Kids' }; // contenido propio de cada
 
 // La rueda se arma letra a letra con todas las definiciones disponibles para esa letra,
 // dando una distinta a cada equipo y evitando las que ya salieron en partidas anteriores.
+// Letras que no se juegan en la Rueda Final (sus definiciones siguen en el contenido, pero no se usan)
+const LETRAS_FUERA = ['K', 'W'];
 function ruedasParaPartida() {
   const suf = SUFIJO[G.dificultad];
   const dificiles = suf ? pool(C['ruedas' + suf] || [], C['ruedasChile' + suf] || []) : [];
   const normales = pool(C.ruedas, C.ruedasChile);
   const A = [], B = [];
   C.ruedas[0].forEach((base, j) => {
+    if (LETRAS_FUERA.includes(base.letra)) return; // el rosco va sin K ni W (25 letras)
     const deLaLetra = (ruedas) => ruedas.map((r) => r[j]).filter(Boolean);
     let cand = deLaLetra(dificiles);
     if (cand.length < 2) cand = [...cand, ...deLaLetra(normales)];
