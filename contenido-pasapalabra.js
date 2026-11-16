@@ -502,3 +502,57 @@ exports.pistasQueDespistanChile.push(
   { pistas: ['Tengo un día nacional en Chile: el 4 de abril', 'Puedo ser de mariscos, de queso o de pino', 'Me hornean o me fríen', 'Tengo repulgue', 'Soy infaltable en las Fiestas Patrias'], respuestas: ['empanada'] },
   { pistas: ['El de 1960 en Valdivia es el más fuerte que se ha registrado', 'Después de mí vienen las réplicas', 'Me producen las placas tectónicas', 'Me miden en grados de magnitud', 'También soy un trago con pipeño y helado de piña'], respuestas: ['terremoto', 'sismo'] },
 );
+
+// La pista musical — el presentador pone la canción (Spotify, YouTube, la radio…) y los equipos dicen su nombre.
+// Aquí solo están el título, el intérprete y tres pistas, de la más difícil a la más fácil (la 1.ª sale junto con la música).
+const C = (titulo, artista, pistas, respuestas) => ({ titulo, artista, pistas, respuestas: respuestas || [titulo.toLowerCase()] });
+exports.pistaMusical = [
+  C('Despacito', 'Luis Fonsi y Daddy Yankee', ['Reguetón de 2017, uno de los videos más vistos de YouTube', 'La cantan un puertorriqueño de baladas y el «rey del reguetón»', 'Su título es un adverbio: lo contrario de «rapidito»']),
+  C('Macarena', 'Los del Río', ['Éxito bailable de mediados de los 90', 'La canta un dúo de Sevilla', 'Tiene una coreografía famosa y es nombre de mujer']),
+  C('La Bamba', 'Ritchie Valens', ['Rock and roll de 1958 basado en un son jarocho mexicano', 'La grabó Ritchie Valens, que murió a los 17 años', '«Para bailar … se necesita una poca de gracia»'], ['la bamba', 'bamba']),
+  C('Bohemian Rhapsody', 'Queen', ['Rock de 1975 que dura casi seis minutos y no tiene estribillo', 'La canta Freddie Mercury con su banda', 'Su título mezcla «bohemio» con «rapsodia»'], ['bohemian rhapsody', 'rapsodia bohemia']),
+  C('Thriller', 'Michael Jackson', ['Pop de 1982 con uno de los videoclips más famosos de la historia', 'La canta el «Rey del Pop»', 'En el video, el cantante se convierte en zombi']),
+  C('Waka Waka (Esto es África)', 'Shakira', ['Canción oficial de un Mundial de fútbol', 'La canta una colombiana', 'El Mundial fue el de Sudáfrica 2010'], ['waka waka', 'esto es africa', 'waka waka esto es africa']),
+  C('Livin\' la vida loca', 'Ricky Martin', ['Pop latino de 1999', 'La canta un puertorriqueño que antes estuvo en Menudo', 'Habla de una vida desenfrenada'], ['livin la vida loca', 'la vida loca', 'living la vida loca']),
+  C('Gasolina', 'Daddy Yankee', ['Reguetón de 2004 que hizo famoso el género en el mundo', 'La canta Daddy Yankee', '«A ella le gusta la …»']),
+  C('Let It Be', 'The Beatles', ['Balada rock de 1970', 'La cantan cuatro músicos de Liverpool', 'Su título dice «déjalo ser»'], ['let it be']),
+  C('Imagine', 'John Lennon', ['Balada de 1971 tocada al piano', 'La canta un exintegrante de The Beatles', 'Pide imaginar un mundo sin guerras'], ['imagine', 'imagina']),
+  C('Bailando', 'Enrique Iglesias', ['Pop latino de 2014', 'La canta el hijo de Julio Iglesias', 'Su título es un verbo en gerundio']),
+  C('Smells Like Teen Spirit', 'Nirvana', ['Grunge de 1991', 'La canta Kurt Cobain con su banda', 'Su título habla del «espíritu adolescente»'], ['smells like teen spirit']),
+  C('Dancing Queen', 'ABBA', ['Música disco de 1976', 'La canta un grupo sueco', 'Habla de una «reina del baile»'], ['dancing queen']),
+  C('Vivir mi vida', 'Marc Anthony', ['Salsa de 2013', 'La canta un neoyorquino de origen puertorriqueño', '«Voy a reír, voy a bailar…»']),
+  C('La camisa negra', 'Juanes', ['Pop rock de 2005', 'La canta un colombiano', 'Habla de una prenda de un color oscuro'], ['la camisa negra', 'camisa negra']),
+  C('De música ligera', 'Soda Stereo', ['Rock argentino de 1990', 'La canta Gustavo Cerati con su banda', 'Su título habla de una música «poco pesada»'], ['de musica ligera', 'musica ligera']),
+  C('Shape of You', 'Ed Sheeran', ['Pop de 2017', 'La canta un pelirrojo británico con su guitarra', 'Habla de la «forma» de alguien'], ['shape of you']),
+  C('Billie Jean', 'Michael Jackson', ['Pop de 1983', 'En su presentación de 1983 se vio por primera vez el «moonwalk»', 'Es un nombre de mujer: Billie…'], ['billie jean']),
+  C('Mamma Mia', 'ABBA', ['Pop de 1975', 'La canta un grupo sueco y también da nombre a un musical', 'Es una expresión italiana de sorpresa'], ['mamma mia', 'mama mia']),
+  C('Rayando el sol', 'Maná', ['Rock pop mexicano de 1990', 'La canta Fher Olvera con su banda', '«… el sol, ¡oh, oh, oh!, desesperación»'], ['rayando el sol']),
+];
+exports.pistaMusicalChile = [
+  C('Gracias a la vida', 'Violeta Parra', ['Canción de 1966', 'La compuso y cantó una folclorista nacida en San Carlos', 'Agradece por haber dado tanto']),
+  C('Volver a los 17', 'Violeta Parra', ['Canción de 1966', 'La compuso la autora de «Gracias a la vida»', 'Habla de volver a ser adolescente'], ['volver a los 17', 'volver a los diecisiete']),
+  C('Te recuerdo Amanda', 'Víctor Jara', ['Canción de 1969', 'La canta un cantautor de la Nueva Canción Chilena', 'Habla de una mujer que corre a la fábrica donde trabaja Manuel'], ['te recuerdo amanda']),
+  C('El baile de los que sobran', 'Los Prisioneros', ['Rock chileno de 1986', 'La canta Jorge González con su banda de San Miguel', '«Únete al …»'], ['el baile de los que sobran', 'baile de los que sobran']),
+  C('Tren al sur', 'Los Prisioneros', ['Rock chileno de 1990', 'La canta Jorge González con su banda', 'Habla de un viaje en ferrocarril hacia Temuco']),
+  C('Todos juntos', 'Los Jaivas', ['Canción de 1972', 'La canta una banda de Viña del Mar que fusionó rock y folclor', 'Pregunta: «¿por qué vivir solos?»']),
+  C('Mira niñita', 'Los Jaivas', ['Canción de los años 70', 'La canta la banda de «Alturas de Machu Picchu»', 'Le habla a una niña'], ['mira ninita', 'mira niñita']),
+  C('La joya del Pacífico', 'Lucho Barrios', ['Vals porteño', 'La popularizó un cantante peruano muy querido en Chile', 'Le canta a Valparaíso'], ['la joya del pacifico', 'joya del pacifico']),
+  C('Si vas para Chile', 'Los Huasos Quincheros', ['Canción de 1942 que se volvió un himno no oficial', 'La compuso Chito Faró', 'Le habla a un viajero que va a nuestro país']),
+  C('Mi banderita chilena', 'Donato Román Heitman', ['Canción patria de los años 40', 'Se canta en los colegios en septiembre', 'Le canta al emblema tricolor'], ['mi banderita chilena', 'banderita chilena']),
+  C('Tu falta de querer', 'Mon Laferte', ['Balada de 2015', 'La canta una viñamarina que triunfó en México', 'Habla de la «falta de querer»']),
+  C('Déjate caer', 'Los Tres', ['Rock chileno de los 90 que hicieron famoso en un MTV Unplugged', 'La canta Álvaro Henríquez con su banda de Concepción', 'Invita a «dejarse caer»'], ['dejate caer']),
+  C('Mentira', 'La Ley', ['Rock de 2000', 'La canta Beto Cuevas con su banda', 'Es lo contrario de la verdad']),
+  C('El derecho de vivir en paz', 'Víctor Jara', ['Canción de 1971', 'La canta el autor de «Te recuerdo Amanda»', 'Está dedicada a Ho Chi Minh y a Vietnam'], ['el derecho de vivir en paz', 'derecho de vivir en paz']),
+];
+exports.pistaMusicalKids = [
+  C('Cumpleaños feliz', 'Canción tradicional', ['Se canta en todo el mundo', 'Se canta una vez al año para alguien', 'Después se soplan las velas'], ['cumpleanos feliz', 'feliz cumpleanos']),
+  C('Estrellita, ¿dónde estás?', 'Canción tradicional', ['Canción de cuna muy antigua', 'Mozart compuso variaciones con su melodía', 'Le pregunta a algo que brilla en el cielo'], ['estrellita donde estas', 'estrellita']),
+  C('Libre soy', 'Frozen (Disney)', ['Canción de una película de Disney de 2013', 'La canta la reina Elsa', 'Su título habla de ser libre'], ['libre soy', 'let it go', 'suelta']),
+  C('Hakuna Matata', 'El rey león (Disney)', ['Canción de una película de Disney de 1994', 'La cantan un suricato y un jabalí', 'Significa «no hay problema»']),
+  C('Bajo el mar', 'La sirenita (Disney)', ['Canción de una película de Disney de 1989', 'La canta un cangrejo llamado Sebastián', 'Habla de la vida en el fondo del océano'], ['bajo el mar']),
+  C('Baby Shark', 'Pinkfong', ['Video infantil coreano de 2016, el más visto de YouTube', 'Tiene un papá, una mamá y un abuelo', 'Es sobre una familia de tiburones'], ['baby shark', 'tiburon bebe']),
+  C('Los pollitos dicen', 'Canción tradicional', ['Canción infantil tradicional en español', 'La gallina busca el maíz y el trigo', '«… pío, pío, pío»'], ['los pollitos dicen', 'los pollitos']),
+  C('La vaca Lola', 'Canción infantil', ['Canción infantil muy famosa en internet', 'Su protagonista tiene cabeza y tiene cola', 'Hace «mu»'], ['la vaca lola', 'vaca lola']),
+  C('Hay un amigo en mí', 'Toy Story (Disney · Pixar)', ['Canción de una película de 1995', 'Es la canción de un vaquero y un astronauta de juguete', 'Habla de la amistad'], ['hay un amigo en mi', 'yo soy tu amigo fiel', 'you ve got a friend in me']),
+  C('Un elefante se balanceaba', 'Canción tradicional', ['Canción infantil para contar', 'Cada vez se suma uno más', 'Se balanceaban sobre la tela de una araña'], ['un elefante se balanceaba', 'los elefantes']),
+];

@@ -134,6 +134,13 @@
     background:radial-gradient(closest-side,var(--bg2) 76%,transparent 78% 100%),conic-gradient(var(--team) calc(var(--p) * 1%),var(--pend) 0)}
   .circulo.bajo{animation:latido 1s infinite;color:var(--ko)}
   .circulo.valor{--team:var(--o1);width:15vmin;height:15vmin;font-size:7.5vmin;margin:0 auto 1.5vmin}
+  /* La pista musical: notas que se mueven mientras suena la canción */
+  .notas{text-align:center;font-size:14vmin;margin:1vmin 0;opacity:.35;transition:opacity .4s}
+  .notas.on{opacity:1}
+  .notas span{display:inline-block}
+  .notas.on span{animation:bailar .6s ease-in-out infinite alternate}
+  @keyframes bailar{from{transform:translateY(-1.5vmin) rotate(-8deg)}to{transform:translateY(1.5vmin) rotate(8deg)}}
+  @media (prefers-reduced-motion: reduce){.notas.on span{animation:none}}
   /* Pistas que despistan: la pista va en una barra con el marcador de cada equipo a los lados */
   .barraPista{display:grid;grid-template-columns:15vmin 1fr 15vmin;background:var(--panel);border-radius:2vmin;overflow:hidden;margin:2.5vmin auto 1vmin;max-width:150vmin;box-shadow:0 1vmin 3vmin rgba(0,0,0,.35)}
   .barraPista .mk{background:var(--team);color:#111;font-weight:900;font-size:6vmin;display:grid;place-items:center}
@@ -327,7 +334,7 @@ let bucleActual = null, tipoBucle = null, esperaBucle = null;
 function controlarBucle() {
   if (!sonidoActivo || !S) return;
   const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'cruzadas'];
-  // la sala de espera va sin música de fondo
+  // la sala de espera va sin música de fondo, y en La pista musical suena la canción del presentador
   const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) ? 'pregunta' : null;
   if (quiero === tipoBucle) return;
   if (bucleActual) { const v = bucleActual; fundido(v, 0, 800, () => v.pause()); }
@@ -475,7 +482,7 @@ function render() {
     if (conTabla) extra = `<table class="acu"><tr><th class="A">${esc(S.teams.A.name)}</th><th class="nom">Tiempo acumulado</th><th class="B">${esc(S.teams.B.name)}</th></tr>
       ${acu.map((x) => `<tr><td class="A">${x.A}</td><td class="nom">${esc(x.titulo)}</td><td class="B">${x.B}</td></tr>`).join('')}
       <tr class="tot"><td class="A">${S.tiempoBase + S.teams.A.bonus} s</td><td class="nom">Para la Rueda: ${S.tiempoBase} s + lo ganado</td><td class="B">${S.tiempoBase + S.teams.B.bonus} s</td></tr></table>`;
-    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', letraaletra: '🔠', pistas: '🔍', cruzadas: '🔗', rueda: '🎡' };
+    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', letraaletra: '🔠', pistas: '🔍', musical: '🎵', cruzadas: '🔗', rueda: '🎡' };
     h = `<div style="text-align:center">${conTabla ? '' : `<div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div>`}<div class="big intro-titulo"${conTabla ? ' style="font-size:5vmin"' : ''}>${esc(S.intro.titulo)}</div>${conTabla ? '' : `<div class="sub intro-texto">${esc(S.intro.texto)}</div>`}${extra}
       <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
   } else if (S.quiz && S.modo === 'presentador' && S.quiz.stage === 'ask') {
@@ -621,7 +628,9 @@ function render() {
     else if (rev) aviso = 'Nadie lo acertó';
     else if (p.buzz) aviso = `<span class="${p.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[p.buzz.team].name) + ' responde!' : esc(S.teams[p.buzz.team].name) + ' responde… ' + seg(p.buzz.rem)}</span>`;
     else if (p.intento) aviso = `<span style="color:var(--ko)">«${esc(p.intento.texto)}» no es correcto</span>`;
-    else if (p.espera > 0) aviso = `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(p.espera)}</span>`;
+    else if (p.espera > 0) aviso = `<span style="color:var(--muted)">🤔 Escuchen… el botón se activa en ${seg(p.espera)}</span>`;
+    if (p.kind === 'musical' && p.stage === 'preparar') aviso = '<span style="color:var(--muted)">🎧 El presentador está preparando la canción…</span>';
+    if (p.kind === 'musical' && p.buzz && S.modo === 'presentador') aviso += '<div class="sub" style="margin:1vmin auto 0">⏸ ¡Pausa la música!</div>';
     let cuerpo = '';
     if (p.kind === 'anagrama') {
       const letras = rev ? [...p.respuesta.replace(/\s/g, '')] : [...p.revuelta];
@@ -634,6 +643,14 @@ function render() {
         ${ps.length > 1 ? `<div class="pprev">${ps.slice(0, -1).map((x, k) => `${k + 1}. ${esc(x)}`).join('<br>')}</div>` : ''}
         ${rev ? `<div class="big" style="color:var(--ok);margin-top:1.5vmin">${esc(p.respuesta.toUpperCase())}</div>` : ''}
         <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${actual ? `${ps.length}. ${esc(actual)}` : `🎙️ Escuchen la pista ${p.numPistas}`}</div><div class="mk B">${ep.B}</div></div>`;
+    } else if (p.kind === 'musical') {
+      // mientras suena la canción: notas animadas; las pistas van en la barra con lo que lleva cada equipo
+      const ps = p.pistas || [], actual = ps[ps.length - 1], ep = S.enPrueba || { A: 0, B: 0 }, suena = p.stage === 'play' && !p.buzz;
+      cuerpo = `${rev ? '' : `<div class="circulo valor" style="--p:${(p.valor || 0) * 20}">${p.valor || ''}</div>`}
+        <div class="notas ${suena ? 'on' : ''}">🎵<span>🎶</span>🎵</div>
+        ${ps.length > 1 && !rev ? `<div class="pprev">${ps.slice(0, -1).map((x, k) => `${k + 1}. ${esc(x)}`).join('<br>')}</div>` : ''}
+        ${rev ? `<div class="big" style="color:var(--ok);margin-top:1.5vmin">${esc(p.respuesta)}</div>` : ''}
+        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${p.stage === 'preparar' ? '🎧 Atentos a la música…' : rev ? ps.map((x, k) => `${k + 1}. ${esc(x)}`).join(' · ') : actual ? `${ps.length}. ${esc(actual)}` : '🎵 Escuchen…'}</div><div class="mk B">${ep.B}</div></div>`;
     } else if (p.kind === 'quiensoy') {
       const dots = Array.from({ length: p.maxPistas || 3 }, (_, k) => k + 1).map((k) => `<span style="display:inline-block;width:3vmin;height:3vmin;border-radius:50%;margin:0 .6vmin;background:${k <= p.numPistas ? 'var(--B)' : 'var(--pend)'}"></span>`).join('');
       cuerpo = `<div style="text-align:center;margin:2vmin 0">${dots}</div>` + (p.pistas

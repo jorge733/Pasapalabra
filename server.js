@@ -33,6 +33,8 @@ const CONFIG = {
   segElegir: 12,           //   segundos para elegir entre los dos temas
   segMemorizar: 15,        //   La Memoria: segundos para memorizar el tablero antes de taparlo
   pistasCadaMs: 8000,      // Pistas que despistan: cada cuánto sale una pista nueva (son 5; el acierto vale 5, 4, 3, 2 o 1 s)
+  canciones: 4,            // La pista musical: nº de canciones (las pone el presentador)
+  musicalCadaMs: 12000,    //   cada cuánto sale una pista escrita mientras suena la canción (son 3; el acierto vale 5, 3 o 2 s)
   queFueAntes: 5,          // ¿Qué fue antes?: nº de preguntas
   cifras: 4,               // Adivina la cifra: nº de preguntas
   segCifra: 25,            //   segundos para escribir el número
@@ -57,6 +59,7 @@ const CONFIG_KIDS = {
   segMemorizar: 20,
   segTurno: { letraaletra: 120, cruzadas: 100, memoria: 100, deletrea: 150, unade4: 60 },
   pistasCadaMs: 10000,
+  musicalCadaMs: 15000,
   segTuti: 120,
   segBasta: 15,
   quienSoyCadaMs: 13000,
@@ -226,6 +229,12 @@ const PRUEBAS = {
     auto: 'Hay un personaje o cosa secreta y van saliendo hasta cinco pistas, de la más difícil a la más fácil. Presionen «¡Lo sé!» y escriban qué es. Con la 1.ª pista se ganan 5 s, y 1 s menos por cada pista más.',
     presentador: 'El presentador lee hasta cinco pistas sobre un personaje o cosa secreta, de la más difícil a la más fácil. Presionen «¡Lo sé!» y digan qué es. Con la 1.ª pista se ganan 5 s, y 1 s menos por cada pista más.',
   },
+  musical: {
+    titulo: 'La pista musical',
+    pasapalabra: true,
+    auto: 'El presentador pone una canción. Presionen «¡Lo sé!» y escriban su nombre. Si nadie la adivina, van saliendo pistas. Solo con la música y la 1.ª pista se ganan 5 s; con la 2.ª, 3 s; con la 3.ª, 2 s.',
+    presentador: 'El presentador pone una canción. Presionen «¡Lo sé!» y digan su nombre en voz alta. Si nadie la adivina, van saliendo pistas. Solo con la música y la 1.ª pista se ganan 5 s; con la 2.ª, 3 s; con la 3.ª, 2 s.',
+  },
   cruzadas: {
     titulo: 'Palabras cruzadas',
     pasapalabra: true,
@@ -275,14 +284,14 @@ const PRUEBAS = {
   },
 };
 const CLASICAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran'];
-// Pruebas del Pasapalabra chileno: primero las 7 de la temporada 2026 que se pueden jugar sin música, luego otras de temporadas anteriores
-const CHILENAS = ['letraaletra', 'pistas', 'memoria', 'cruzadas', 'deletrea', 'tutifruti', 'unade4', 'vertical', 'quitaletras'];
+// Pruebas del Pasapalabra chileno: primero las de la temporada 2026, luego otras de temporadas anteriores
+const CHILENAS = ['letraaletra', 'pistas', 'musical', 'memoria', 'cruzadas', 'deletrea', 'tutifruti', 'unade4', 'vertical', 'quitaletras'];
 const ORDEN = [...CLASICAS, ...CHILENAS]; // orden en que se juegan; la rueda va siempre al final
-const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'quitaletras', 'vertical', 'pistas']; // pruebas de «presiona y responde»
+const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'quitaletras', 'vertical', 'pistas', 'musical']; // pruebas de «presiona y responde»
 const RAPIDA = ['quiz']; // pruebas con cuatro alternativas en que responden los dos equipos
-const PREMIO = { quiensoy: [12, 8, 5], pistas: [5, 4, 3, 2, 1], vertical: 5 }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
+const PREMIO = { quiensoy: [12, 8, 5], pistas: [5, 4, 3, 2, 1], musical: [5, 3, 2], vertical: 5 }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
 const PULSADOR_CORTO = ['vertical'];
-const CON_PISTAS = ['quiensoy', 'pistas']; // pruebas de pulsador en que van saliendo pistas
+const CON_PISTAS = ['quiensoy', 'pistas', 'musical']; // pruebas de pulsador en que van saliendo pistas
 const TURNOS = ['letraaletra', 'cruzadas', 'memoria', 'deletrea', 'unade4']; // pruebas en que cada equipo juega solo contra el reloj
 const ELIGE_TEMA = ['cruzadas', 'memoria']; // pruebas por turnos en que el equipo elige entre dos temas
 const ELECCION = ['vf', 'antes']; // pruebas en que ambos equipos eligen una opción en el celular
@@ -400,6 +409,12 @@ function iniciarPrueba(k) {
   if (k === 'quiz') { G.r = { kind: k, list: tomar('preguntasRapidas', 'preguntasChile', cfg().preguntasRapidas), i: -1 }; siguientePregunta(); }
   else if (TURNOS.includes(k)) iniciarTurnos(k);
   else if (k === 'pistas') { G.r = { kind: k, list: tomar('pistasQueDespistan', 'pistasQueDespistanChile', n), i: -1 }; siguientePulsador(); }
+  else if (k === 'musical') {
+    // se toman unas canciones de reserva por si el presentador no encuentra alguna y la cambia
+    const todas = tomar('pistaMusical', 'pistaMusicalChile', cfg().canciones + 3);
+    G.r = { kind: k, list: todas.slice(0, cfg().canciones), reserva: todas.slice(cfg().canciones), i: -1 };
+    siguientePulsador();
+  }
   else if (k === 'tutifruti') { G.r = { kind: k, list: rondasTuti(cfg().tutiFruti), i: -1 }; siguienteTuti(); }
   else if (k === 'quitaletras') { G.r = { kind: k, list: tomar('quitaletras', 'quitaletrasChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'vertical') {
@@ -581,6 +596,7 @@ function textoRespuesta(r) {
   if (r.kind === 'vertical') return r.item.respuestas[0].toUpperCase();
   if (r.kind === 'refran') return r.item.inicio.replace(/…$/, '') + ' ' + r.item.finales[0];
   if (r.kind === 'siglas') return `${r.item.sigla}: ${r.item.respuestas[0]}`;
+  if (r.kind === 'musical') return `${r.item.titulo} (${r.item.artista})`;
   return r.item.respuestas[0];
 }
 function siguientePulsador() {
@@ -594,6 +610,20 @@ function siguientePulsador() {
   if (r.kind === 'anagrama') r.revuelta = revolver(r.item.palabra);
   if (r.kind === 'quitaletras') r.revuelta = revolver(r.item.palabra + r.item.sobra);
   r.espera = cfg().segPensar * 1000;
+  // La pista musical: el reloj no corre hasta que el presentador pone la canción
+  if (r.kind === 'musical') { r.stage = 'preparar'; r.espera = 0; }
+}
+// La pista musical: el presentador avisa que ya suena la canción (o la cambia por otra si no la encuentra)
+function empezarCancion() {
+  const r = G.r;
+  r.stage = 'play'; r.rem = cadaPista(r); r.espera = cfg().segPensar * 1000;
+  emitir('listo');
+}
+function cambiarCancion() {
+  const r = G.r;
+  if (!r.reserva.length) return;
+  r.item = r.list[r.i] = r.reserva.shift();
+  emitir();
 }
 // Tiempo de cada ronda de pulsador (en ¿Quién soy?, hasta la siguiente pista)
 function tiempoP(r) {
@@ -601,7 +631,7 @@ function tiempoP(r) {
   return (PULSADOR_CORTO.includes(r.kind) ? cfg().segPulsadorCorto : cfg().segPulsador) * 1000;
 }
 // ¿Quién soy? y Pistas que despistan: cada cuánto sale una pista y cuántas hay
-const cadaPista = (r) => (r.kind === 'pistas' ? cfg().pistasCadaMs : cfg().quienSoyCadaMs);
+const cadaPista = (r) => (r.kind === 'pistas' ? cfg().pistasCadaMs : r.kind === 'musical' ? cfg().musicalCadaMs : cfg().quienSoyCadaMs);
 const maxPistas = (r) => r.item.pistas.length;
 // La palabra vertical: anota quién resolvió la fila (o 'nadie')
 function anotarFila(r, quien) { if (r.kind === 'vertical') r.tableros[r.item.tablero].filas[r.item.fila] = quien; }
@@ -952,7 +982,17 @@ function terminar() {
 // ---- Decisión del presentador: 'ok', 'ko', 'paso' (rueda) o 'nadie' (nadie la sabe) ----
 function juzgar(res) {
   const r = G.r;
-  if (!r || !conPresentador() || G.paused) return;
+  if (!r || G.paused) return;
+  // La pista musical: el presentador pone la canción también en modo automático
+  if (G.phase === 'musical') {
+    if (r.stage === 'preparar') {
+      if (res === 'empezar') return empezarCancion();
+      if (res === 'cambiar') return cambiarCancion();
+      if (res === 'nadie') return rendirP();
+      return;
+    }
+    if (!conPresentador() && !['nadie', 'pista'].includes(res)) return; // en automático corrige el juego
+  } else if (!conPresentador()) return;
   if (RAPIDA.includes(G.phase) && r.stage === 'ask') {
     if (res === 'nadie') { r.buzz = null; r.stage = 'reveal'; r.rem = 5000; return emitir('reveal'); }
     if (!r.buzz) return;
@@ -1057,7 +1097,7 @@ setInterval(() => {
           else rendirP();
         }
       }
-    } else { r.rem -= dt; if (r.rem <= 0) { siguientePulsador(); emitir(); } }
+    } else if (r.stage === 'reveal') { r.rem -= dt; if (r.rem <= 0) { siguientePulsador(); emitir(); } }
   } else if (G.phase === 'rueda') {
     if (r.stage === 'play') {
       const T = r.eq[r.turno];
@@ -1118,6 +1158,7 @@ function publico() {
       respuesta: rev ? textoRespuesta(r) : null };
     if (r.kind === 'anagrama') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null });
     if (CON_PISTAS.includes(r.kind)) Object.assign(s.p, { maxPistas: maxPistas(r), pistas: ver ? it.pistas.slice(0, rev ? maxPistas(r) : r.pistas) : null });
+    if (r.kind === 'musical') Object.assign(s.p, { valor: PREMIO.musical[r.pistas - 1], pistas: r.stage === 'preparar' ? [] : s.p.pistas });
     if (r.kind === 'refran') s.p.inicio = ver ? it.inicio : null;
     if (r.kind === 'adivinanza') s.p.texto = it.texto;
     if (r.kind === 'siglas') s.p.sigla = it.sigla;
@@ -1194,7 +1235,8 @@ function secreto() {
     // en La palabra vertical se cuenta dentro del tablero en curso
     const tablero = r.kind === 'vertical' ? r.list.filter((f) => f.tablero === r.item.tablero) : null;
     return { tipo: 'p', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: tablero ? tablero.indexOf(r.item) + 1 : r.i + 1, total: tablero ? tablero.length : r.list.length,
-      stage: r.stage, buzz: r.buzz, bloqueado: r.bloqueado, item: r.item, revuelta: r.revuelta, numPistas: r.pistas, respuesta: textoRespuesta(r),
+      stage: r.stage, buzz: r.buzz, bloqueado: r.bloqueado, item: r.item, revuelta: r.revuelta, numPistas: r.pistas, respuesta: textoRespuesta(r), modo: G.modo,
+      reserva: r.reserva ? r.reserva.length : 0,
       concepto: r.kind === 'vertical' ? r.tableros[r.item.tablero].concepto : null,
       tablero: tablero ? { num: r.item.tablero + 1, de: r.tableros.length } : null };
   }
