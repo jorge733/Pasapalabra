@@ -87,6 +87,15 @@
   .vfila .tile.ini{background:var(--o1);color:#fff;border-color:var(--o1)}
   .vfila.cur{background:rgba(255,255,255,.12);box-shadow:0 0 0 .4vmin #fff}
   .vfila.A .tile.on,.vfila.B .tile.on{background:var(--team);border-color:var(--team);color:#fff}
+  /* Tuti Fruti (bachillerato) */
+  .tcats{margin:0;padding-left:5vmin;font-size:4.6vmin;font-weight:900;line-height:1.45;text-align:left}
+  .ttab{border-collapse:separate;border-spacing:.8vmin;font-size:3vmin}
+  .ttab th{text-align:left;color:var(--muted);font-weight:900;padding:0 1vmin}
+  .ttab td{background:var(--panel);border-radius:1.2vmin;padding:1vmin 1.8vmin;font-weight:900;min-width:30vmin}
+  .ttab td b{float:right;margin-left:1.5vmin}.ttab td em{float:right;font-style:normal;color:var(--ok)}
+  .ttab td.ok,.ttab td.si{box-shadow:inset .6vmin 0 0 var(--ok)}.ttab td.duda{box-shadow:inset .6vmin 0 0 var(--B)}
+  .ttab td.mal,.ttab td.no{box-shadow:inset .6vmin 0 0 var(--ko);color:var(--muted);text-decoration:line-through}.ttab td.vacia{color:var(--muted)}
+  .ttab .ttot td{background:none;text-align:center;font-size:4vmin;color:var(--ok)}
   /* La Memoria: tablero de 3 × 3 casillas */
   .mgrid{display:grid;grid-template-columns:repeat(3,22vmin);gap:1.6vmin;justify-content:center;margin:2vmin auto}
   .mcel{height:15vmin;border-radius:2vmin;background:var(--panel);border:.5vmin solid var(--pend);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900}
@@ -457,6 +466,28 @@ function render() {
     h = `<div class="q"><div class="pista">${esc(v.titulo)} · ${v.n} de ${v.total}</div>${cuerpo}
       ${rev ? '' : `<div class="bar"><i style="width:${(100 * v.rem / v.total_ms).toFixed(1)}%"></i></div>`}
       <div class="estado">${chips}</div></div>`;
+  } else if (S.tuti) {
+    const u = S.tuti, letra = `<div class="tile on" style="width:20vmin;height:22vmin;font-size:15vmin;border-radius:3vmin;flex:none">${esc(u.letra)}</div>`;
+    if (u.stage === 'ask') {
+      const aviso = u.basta ? `<span class="${u.basta}" style="color:var(--team)">✋ ¡Basta! gritó ${esc(S.teams[u.basta].name)}</span>` : 'Escriban en el celular una palabra por categoría';
+      h = `<div class="q"><div class="pista">Tuti Fruti · letra ${u.n} de ${u.total}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:5vmin;margin:2.5vmin 0">${letra}
+          <ol class="tcats">${u.categorias.map((c) => `<li>${esc(c)}</li>`).join('')}</ol></div>
+        <div class="aviso">${aviso}</div>
+        <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)} · ${u.llenas[t]}/${u.categorias.length}</span>`).join('')}</div></div>`;
+    } else {
+      const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '—' };
+      const celda = (t, k) => {
+        const m = u.marcas[t][k], pts = u.puntos ? u.puntos[k][t] : null;
+        return `<td class="tm ${m}"><span>${esc(u.resp[t][k]) || '—'}</span> <b>${ICON[m]}</b>${pts ? ` <em>+${pts}</em>` : ''}</td>`;
+      };
+      h = `<div class="q" style="width:100%"><div class="pista">Tuti Fruti · letra ${u.n} de ${u.total} · ${u.stage === 'reveal' ? 'Resultado' : 'Revisando respuestas…'}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4vmin;margin-top:2vmin">${letra}
+        <table class="ttab"><tr><th></th>${['A', 'B'].map((t) => `<th class="${t}" style="color:var(--team)">${esc(S.teams[t].name)}</th>`).join('')}</tr>
+          ${u.categorias.map((c, k) => `<tr><th>${esc(c)}</th>${celda('A', k)}${celda('B', k)}</tr>`).join('')}
+          ${u.gana ? `<tr class="ttot"><th>Total</th>${['A', 'B'].map((t) => `<td>+${u.gana[t]} s</td>`).join('')}</tr>` : ''}</table></div>
+        <div class="sub" style="font-size:2.4vmin">✔ válida · ? no está en la lista (vale salvo que el presentador la rechace) · ✘ no vale · iguales: 1 s · distintas: 2 s · solo un equipo: 3 s</div></div>`;
+    }
   } else if (S.phase === 'cifra') {
     const c = S.cifra, rev = c.stage === 'reveal';
     const num = (x) => (c.unidad ? Number(x).toLocaleString('es-CL') : String(x)); // años sin punto de miles
@@ -499,11 +530,6 @@ function render() {
         <div class="tiles">${letras.map((ch, k) => ch === ' ' ? '<div class="tile sp"></div>'
           : `<div class="tile ${ch ? 'on' : ''}" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>
         ${rev ? '' : `<div class="sub" style="margin:0 auto">${p.molde.filter((ch) => ch !== ' ').length} letras · ¡a deletrear!</div>`}`;
-    } else if (p.kind === 'tutifruti') {
-      cuerpo = `<div style="display:flex;align-items:center;justify-content:center;gap:5vmin;margin:3vmin 0">
-          <div class="tile on" style="width:22vmin;height:24vmin;font-size:17vmin;border-radius:3vmin">${esc(p.letra)}</div>
-          <div style="text-align:left"><div class="pista" style="text-align:left">Categoría</div><div class="big" style="text-align:left;font-size:8vmin">${esc(p.categoria)}</div></div></div>`
-        + (rev ? `<div class="sub" style="margin:0 auto">Algunas válidas: <b style="color:var(--ok)">${esc(p.respuesta)}</b></div>` : '');
     } else if (p.kind === 'quitaletras') {
       const letras = rev ? [...p.palabra] : [...p.revuelta];
       cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b> · sobra una letra</div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista · sobra una letra</div>')}
@@ -567,7 +593,7 @@ function render() {
         <h3>${esc(S.teams[x.team].name)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">${x.fallos} ${x.fallos === 1 ? 'fallo' : 'fallos'} · ${seg(x.tiempo)} s restantes</div></div>`).join('')}</div></div>`;
   }
   // cada pantalla lleva una clave: si cambia (otra pregunta, otra prueba, otro turno) se anima su entrada
-  const dato = S.quiz || S.vf || S.cifra || S.oculta || S.p;
+  const dato = S.quiz || S.vf || S.cifra || S.oculta || S.p || S.tuti;
   const clave = S.phase + '-' + (S.intro ? S.intro.prueba : '') + (dato ? dato.n + (dato.kind || '') : '') + (S.p && (S.p.tablero || S.p.memoria) ? 't' + (S.p.tablero || S.p.memoria).num + (S.p.memoria && S.p.memoria.memorizar ? 'm' : '') : '') + (S.rueda ? S.rueda.turno : '');
   h = `<div class="vista" id="v-${clave.replace(/[^\w-]/g, '')}">${h}</div>`;
   if (S.paused) h += '<div class="pausa">⏸ Pausa</div>';

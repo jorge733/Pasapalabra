@@ -53,13 +53,13 @@ Dos equipos compiten en varias pruebas cortas para ganar segundos. Después vien
 | **Completa el refrán** | Decir cómo termina el refrán (incluye dichos chilenos) | 8 s |
 | 🇨🇱 **Una de cuatro** | Un tema, una pista y cuatro alternativas | 8 s (con presentador) / 5 + 3 s al más rápido (automático) |
 | 🇨🇱 **Deletrea** | Una definición: solo se ve la primera letra y hay que deletrear la palabra sin faltas | 8 s |
-| 🇨🇱 **Tuti Fruti** | Una letra y una categoría (país, fruta, comuna de Chile…): decir algo que empiece por esa letra | 5 s |
+| 🇨🇱 **Tuti Fruti** | El bachillerato: sale una letra y cinco categorías (nombre, animal, país, comida chilena…). Los equipos las llenan en el celular y el primero que termina grita «¡Basta!» | Por categoría: 3 s si solo un equipo tiene respuesta válida, 2 s cada uno si son distintas, 1 s si son iguales |
 | 🇨🇱 **El Quitaletras** | Letras revueltas con una de más: quitarla y formar la palabra | 8 s |
 | 🇨🇱 **La palabra vertical** | Un concepto y varias filas relacionadas; sus iniciales forman la palabra vertical | 5 s por fila |
 | 🇨🇱 **La Memoria** | Se ve un tablero de 9 dibujos unos segundos y luego se tapa: hay que recordar qué había en la casilla marcada | 5 s por casilla |
 | **La Rueda Final** | Una palabra por letra (25 letras: sin K ni W). Si fallas o pasas, le toca al otro equipo | Gana quien más acierte |
 
-Las marcadas con 🇨🇱 son pruebas del **Pasapalabra chileno** (Chilevisión). Vienen desactivadas para que la partida no se alargue: actívalas una por una en el panel del presentador o con el botón **«🇨🇱 Solo las del Pasapalabra chileno»** (también hay «Solo las clásicas» y «Todas»). Su contenido está en [`contenido-pasapalabra.js`](contenido-pasapalabra.js).
+Las marcadas con 🇨🇱 son pruebas del **Pasapalabra chileno** (Chilevisión). Vienen desactivadas para que la partida no se alargue: actívalas una por una en el panel del presentador o con el botón **«🇨🇱 Solo las del Pasapalabra chileno»** (también hay «Solo las clásicas» y «Todas»). Su contenido está en [`contenido-pasapalabra.js`](contenido-pasapalabra.js). En el Tuti Fruti, una respuesta que empieza por la letra pero no está en las listas vale igual (sale con «?»), salvo que el presentador la rechace: durante la revisión, en su panel, puede aceptar o rechazar cada respuesta con un toque, también en modo automático.
 
 El presentador elige en su panel qué pruebas se juegan antes de empezar. Si un equipo presiona y falla, el otro puede intentarlo.
 

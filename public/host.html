@@ -163,6 +163,7 @@ function render() {
   if (s.phase === 'oculta') e += ` (${s.oculta.n}/${s.oculta.total})`;
   if (s.vf) e += ` (${s.vf.n}/${s.vf.total})`;
   if (s.cifra) e += ` (${s.cifra.n}/${s.cifra.total})`;
+  if (s.tuti) e += ` (letra ${s.tuti.n}/${s.tuti.total})`;
   if (s.p) e += s.p.tablero ? ` (tablero ${s.p.tablero.num}/${s.p.tablero.de}, fila ${s.p.n}/${s.p.total})` : ` (${s.p.n}/${s.p.total})`;
   if (s.phase === 'intro') e = s.intro.titulo;
   if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
@@ -199,7 +200,8 @@ const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar',
 
 function renderLectura() {
   const card = $('#lectura');
-  const visible = S && X && S.modo === 'presentador' && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'rueda'].includes(S.phase);
+  // el Tuti Fruti se revisa desde aquí también en modo automático
+  const visible = S && X && (S.modo === 'presentador' || S.phase === 'tutifruti') && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'rueda'].includes(S.phase);
   card.classList.toggle('hidden', !visible);
   if (!visible) return;
   let html = '';
@@ -225,6 +227,27 @@ function renderLectura() {
       <div class="resp">Respuesta: ${esc(correcta)}</div>${X.detalle ? `<div class="meta">${esc(X.detalle)}</div>` : ''}
       <div class="estadoL">${X.stage === 'reveal' ? 'Mostrando la respuesta en la tele…' : `Los equipos responden en el celular · ${['A', 'B'].map((t) => team(t) + (X.respondido[t] ? ' ✓' : ' …')).join(' ')}`}</div>
       <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
+  } else if (X.tipo === 'tuti') {
+    const head = `<div class="meta">Tuti Fruti · letra ${X.n} de ${X.total}</div><div><span class="letraG" style="color:var(--B)">${esc(X.letra)}</span></div>`;
+    if (X.stage === 'ask') {
+      const ll = S.tuti ? S.tuti.llenas : { A: 0, B: 0 };
+      html = `${head}<div class="leer" style="font-size:22px">Di la letra en voz alta. Categorías:</div>
+        ${X.cats.map((c) => `<div><b>${esc(c.categoria)}</b> <span class="meta">(p. ej.: ${c.ejemplos.map(esc).join(', ')})</span></div>`).join('')}
+        <div class="estadoL">${X.basta ? `✋ ${team(X.basta)} gritó «¡Basta!»` : 'Los equipos escriben en el celular'} · ${['A', 'B'].map((t) => `${team(t)} ${ll[t]}/${X.cats.length}`).join(' ')}</div>
+        <div class="juicio">${btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
+    } else {
+      const ICON = { ok: '✔', si: '✔ (aceptada)', duda: '? (no está en la lista)', mal: '✘ (otra letra)', no: '✘ (rechazada)', vacia: '—' };
+      const celda = (t, k) => {
+        const m = X.marcas[t][k], vale = ['ok', 'si', 'duda'].includes(m);
+        const txt = `${esc(X.resp[t][k]) || '—'} <span class="meta">${ICON[m]}${X.puntos ? ' · +' + X.puntos[k][t] : ''}</span>`;
+        return X.stage === 'revision' && m !== 'vacia'
+          ? `<button style="text-align:left;padding:10px;background:${vale ? '#14532d' : '#7f1d1d'}" onclick="h('tutiMarca',{team:'${t}',k:${k}})">${txt}</button>`
+          : `<div>${txt}</div>`;
+      };
+      html = `${head}<div class="ops"><div>${team('A')}</div><div>${team('B')}</div></div>${X.cats.map((c, k) => `<div class="meta" style="margin-top:6px">${esc(c.categoria)}</div><div class="ops">${celda('A', k)}${celda('B', k)}</div>`).join('')}
+        <div class="estadoL">${X.stage === 'revision' ? 'Toca una respuesta para aceptarla o rechazarla. Iguales: 1 s · distintas: 2 s · solo un equipo: 3 s.' : `Puntos: ${['A', 'B'].map((t) => `${team(t)} +${X.gana[t]} s`).join(' ')}`}</div>
+        <div class="juicio">${X.stage === 'revision' ? btn('bOk', 'nadie', 'Confirmar puntos →', 'N') : ''}</div>`;
+    }
   } else if (X.tipo === 'cifra') {
     html = `<div class="meta">Adivina la cifra · ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
       <div class="resp">Respuesta: ${X.unidad ? Number(X.respuesta).toLocaleString('es-CL') : X.respuesta} ${esc(X.unidad)}</div>
@@ -238,7 +261,6 @@ function renderLectura() {
     else {
       estado = { memoria: 'Señala la casilla marcada en la tele: «¿Qué había en la casilla…?»', anagrama: 'Di la pista en voz alta. Las letras revueltas están en la tele.', quiensoy: 'Lee la pista marcada. Saldrá la siguiente automáticamente (o presiona «Otra pista»).', refran: 'Lee el comienzo del refrán.', adivinanza: 'Lee la adivinanza en voz alta.', siglas: 'Lee las siglas en voz alta, letra por letra.',
         deletrea: 'Lee la definición. Quien presione debe deletrear la palabra: una sola letra mal y es incorrecta.',
-        tutifruti: 'Di la letra y la categoría. Vale cualquier respuesta correcta que empiece por esa letra (no solo las de la lista).',
         quitaletras: 'Di la pista. Las letras revueltas (con una de más) están en la tele.',
         vertical: 'Di el concepto y lee la pista de la fila marcada.' }[X.kind];
       botones = (X.kind === 'quiensoy' && X.numPistas < 3 ? btn('bPaso', 'pista', 'Otra pista', 'P') : '') + btn('bNadie', 'nadie', 'Nadie lo sabe →', 'N');
@@ -249,7 +271,6 @@ function renderLectura() {
     else if (X.kind === 'adivinanza') leer = `<div class="leer" style="font-style:italic">«${esc(X.item.texto)}»</div>`;
     else if (X.kind === 'siglas') leer = `<div class="leer" style="font-size:44px;letter-spacing:.2em">${esc(X.item.sigla)}</div>`;
     else if (X.kind === 'deletrea') leer = `<div class="leer">${esc(X.item.definicion)}</div><div class="meta">Deletreo: ${esc([...X.item.palabra.toUpperCase()].join(' - '))}</div>`;
-    else if (X.kind === 'tutifruti') leer = `<div class="leer">${esc(X.item.categoria)} con <span class="letraG" style="font-size:44px;color:var(--B)">${esc(X.item.letra)}</span></div>`;
     else if (X.kind === 'quitaletras') leer = `<div class="leer">Pista: ${esc(X.item.pista)}</div><div class="meta">En la tele: ${esc(X.revuelta)}</div>`;
     else if (X.kind === 'memoria') leer = `<div class="meta">Tema: ${esc(X.memoria.tema)}</div>
       ${X.stage === 'memorizar' ? '' : `<div class="leer">¿Qué había en la casilla ${X.memoria.pos + 1}?</div>`}

@@ -1,5 +1,5 @@
 // Contenido de las pruebas del Pasapalabra chileno (Chilevisión):
-// Una de cuatro, Deletrea, Tuti Fruti, El Quitaletras y La palabra vertical.
+// Una de cuatro, Deletrea, Tuti Fruti (el bachillerato), El Quitaletras, La palabra vertical y La Memoria.
 // Se suma al resto del contenido desde contenido.js. Cada prueba tiene una versión general y otra chilena
 // («…Chile»); «…Dificil» es contenido propio del nivel difícil (si falta, se usa el normal).
 
@@ -101,31 +101,77 @@ exports.deletreaDificil = [
   { definicion: 'Arbusto del desierto o planta con espinas y tallo carnoso', palabra: 'cactus' },
 ];
 
-// Tuti Fruti — una letra y una categoría; vale cualquier respuesta de la lista (el presentador puede aceptar otras)
+// Tuti Fruti (el bachillerato) — en cada ronda se sortea una letra y se eligen categorías que tengan palabras con ella.
+// Las listas sirven para corregir solas: una respuesta que empieza por la letra pero no está en la lista vale igual
+// (sale con «?» en la tele) salvo que el presentador la rechace desde su panel.
+const P = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
 exports.tutiFruti = [
-  { letra: 'M', categoria: 'Fruta', respuestas: ['manzana', 'mango', 'mandarina', 'melón', 'mora', 'membrillo', 'maracuyá', 'maqui', 'murta', 'melocotón', 'mangostán', 'mamey', 'marañón'] },
-  { letra: 'P', categoria: 'País', respuestas: ['Perú', 'Paraguay', 'Panamá', 'Portugal', 'Polonia', 'Pakistán', 'Países Bajos', 'Papúa Nueva Guinea', 'Palaos', 'Palestina'] },
-  { letra: 'C', categoria: 'Animal', respuestas: ['caballo', 'cabra', 'camello', 'canguro', 'castor', 'cebra', 'cerdo', 'chancho', 'ciervo', 'cocodrilo', 'conejo', 'cóndor', 'coyote', 'cisne', 'cuervo', 'camaleón', 'calamar', 'cangrejo', 'caracol', 'chimpancé', 'cucaracha', 'colibrí', 'cobra', 'cordero', 'cuy', 'chinchilla', 'chita', 'codorniz', 'cachalote', 'camarón', 'caimán', 'canario', 'cocodrilo', 'comadreja'] },
-  { letra: 'R', categoria: 'Color', respuestas: ['rojo', 'rosado', 'rosa', 'rubí', 'rojizo', 'rojo carmesí'] },
-  { letra: 'T', categoria: 'Profesión u oficio', respuestas: ['taxista', 'tornero', 'traductor', 'traductora', 'técnico', 'técnica', 'tesorero', 'topógrafo', 'terapeuta', 'tapicero', 'tatuador', 'telefonista', 'tripulante', 'teniente', 'tenista', 'trapecista'] },
-  { letra: 'L', categoria: 'Ciudad del mundo', respuestas: ['Lima', 'Londres', 'Lisboa', 'La Paz', 'Los Ángeles', 'La Serena', 'Lyon', 'Liverpool', 'Leipzig', 'Linares', 'Los Andes', 'La Habana', 'Las Vegas', 'La Plata', 'León', 'Lagos', 'Luxemburgo', 'Lota', 'Lille', 'Lucerna'] },
-  { letra: 'A', categoria: 'Animal', respuestas: ['abeja', 'águila', 'alce', 'alpaca', 'anaconda', 'araña', 'ardilla', 'armadillo', 'asno', 'atún', 'avestruz', 'avispa', 'anguila', 'antílope', 'ajolote', 'albatros', 'alacrán', 'almeja'] },
-  { letra: 'B', categoria: 'Fruta o verdura', respuestas: ['banana', 'berenjena', 'brócoli', 'betarraga', 'batata', 'berro', 'boniato', 'breva', 'bergamota', 'borraja', 'baya'] },
-  { letra: 'G', categoria: 'Animal', respuestas: ['gato', 'gallina', 'gallo', 'ganso', 'gorila', 'gusano', 'guanaco', 'gaviota', 'garza', 'grillo', 'guepardo', 'gacela', 'golondrina', 'gamba', 'gorrión', 'galápago', 'garrapata', 'gamo', 'güiña', 'gaviotín'] },
-  { letra: 'E', categoria: 'Deporte', respuestas: ['esgrima', 'esquí', 'equitación', 'escalada', 'escalada deportiva', 'esquí acuático', 'esnórquel'] },
-  { letra: 'V', categoria: 'Instrumento musical', respuestas: ['violín', 'viola', 'violonchelo', 'vihuela', 'vibráfono', 'vuvuzela'] },
-  { letra: 'S', categoria: 'Prenda de vestir', respuestas: ['sombrero', 'suéter', 'sudadera', 'short', 'saco', 'sandalia', 'sandalias', 'sostén', 'sujetador', 'sweater', 'sobretodo', 'shorts', 'smoking', 'slip', 'sari', 'sarong', 'sayo'] },
+  { categoria: 'Nombre', palabras: P(`Alberto, Alejandro, Alicia, Ana, Andrés, Antonia, Agustín, Amanda, Arturo, Benjamín, Bárbara, Beatriz, Bernardo, Blanca, Bruno,
+    Camila, Carlos, Carolina, Catalina, Cristián, Claudia, Constanza, Daniel, Daniela, David, Diego, Dolores, Domingo, Elena, Emilia, Eduardo, Emilio, Enrique, Esteban, Eva,
+    Fernanda, Fernando, Felipe, Florencia, Francisca, Francisco, Gabriel, Gabriela, Gaspar, Gloria, Gonzalo, Guillermo, Gustavo, Ignacio, Isabel, Isidora, Iván,
+    Javiera, Jorge, José, Josefa, Juan, Julia, Laura, Leonardo, Lorena, Lucas, Lucía, Luis, Luisa, Manuel, Margarita, María, Martín, Martina, Matías, Mercedes, Miguel,
+    Natalia, Nicolás, Noelia, Norma, Octavio, Olga, Olivia, Óscar, Pablo, Patricia, Paula, Pedro, Pilar, Rafael, Ramón, Raúl, Ricardo, Roberto, Rocío, Rodrigo, Rosa,
+    Samuel, Santiago, Sara, Sebastián, Sergio, Silvia, Sofía, Sonia, Tamara, Teresa, Tomás, Trinidad, Valentina, Vicente, Victoria`) },
+  { categoria: 'Animal', palabras: P(`abeja, águila, alce, alpaca, anaconda, araña, ardilla, armadillo, asno, atún, avestruz, avispa, ballena, búfalo, búho, burro, caballo,
+    cabra, camello, canguro, castor, cebra, cerdo, chancho, ciervo, cisne, cocodrilo, conejo, cóndor, coyote, cuervo, chimpancé, delfín, dromedario, elefante, erizo, escarabajo,
+    escorpión, foca, flamenco, gallina, gato, gaviota, gorila, gorrión, grillo, guanaco, gusano, halcón, hámster, hiena, hipopótamo, hormiga, iguana, impala, jabalí, jaguar,
+    jirafa, koala, langosta, león, leopardo, liebre, llama, lobo, loro, mapache, mariposa, medusa, mono, mosca, murciélago, nutria, ñandú, oca, orca, oso, oveja, pájaro,
+    paloma, pantera, pato, pavo, pelícano, perro, pez, pingüino, pulpo, puma, rana, ratón, rinoceronte, salamandra, sapo, sardina, serpiente, tiburón, tigre, topo, tortuga,
+    trucha, tucán, urraca, vaca, venado, víbora, yegua, zorro`) },
+  { categoria: 'País', palabras: P(`Alemania, Argentina, Australia, Austria, Argelia, Arabia Saudita, Angola, Bélgica, Bolivia, Brasil, Bulgaria, Bangladés, Canadá, Chile, China,
+    Colombia, Corea del Sur, Costa Rica, Croacia, Cuba, Camerún, Dinamarca, Ecuador, Egipto, El Salvador, Escocia, Eslovaquia, Eslovenia, España, Estados Unidos, Estonia, Etiopía,
+    Filipinas, Finlandia, Francia, Gabón, Ghana, Grecia, Guatemala, Guinea, Haití, Honduras, Hungría, India, Indonesia, Inglaterra, Irak, Irán, Irlanda, Islandia, Israel, Italia,
+    Jamaica, Japón, Jordania, Kenia, Letonia, Líbano, Libia, Lituania, Luxemburgo, Madagascar, Malasia, Marruecos, México, Mongolia, Mozambique, Nepal, Nicaragua, Nigeria,
+    Noruega, Nueva Zelanda, Omán, Países Bajos, Pakistán, Panamá, Paraguay, Perú, Polonia, Portugal, Reino Unido, República Dominicana, Rumania, Rusia, Senegal, Serbia, Singapur,
+    Siria, Sudáfrica, Suecia, Suiza, Tailandia, Tanzania, Túnez, Turquía, Ucrania, Uganda, Uruguay, Venezuela, Vietnam`) },
+  { categoria: 'Ciudad del mundo', palabras: P(`Ámsterdam, Atenas, Asunción, Barcelona, Berlín, Bogotá, Bruselas, Buenos Aires, Bangkok, Cairo, Caracas, Chicago, Copenhague, Cuzco, Córdoba,
+    Dublín, Dakar, Delhi, Dubái, Edimburgo, Estambul, Florencia, Fráncfort, Ginebra, Guadalajara, Guayaquil, Hamburgo, La Habana, Helsinki, Hong Kong, Kioto, Lima, Lisboa,
+    Londres, Los Ángeles, Lyon, La Paz, Madrid, Medellín, Melbourne, Miami, Milán, Montevideo, Moscú, Múnich, Nápoles, Nueva York, Niza, Oslo, Ottawa, Oporto, París, Pekín, Praga,
+    Quito, Río de Janeiro, Roma, Rosario, Santiago, São Paulo, Sevilla, Seúl, Sídney, Shanghái, Tokio, Toronto, Toledo, Turín, Valencia, Venecia, Viena, Varsovia, Zúrich`) },
+  { categoria: 'Fruta o verdura', palabras: P(`acelga, aceituna, aguacate, ajo, alcachofa, apio, arándano, arveja, banana, berenjena, betarraga, brócoli, calabaza, cebolla, cereza, champiñón,
+    choclo, chirimoya, ciruela, coco, coliflor, damasco, dátil, durazno, espárrago, espinaca, frambuesa, frutilla, fresa, granada, guinda, guayaba, haba, higo, kiwi, lechuga,
+    limón, lima, mandarina, mango, manzana, maracuyá, melón, membrillo, mora, nabo, naranja, níspero, nuez, papa, palta, papaya, pepino, pera, pimentón, piña, plátano, pomelo,
+    porotos, puerro, rábano, repollo, sandía, tomate, tuna, uva, zanahoria, zapallo, zapallo italiano`) },
+  { categoria: 'Color', palabras: P(`amarillo, azul, añil, beige, blanco, burdeo, café, calipso, carmesí, celeste, cian, coral, crema, dorado, esmeralda, fucsia, granate, gris,
+    índigo, lila, lavanda, magenta, marrón, morado, mostaza, naranjo, naranja, negro, ocre, oro, plateado, púrpura, rojo, rosado, rosa, salmón, sepia, terracota, turquesa,
+    verde, violeta`) },
+  { categoria: 'Profesión u oficio', palabras: P(`abogado, abogada, actor, actriz, agricultor, albañil, arquitecto, arquitecta, astronauta, azafata, bailarín, bailarina, bombero, bombera,
+    barbero, biólogo, cajero, camarero, carpintero, cartero, carnicero, chofer, cocinero, cocinera, contador, contadora, dentista, diseñador, diseñadora, doctor, doctora,
+    electricista, enfermero, enfermera, escritor, escritora, escultor, florista, fotógrafo, futbolista, garzón, gásfiter, granjero, guardia, historiador, ingeniero, ingeniera,
+    jardinero, joyero, juez, jueza, locutor, maestro, maestra, mecánico, médico, médica, minero, músico, nutricionista, niñera, odontólogo, obrero, panadero, panadera, peluquero,
+    peluquera, periodista, piloto, pintor, policía, profesor, profesora, psicólogo, psicóloga, químico, recepcionista, reportero, sastre, secretario, secretaria, soldado,
+    taxista, técnico, tenista, traductor, traductora, veterinario, veterinaria, vendedor, vendedora, zapatero`) },
+  { categoria: 'Cosa u objeto', palabras: P(`abanico, aguja, alfombra, anillo, anteojos, armario, auto, avión, balde, banco, bicicleta, billetera, bolso, botella, brocha, bufanda, cama,
+    cámara, candado, cartera, cepillo, computador, cuaderno, cuchara, cuchillo, dado, destornillador, diccionario, disco, ducha, escalera, escoba, espejo, estufa, florero,
+    foco, fósforo, guitarra, gorro, goma, grifo, hacha, hilo, horno, imán, impresora, jarra, jabón, lámpara, lápiz, libro, linterna, llave, maleta, martillo, mesa, mochila,
+    olla, palo, pantalla, paraguas, peine, pelota, plato, puerta, radio, regla, reloj, sartén, silla, sillón, sombrero, sofá, taza, teléfono, televisor, tenedor, tijera,
+    toalla, vaso, vela, ventana, ventilador, zapato`) },
+  { categoria: 'Parte del cuerpo', palabras: P(`boca, brazo, cabeza, cadera, cara, ceja, cejas, cerebro, codo, corazón, costilla, cuello, dedo, diente, espalda, estómago, frente, garganta,
+    hígado, hombro, hueso, labio, lengua, mano, mejilla, muñeca, músculo, muslo, nariz, nuca, ojo, oreja, ombligo, pecho, pelo, pestaña, pie, piel, pierna, pulmón, riñón,
+    rodilla, talón, tobillo, uña, vena`) },
+  { categoria: 'Marca', palabras: P(`Adidas, Apple, Audi, BMW, Bimbo, Canon, Casio, Coca-Cola, Colgate, Dell, Disney, Ferrari, Fiat, Ford, Gillette, Google, Honda, HP, Huawei, Hyundai,
+    IKEA, Kia, LEGO, Lenovo, LG, McDonald's, Mercedes-Benz, Microsoft, Mitsubishi, Motorola, Nestlé, Netflix, Nike, Nintendo, Nissan, Nokia, Olympus, Omega, Puma, Peugeot,
+    Pepsi, Philips, Renault, Reebok, Rolex, Samsung, Seat, Sony, Suzuki, Toyota, Twitter, Volkswagen, Volvo, Xiaomi, Yamaha, Zara`) },
 ];
 exports.tutiFrutiChile = [
-  { letra: 'P', categoria: 'Ciudad o comuna de Chile', respuestas: ['Puerto Montt', 'Punta Arenas', 'Pucón', 'Providencia', 'Peñalolén', 'Pudahuel', 'Puente Alto', 'Parral', 'Pichilemu', 'Puerto Varas', 'Puerto Natales', 'Pozo Almonte', 'Pica', 'Paine', 'Peñaflor', 'Panguipulli', 'Purranque', 'Papudo', 'Pirque', 'Petorca', 'Penco', 'Puerto Aysén', 'Porvenir', 'Putre', 'Peumo', 'Puchuncaví', 'Pitrufquén', 'Pedro Aguirre Cerda', 'Puerto Williams', 'Puerto Octay'] },
-  { letra: 'C', categoria: 'Comida chilena', respuestas: ['cazuela', 'charquicán', 'completo', 'curanto', 'chorrillana', 'chapalele', 'calzones rotos', 'churrasco', 'choripán', 'chupe', 'caldillo de congrio', 'carbonada', 'chancho en piedra', 'cochayuyo', 'chilenitos', 'calugas', 'chumbeque', 'chacarero', 'chuchoca', 'cuchuflí', 'chapaleles', 'chupe de jaibas', 'chupe de locos', 'cordero al palo'] },
-  { letra: 'L', categoria: 'Lugar de Chile', respuestas: ['La Serena', 'Los Ángeles', 'Linares', 'Lota', 'Los Andes', 'La Ligua', 'Lebu', 'Lonquimay', 'Loncoche', 'Lautaro', 'Llanquihue', 'Licantén', 'La Florida', 'Las Condes', 'La Reina', 'Lo Barnechea', 'La Pintana', 'Lampa', 'Lago Ranco', 'La Tirana', 'Los Vilos', 'La Unión', 'Lanco', 'Llay-Llay', 'Lumaco', 'Longaví', 'Limache', 'Laja', 'La Cisterna', 'La Granja', 'Lo Prado', 'Lo Espejo', 'Lago Llanquihue', 'Lago Villarrica', 'Los Lagos', 'Lican Ray'] },
-  { letra: 'T', categoria: 'Ave chilena', respuestas: ['tiuque', 'tordo', 'tenca', 'tagua', 'tucúquere', 'traro', 'tórtola', 'tortolita', 'trile', 'tapaculo', 'turca', 'tricahue', 'tijeral'] },
-  { letra: 'L', categoria: 'Cantante o grupo chileno', respuestas: ['Los Prisioneros', 'Los Jaivas', 'La Ley', 'Los Tres', 'Los Bunkers', 'Lucybell', 'Los Ángeles Negros', 'Los Huasos Quincheros', 'Los Vásquez', 'Los Charros de Lumaco', 'Lucho Barrios', 'Luis Jara', 'Los Tetas', 'La Sonora de Tommy Rey', 'La Sonora Palacios', 'Lucho Gatica', 'Leo Rey', 'Los Miserables', 'Los Bunker'] },
-  { letra: 'L', categoria: 'Volcán chileno', respuestas: ['Llaima', 'Láscar', 'Lanín', 'Licancabur', 'Llullaillaco', 'Lonquimay', 'Lascar'] },
-  { letra: 'M', categoria: 'Fruta que se da en Chile', respuestas: ['manzana', 'maqui', 'murta', 'membrillo', 'mora', 'melón', 'mandarina', 'murtilla', 'michay', 'maracuyá', 'mango'] },
-  { letra: 'Q', categoria: 'Lugar de Chile', respuestas: ['Quilpué', 'Quillota', 'Quintero', 'Quellón', 'Quilicura', 'Quinta Normal', 'Quinchao', 'Quintay', 'Quirihue', 'Quillagua', 'Queilén', 'Quemchi', 'Quilaco', 'Quilleco', 'Quillón'] },
-  { letra: 'H', categoria: 'Comida o bebida chilena', respuestas: ['humita', 'huesillo', 'huesillos', 'hallulla', 'hot dog', 'helado', 'habas', 'harina tostada', 'huevos a la copa'] },
+  { categoria: 'Ciudad o comuna de Chile', palabras: P(`Ancud, Angol, Antofagasta, Arica, Arauco, Buin, Bulnes, Calama, Cauquenes, Castro, Chillán, Chiguayante, Coquimbo, Concepción, Constitución,
+    Copiapó, Coyhaique, Curicó, Colina, Conchalí, Dalcahue, Diego de Almagro, El Bosque, El Quisco, El Tabo, Ercilla, Estación Central, Florida, Freire, Frutillar, Graneros,
+    Hualpén, Huechuraba, Huasco, Illapel, Independencia, Iquique, Isla de Maipo, La Serena, Los Ángeles, Linares, Lota, Los Andes, La Ligua, Lebu, Lautaro, La Florida,
+    Las Condes, La Reina, Lo Barnechea, Maipú, Macul, Melipilla, Mejillones, Molina, Mulchén, Nacimiento, Navidad, Ñuñoa, Osorno, Ovalle, Olmué, Puerto Montt, Punta Arenas,
+    Pucón, Providencia, Peñalolén, Puente Alto, Pichilemu, Puerto Varas, Puerto Natales, Quilpué, Quillota, Quintero, Quellón, Quilicura, Rancagua, Recoleta, Renca, Rengo,
+    San Antonio, San Bernardo, San Fernando, San Felipe, Santiago, Santa Cruz, Talca, Talcahuano, Temuco, Tocopilla, Tomé, Valdivia, Vallenar, Valparaíso, Vicuña, Villarrica,
+    Viña del Mar, Victoria, Vitacura`) },
+  { categoria: 'Comida o bebida chilena', palabras: P(`ajiaco, alfajor, ají, asado, berlín, budín, cazuela, charquicán, completo, curanto, chorrillana, chapalele, calzones rotos, churrasco,
+    choripán, chupe, caldillo de congrio, carbonada, chancho en piedra, cochayuyo, chilenitos, calugas, chacarero, chicha, cola de mono, cuchuflí, empanada, ensalada chilena,
+    escabeche, guatitas, humita, huesillo, hallulla, leche asada, lomito, locos, marraqueta, mote con huesillo, merkén, mermelada, milcao, mote, mostaza, navegado, once, pastel de choclo,
+    pebre, pan amasado, paila marina, pantrucas, pequén, pichanga, pisco, pisco sour, plateada, porotos, porotos granados, prietas, picarones, ponche, queso de cabeza, queque,
+    reineta, ravioles, sopaipilla, sánguche, terremoto, tomaticán, torta de mil hojas, tutti frutti, valdiviano`) },
+  { categoria: 'Animal o planta de Chile', palabras: P(`alerce, araucaria, avellano, boldo, canelo, chilco, chinchilla, cóndor, copihue, coigüe, culpeo, chucao, degú, flamenco, guanaco, güiña,
+    huemul, huillín, lenga, loica, lingue, litre, maqui, mañío, monito del monte, ñandú, ñirre, peumo, picaflor, pingüino, pudú, puma, quillay, queltehue, quirquincho, raulí,
+    roble, ruil, tagua, tenca, tiuque, tordo, ulmo, vicuña, vizcacha, zorro chilla, zorzal`) },
+  { categoria: 'Chilenismo', palabras: P(`al tiro, achuntar, bacán, cachar, cachureo, cahuín, carrete, chela, choro, cuico, copuchar, cabro chico, dieciochero, embarrarla, fome, flaite,
+    gallo, guagua, guata, harto, huevear, lolo, luca, longi, malulo, mina, once, pega, pololo, polola, pucha, pituto, quiltro, quiubo, rasca, regalón, sapear, taco, tincar,
+    tuto, achacarse, apitutado, apañar, buena onda, cuático, mano, nanai`) },
 ];
 
 // El Quitaletras — la palabra viene revuelta y con una letra de más; hay que quitarla y ordenar el resto

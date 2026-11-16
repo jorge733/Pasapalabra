@@ -176,10 +176,10 @@ function vista() {
         <button class="btn" style="margin-top:12px">Enviar</button></form>`, after: () => $('#resp').focus() };
     }
     case 'anagrama': case 'quiensoy': case 'refran': case 'adivinanza': case 'siglas':
-    case 'deletrea': case 'tutifruti': case 'quitaletras': case 'vertical': case 'memoria': {
+    case 'deletrea': case 'quitaletras': case 'vertical': case 'memoria': {
       const p = S.p, k = p.kind + p.n + (p.tablero ? 't' + p.tablero.num : '') + (p.memoria ? 'm' + p.memoria.num : '');
       if (p.stage === 'memorizar') return { key: 'pmem' + k, html: () => `<div class="grow"></div><h1>🧠 ¡Memoricen!</h1><h2>Miren el tablero de la tele: enseguida se tapa</h2><div class="grow"></div>` };
-      const ayuda = { deletrea: `Definición: ${esc(p.definicion)}`, tutifruti: `${esc(p.categoria)} con ${esc(p.letra)}`,
+      const ayuda = { deletrea: `Definición: ${esc(p.definicion)}`,
         vertical: p.tablero && p.tablero.pista ? `Empieza por ${esc(p.tablero.filas[p.tablero.actual].inicial)}: ${esc(p.tablero.pista)}` : '',
         memoria: p.memoria && p.memoria.actual !== null ? `¿Qué había en la casilla ${p.memoria.actual + 1}?` : '' }[p.kind];
       if (p.stage === 'reveal') return { key: 'pr' + k, html: () => `<div class="grow"></div>` + (p.ganador
@@ -195,6 +195,28 @@ function vista() {
       if (p.bloqueado[mt]) return { key: 'pl' + k, html: () => `<div class="grow"></div><h2>Tu equipo falló esta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
       return { key: 'pp' + k + (p.espera > 0), html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
         ${botonLoSe(p.espera)}`, tick: () => tickLoSe(p.espera) };
+    }
+    case 'tutifruti': {
+      const u = S.tuti;
+      if (u.stage === 'ask') return { key: 'tf' + u.n, html: () => `
+        <div style="display:flex;align-items:center;gap:12px"><div class="letra" style="font-size:64px;margin:0">${esc(u.letra)}</div>
+          <p style="margin:0;text-align:left">Una palabra que empiece por <b style="color:var(--ink)">${esc(u.letra)}</b> en cada categoría</p></div>
+        <form onsubmit="event.preventDefault();basta()">${u.categorias.map((c, k) => `
+          <label style="display:block;text-align:left;font-weight:800;margin-top:8px">${esc(c)}
+          <input class="in tf" data-k="${k}" autocomplete="off" autocorrect="off" spellcheck="false" oninput="tuti(this)" style="margin-top:4px"></label>`).join('')}
+        <p id="bastaMsg" style="min-height:1.4em;margin:10px 0 0"></p>
+        <p id="faltan" style="margin:0;color:var(--ko)"></p>
+        <button class="btn" id="bBasta" style="margin-top:6px">✋ ¡Basta!</button></form>`,
+        after: () => { const i = document.querySelector('.tf'); if (i) i.focus(); },
+        tick: () => {
+          const m = $('#bastaMsg');
+          if (m) m.innerHTML = u.basta ? (u.basta === mt ? '¡Gritaron «Basta»! Pueden seguir corrigiendo' : `<b style="color:var(--ko)">¡${esc(equipoNombre(u.basta))} gritó «Basta»! Apúrense</b>`) : '';
+          const b = $('#bBasta'); if (b) b.disabled = !!u.basta;
+        } };
+      const r = u.resp ? u.resp[mt] : [], m = u.marcas ? u.marcas[mt] : [];
+      const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '—' };
+      return { key: 'tfr' + u.n + u.stage + JSON.stringify(m), html: () => `<h2>${u.stage === 'reveal' ? (u.gana[mt] ? '¡Bien! +' + u.gana[mt] + ' s' : 'Esta vez no') : 'Revisando respuestas… mira la tele'}</h2>
+        <div style="text-align:left">${u.categorias.map((c, k) => `<p style="margin:6px 0"><b style="color:var(--ink)">${esc(c)}:</b> ${esc(r[k]) || '—'} ${ICON[m[k]] || ''}${u.puntos ? ' · +' + u.puntos[k][mt] : ''}</p>`).join('')}</div>` };
     }
     case 'rueda': {
       const r = S.rueda;
@@ -236,6 +258,16 @@ function botonLoSe(espera) {
     : `<button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡Lo sé!</button>`;
 }
 function tickLoSe(espera) { const c = $('#bzc'); if (c) c.textContent = seg(espera); }
+// Tuti Fruti: cada casilla se envía mientras se escribe; «¡Basta!» manda todas y detiene la ronda
+function tuti(el) { sock.emit('tuti', { k: Number(el.dataset.k), texto: el.value }); }
+function basta() {
+  const ins = [...document.querySelectorAll('.tf')];
+  ins.forEach((i) => i.value.trim() && tuti(i));
+  const vacia = ins.find((i) => !i.value.trim());
+  if (vacia) { vacia.focus(); const m = $('#faltan'); if (m) m.textContent = 'Llenen todas las categorías para gritar «Basta»'; return; }
+  const f = $('#faltan'); if (f) f.textContent = '';
+  sock.emit('basta'); vibra(60);
+}
 function responder() { const v = $('#resp').value.trim(); if (v) { sock.emit('rueda', { texto: v }); vibra(30); } }
 function cambiar() { me = { ...me, team: me.team === 'A' ? 'B' : 'A' }; sock.emit('join', me); }
 function salir() { me = null; try { localStorage.removeItem('letramania-yo'); } catch (e) {} render(); }
