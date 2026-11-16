@@ -76,7 +76,7 @@
   .paso .num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--B);color:#111;font-weight:900}
   .paso h2{font-size:20px;font-weight:900}
 
-  /* controles segmentados (modo, dificultad, temática) */
+  /* controles segmentados (dificultad, temática) */
   .seg{display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:4px;background:var(--bg);padding:4px;border-radius:14px}
   .seg button{padding:12px 6px;font-weight:900;background:transparent;color:var(--muted);border-radius:10px}
   .seg button.sel{background:#7c3aed;color:#fff;box-shadow:0 2px 10px rgba(124,58,237,.45)}
@@ -200,20 +200,11 @@
     <!-- en partida -->
     <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="pensarH" class="estadoL hidden" style="background:#78350f"></div><div id="lecturaBody"></div></div>
     <div class="card hidden" id="ahora"></div>
-    <div class="card hidden" id="juez"><h3>⚖️ Juez de la rueda</h3>
-      <div id="ultimo" style="font-size:18px;font-weight:800">—</div>
-      <button id="bBuena" style="padding:14px;font-weight:900;background:#15803d" onclick="h('darPorBuena')" disabled>✔ Dar por buena la última respuesta</button>
-      <p class="hint">Si alguien escribió una respuesta válida que el juego no reconoció (sinónimo, errata…), márcala aquí.</p>
-    </div>
 
     <!-- sala de espera -->
     <div class="card" id="cfgModo">
-      <div class="paso"><span class="num">1</span><h2>¿Cómo se juega?</h2></div>
-      <div class="seg" id="modos">
-        <button data-m="presentador" onclick="h('modo','presentador')">🎙️ Con presentador</button>
-        <button data-m="auto" onclick="h('modo','auto')">📱 Automático</button>
-      </div>
-      <p class="hint" id="modoHint"></p>
+      <div class="paso"><span class="num">1</span><h2>Ajustes de la partida</h2></div>
+      <p class="hint">Tú lees las preguntas desde este panel; los jugadores presionan en el celular y responden en voz alta. Tú marcas Correcto / Incorrecto.</p>
       <div class="ajuste">
         <div class="meta">Dificultad</div>
         <div class="seg" id="difs">
@@ -372,22 +363,17 @@ function render() {
   for (const id of ['#cfgModo', '#cfgRondas', '#arranque', '#conexion']) $(id).classList.toggle('hidden', !lobby);
   $('#controles').classList.toggle('hidden', lobby);
   $('#bMusica').textContent = s.musicaFondo ? '🎵 Música de fondo: Sí' : '🔇 Música de fondo: No';
-  $('#atajos').classList.toggle('hidden', s.modo !== 'presentador');
 
   // ajustes
-  document.querySelectorAll('#modos button').forEach((b) => b.classList.toggle('sel', b.dataset.m === s.modo));
   document.querySelectorAll('#difs button').forEach((b) => b.classList.toggle('sel', b.dataset.d === s.dificultad));
   document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
-  $('#modoHint').textContent = s.modo === 'presentador'
-    ? 'Tú lees las preguntas desde este panel; los jugadores presionan en el celular y responden en voz alta. Tú marcas Correcto / Incorrecto.'
-    : 'Las preguntas salen en la tele y los jugadores escriben las respuestas en el celular. El juego corrige solo.';
   $('#difHint').textContent = { kids: 'Para niños de 7 a 12 años, con más tiempo para pensar y responder.', normal: 'Cultura general sencilla.', dificil: 'Historia, ciencia, geografía y literatura para expertos.' }[s.dificultad] || '';
   pon('#rondas', s.catalogo.map((c) => {
     const on = s.rondas.includes(c.id);
     return `<button class="${on ? 'sel' : ''}" aria-pressed="${on}" onclick="h('ronda','${c.id}')"><span class="chk">✔</span>${esc(c.titulo)}${c.pasapalabra ? '<span class="cl" title="Pasapalabra chileno">🇨🇱</span>' : ''}</button>`;
   }).join(''));
   const nR = s.rondas.length;
-  $('#resumen').textContent = `${nR} prueba${nR === 1 ? '' : 's'} + Rueda · ${s.modo === 'presentador' ? 'con presentador' : 'automático'} · ${{ kids: 'kids', normal: 'normal', dificil: 'difícil' }[s.dificultad] || ''}`;
+  $('#resumen').textContent = `${nR} prueba${nR === 1 ? '' : 's'} + Rueda · ${{ kids: 'kids', normal: 'normal', dificil: 'difícil' }[s.dificultad] || ''}`;
   $('#bEmpezar').disabled = !lobby;
   $('#bEmpezar').textContent = s.players.length ? '▶ Empezar partida' : '▶ Empezar partida (aún no hay jugadores)';
 
@@ -420,27 +406,19 @@ function render() {
     if (act && ol.dataset.paso !== String(s.paso)) { ol.dataset.paso = s.paso; ol.scrollTop = act.offsetTop - ol.offsetTop - 40; }
   }
 
-  // juez (solo modo automático)
-  $('#juez').classList.toggle('hidden', s.modo === 'presentador' || s.phase !== 'rueda');
-  const u = s.phase === 'rueda' && s.rueda.ultimo;
-  if (u && (u.tipo === 'fallo' || u.tipo === 'corregida')) {
-    $('#ultimo').innerHTML = `${esc(s.teams[u.team].name)} · letra ${u.letra}: escribió «${esc(u.dada)}» (esperada: ${esc(u.correcta)})${u.tipo === 'corregida' ? ' → dada por buena ✔' : ''}`;
-    $('#bBuena').disabled = u.tipo !== 'fallo';
-  } else { $('#ultimo').textContent = '—'; $('#bBuena').disabled = true; }
-
   renderLectura();
   renderAhora();
   document.documentElement.style.setProperty('--topH', $('.top').offsetHeight + 'px');
   if (jugando) mantenerPantalla();
 }
 
-// Tarjeta "Ahora": lo que pasa cuando no hay nada que leer (presentación, modo automático, final)
+// Tarjeta "Ahora": lo que pasa cuando no hay nada que leer (presentación, final)
 function renderAhora() {
   const s = S, card = $('#ahora');
   const lecturaVisible = !$('#lectura').classList.contains('hidden');
   let html = '';
   if (s.phase === 'intro') {
-    html = `<h3>${s.modo === 'presentador' ? '🎙️ Presenta la prueba' : '📺 En la tele'}</h3><div class="grande">${esc(s.intro.titulo)}</div>
+    html = `<h3>🎙️ Presenta la prueba</h3><div class="grande">${esc(s.intro.titulo)}</div>
       <div class="texto">${esc(s.intro.texto)}</div><p class="hint">La prueba empieza sola en unos segundos.</p>`;
   } else if (s.phase === 'fin' && s.fin) {
     const g = s.fin.ganador;
@@ -449,7 +427,7 @@ function renderAhora() {
       <button class="peligro" style="border-color:#15803d;color:#86efac" onclick="h('nueva')">↺ Jugar otra partida</button>`;
   } else if (!lecturaVisible && s.phase !== 'lobby') {
     html = `<h3>📺 Mira la tele</h3><div class="grande">${esc(FASES[s.phase] || s.phase)}</div>
-      <p class="hint">${s.modo === 'auto' ? 'Modo automático: las preguntas salen en la tele, los jugadores responden en el celular y el juego corrige solo. Usa los controles si necesitas pausar o saltar.' : 'Espera un momento…'}</p>`;
+      <p class="hint">Espera un momento…</p>`;
   }
   card.classList.toggle('hidden', !html);
   pon('#ahora', html);
@@ -473,8 +451,7 @@ const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar',
 
 function renderLectura() {
   const card = $('#lectura');
-  // el Tuti Fruti se revisa y La pista musical se pone desde aquí también en modo automático
-  const visible = S && X && (S.modo === 'presentador' || ['tutifruti', 'musical'].includes(S.phase)) && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'musical', 'cruzadas', 'rueda'].includes(S.phase);
+  const visible = S && X && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'musical', 'cruzadas', 'rueda'].includes(S.phase);
   card.classList.toggle('hidden', !visible);
   if (!visible) return;
   let html = '';
@@ -528,15 +505,15 @@ function renderLectura() {
       <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
   } else if (X.tipo === 'p' && X.kind === 'musical') {
     // La pista musical: el presentador busca la canción, la pone y la pausa cuando alguien presiona
-    const q = encodeURIComponent(X.item.titulo + ' ' + X.item.artista), auto = X.modo === 'auto';
+    const q = encodeURIComponent(X.item.titulo + ' ' + X.item.artista);
     let estado, botones = '';
     if (X.stage === 'preparar') {
       estado = 'Busca la canción y déjala lista. Cuando empiece a sonar, presiona «Ya suena».';
       botones = btn('bOk', 'empezar', '▶ Ya suena', 'C') + (X.reserva ? btn('bPaso', 'cambiar', '🔄 Otra canción', 'P') : '') + btn('bNadie', 'nadie', 'Saltar →', 'N');
     } else if (X.stage === 'reveal') estado = 'Mostrando la respuesta en la tele… Puedes dejar sonar la canción.';
     else if (X.buzz) {
-      estado = `🔔 ${team(X.buzz.team)} presionó. ⏸ Pausa la música.${auto ? ' Está escribiendo la respuesta…' : ' ¿Ha acertado?'}`;
-      if (!auto) botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X');
+      estado = `🔔 ${team(X.buzz.team)} presionó. ⏸ Pausa la música. ¿Ha acertado?`;
+      botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X');
     } else {
       estado = (X.bloqueado.A || X.bloqueado.B ? '▶ Vuelve a poner la música. ' : '') + 'Las pistas salen solas en la tele (o presiona «Otra pista»).';
       botones = (X.numPistas < X.item.pistas.length ? btn('bPaso', 'pista', 'Otra pista', 'P') : '') + btn('bNadie', 'nadie', 'Nadie la sabe →', 'N');
@@ -619,7 +596,7 @@ document.addEventListener('keydown', (e) => {
   let m = { c: 'ok', x: 'ko', p: 'paso', n: 'nadie' }[e.key.toLowerCase()];
   if (X && X.tipo === 'p' && X.kind === 'musical' && X.stage === 'preparar') m = { c: 'empezar', p: 'cambiar', n: 'nadie' }[e.key.toLowerCase()];
   else if (m === 'paso' && X && X.tipo === 'p') m = 'pista';
-  if (m && S && (S.modo === 'presentador' || S.phase === 'musical')) h('juzgar', m);
+  if (m && S) h('juzgar', m);
 });
 </script>
 </body></html>

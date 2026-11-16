@@ -41,7 +41,7 @@ Dos equipos compiten en varias pruebas cortas para ganar segundos. Después vien
 
 | Prueba | Cómo funciona | Premio |
 |---|---|---|
-| **Respuesta rápida** | Pregunta con 4 opciones | 8 s (con presentador) / 5 + 3 s al más rápido (automático) |
+| **Respuesta rápida** | Pregunta con 4 opciones | 8 s |
 | **Verdadero o falso** | Los dos equipos responden a la vez en el celular | 3 s por acierto |
 | **¿Qué fue antes?** | Dos hechos históricos: elegir cuál ocurrió primero | 3 s por acierto |
 | **Letras revueltas** | Ordenar las letras para formar la palabra | 8 s |
@@ -65,7 +65,7 @@ Dos equipos compiten en varias pruebas cortas para ganar segundos. Después vien
 
 Las marcadas con 🇨🇱 son pruebas del **Pasapalabra de Chilevisión**, con reglas basadas en el [artículo de Wikipedia del programa](https://es.wikipedia.org/wiki/Pasapalabra_(Chile)) y en el capítulo de estreno de la temporada 2026 (orden de los juegos, tiempos y segundos de cada uno), adaptadas a dos equipos con celulares. Las seis primeras son juegos de esa temporada (falta *Todos contra todos*). Vienen desactivadas para que la partida no se alargue: actívalas una por una en el panel del presentador o con el botón **«🇨🇱 Solo las del Pasapalabra chileno»** (también hay «Solo las clásicas» y «Todas»). En las pruebas **por turnos** juega un equipo y después el otro (empieza el que tiene más segundos), como en el programa. En la tele, el equipo que juega tiene su panel a su lado (Violeta a la izquierda, Ámbar a la derecha) con sus jugadores y un reloj circular; en *Pistas que despistan* la pista va en una barra con lo que lleva cada equipo a los lados; y antes de la Rueda Final se muestra una tabla de **tiempo acumulado** con los segundos que ganó cada equipo en cada prueba. Su contenido está en [`contenido-pasapalabra.js`](contenido-pasapalabra.js).
 
-En **La pista musical** el juego no trae música: el panel del presentador muestra la canción, el intérprete y botones para buscarla en Spotify o YouTube. El presentador la deja lista, la pone en un parlante (o en la tele) y presiona **«▶ Ya suena»**: desde ese momento se puede presionar «¡Lo sé!» y empiezan a salir las pistas. Cuando un equipo presiona, el presentador pausa la música; si falla, la vuelve a poner. Si no encuentra una canción, puede cambiarla con **«🔄 Otra canción»**. Esta prueba se maneja desde el panel también en el modo automático (ahí los jugadores escriben el nombre de la canción y el juego corrige solo). Hay canciones generales, chilenas y, en el modo Kids, canciones infantiles y de películas; puedes añadir las tuyas en `pistaMusical`, `pistaMusicalChile` y `pistaMusicalKids`. En el Bachillerato, una respuesta que empieza por la letra pero no está en las listas vale igual (sale con «?»), salvo que el presentador la rechace: durante la revisión, en su panel, puede aceptar o rechazar cada respuesta con un toque, también en modo automático.
+En **La pista musical** el juego no trae música: el panel del presentador muestra la canción, el intérprete y botones para buscarla en Spotify o YouTube. El presentador la deja lista, la pone en un parlante (o en la tele) y presiona **«▶ Ya suena»**: desde ese momento se puede presionar «¡Lo sé!» y empiezan a salir las pistas. Cuando un equipo presiona, el presentador pausa la música; si falla, la vuelve a poner. Si no encuentra una canción, puede cambiarla con **«🔄 Otra canción»**. Hay canciones generales, chilenas y, en el modo Kids, canciones infantiles y de películas; puedes añadir las tuyas en `pistaMusical`, `pistaMusicalChile` y `pistaMusicalKids`. En el Bachillerato, una respuesta que empieza por la letra pero no está en las listas vale igual (sale con «?»), salvo que el presentador la rechace: durante la revisión, en su panel, puede aceptar o rechazar cada respuesta con un toque.
 
 El presentador elige en su panel qué pruebas se juegan antes de empezar. Si un equipo presiona y falla, el otro puede intentarlo.
 
@@ -100,14 +100,11 @@ Jugadores (o escanean el QR de la tele):  http://192.168.1.50:3000/play
 >
 > Si la dirección detectada no es la buena (por ejemplo, si tienes VPN), puedes indicarla tú: `HOST_IP=192.168.1.50 npm start` (en Windows PowerShell: `$env:HOST_IP="192.168.1.50"; npm start`).
 
-## Modo de juego
+## El presentador
 
-En el panel del presentador, antes de empezar, eliges:
+Para jugar siempre hace falta un presentador, como en la tele. El presentador lee en voz alta las preguntas, pistas y definiciones (también se ven en la tele) y en su panel ve la respuesta correcta, que la tele solo muestra al final. Los jugadores presionan «¡Lo sé!» en el celular y responden **en voz alta**. El presentador marca **✔ Correcto**, **✘ Incorrecto**, **⏭ Paso** o **Nadie la sabe**. También puede usar el teclado: `C` correcto, `X` incorrecto, `P` paso, `N` nadie la sabe.
 
-- **🎙️ Con presentador** (por defecto): como en la tele. El presentador lee en voz alta las preguntas, pistas y definiciones (también se ven en la tele) y en su panel ve la respuesta correcta, que la tele solo muestra al final. Los jugadores presionan «¡Lo sé!» en el celular y responden **en voz alta**. El presentador marca **✔ Correcto**, **✘ Incorrecto**, **⏭ Paso** o **Nadie la sabe**. También puede usar el teclado: `C` correcto, `X` incorrecto, `P` paso, `N` nadie la sabe.
-- **📱 Automático**: las preguntas salen en la tele y los jugadores escriben las respuestas en el celular. El juego corrige solo.
-
-Consejo: con presentador, abre `/host` en tu celular o en un portátil que puedas tener en la mano, para ver la respuesta sin que los jugadores la vean.
+Consejo: abre `/host` en tu celular o en un portátil que puedas tener en la mano, para ver la respuesta sin que los jugadores la vean.
 
 ## Dificultad
 
