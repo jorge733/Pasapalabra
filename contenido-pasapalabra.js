@@ -639,3 +639,98 @@ exports.todosContraTodosObraKids = [
   O('Hay un amigo en mí', 'Toy Story', ['toy story']),
   O('No se habla de Bruno', 'Encanto', ['encanto']),
 ];
+
+// Más canciones para las pruebas musicales
+exports.pistaMusical.push(
+  C('Hey Jude', 'The Beatles', ['Balada rock de 1968 que dura más de siete minutos', 'La cantan cuatro músicos de Liverpool', 'Le habla a un tal Jude'], ['hey jude']),
+  C('Yesterday', 'The Beatles', ['Balada de 1965 con guitarra y cuarteto de cuerdas', 'La canta Paul McCartney con su banda', 'Su título significa «ayer»'], ['yesterday']),
+  C('We Will Rock You', 'Queen', ['Rock de 1977 que se canta en los estadios', 'La canta Freddie Mercury con su banda', 'Se acompaña con dos pisotones y un aplauso'], ['we will rock you']),
+  C('Don\'t Stop Me Now', 'Queen', ['Rock de 1978', 'La canta Freddie Mercury con su banda', 'Pide que no lo detengan'], ['dont stop me now']),
+  C('Like a Virgin', 'Madonna', ['Pop de 1984', 'La canta la «Reina del Pop»', 'La cantó en un vestido de novia en los premios MTV'], ['like a virgin']),
+  C('Gangnam Style', 'PSY', ['Pop coreano de 2012, el primer video en pasar los mil millones de vistas en YouTube', 'La canta el surcoreano PSY', 'Se baila como si se montara a caballo'], ['gangnam style']),
+  C('Someone Like You', 'Adele', ['Balada de 2011 tocada al piano', 'La canta una británica de voz potente', 'Habla de encontrar a alguien «como tú»'], ['someone like you']),
+  C('Ojos así', 'Shakira', ['Pop latino de 1998 con aires árabes', 'La canta una colombiana', 'Habla de unos ojos'], ['ojos asi']),
+  C('La tortura', 'Shakira y Alejandro Sanz', ['Pop latino de 2005', 'La cantan una colombiana y un español', 'Su título es un sufrimiento'], ['la tortura']),
+  C('Corazón partío', 'Alejandro Sanz', ['Pop español de 1997 con aires flamencos', 'La canta un madrileño', '«¿Quién me va a entregar sus emociones?»… y habla de un corazón roto'], ['corazon partio', 'corazon partido']),
+  C('Color esperanza', 'Diego Torres', ['Pop de 2001', 'La canta un argentino', 'Habla del color de la esperanza'], ['color esperanza']),
+  C('María', 'Ricky Martin', ['Pop latino de 1995', 'La canta un puertorriqueño', '«Un, dos, tres…» y un nombre de mujer'], ['maria', 'un dos tres maria']),
+  C('Clavado en un bar', 'Maná', ['Rock pop mexicano de 1997', 'La canta Fher Olvera con su banda', 'El protagonista está atrapado en una cantina'], ['clavado en un bar']),
+  C('La gozadera', 'Gente de Zona y Marc Anthony', ['Música cubana de 2015', 'La cantan un dúo cubano y un salsero neoyorquino', 'Invita a la fiesta y a «gozar»'], ['la gozadera']),
+  C('Hasta la raíz', 'Natalia Lafourcade', ['Canción mexicana de 2015', 'La canta Natalia Lafourcade', 'Habla de llevar a alguien muy adentro, como una planta'], ['hasta la raiz']),
+  C('Rosas', 'La Oreja de Van Gogh', ['Pop español de 2003', 'La canta un grupo de San Sebastián', 'Son unas flores'], ['rosas']),
+  C('Cielito lindo', 'Canción tradicional mexicana', ['Canción mexicana de fines del siglo XIX', 'La cantan los mariachis en todo el mundo', '«Ay, ay, ay, ay, canta y no llores»'], ['cielito lindo']),
+  C('Bésame mucho', 'Consuelo Velázquez', ['Bolero mexicano de 1940', 'Lo compuso una pianista mexicana y lo cantaron cientos de artistas', 'Pide muchos besos'], ['besame mucho']),
+);
+exports.pistaMusicalChile.push(
+  C('Quieren dinero', 'Los Prisioneros', ['Rock chileno de los años 80', 'La canta Jorge González con su banda', 'Su título habla de plata']),
+  C('¿Por qué no se van?', 'Los Prisioneros', ['Rock chileno de 1986', 'La canta Jorge González con su banda', 'Les pregunta a los que critican el país por qué no se van'], ['por que no se van']),
+  C('Plegaria a un labrador', 'Víctor Jara', ['Ganó el primer Festival de la Nueva Canción Chilena, en 1969', 'La canta el autor de «Te recuerdo Amanda»', 'Es una oración dedicada a un campesino'], ['plegaria a un labrador']),
+  C('Luchín', 'Víctor Jara', ['Canción de comienzos de los 70', 'La canta el autor de «Te recuerdo Amanda»', 'Es el apodo de un niño'], ['luchin']),
+  C('Arauco tiene una pena', 'Violeta Parra', ['Canción de los años 60', 'La compuso la autora de «Gracias a la vida»', 'Habla del dolor del pueblo mapuche'], ['arauco tiene una pena']),
+  C('La jardinera', 'Violeta Parra', ['Canción de los años 50', 'La compuso la autora de «Gracias a la vida»', 'Su protagonista cuida un jardín de flores'], ['la jardinera']),
+  C('He barrido el sol', 'Los Tres', ['Rock chileno de 1991', 'La canta Álvaro Henríquez con su banda de Concepción', 'Dice que barrió el sol'], ['he barrido el sol']),
+  C('Chile lindo', 'Clara Solovera', ['Tonada de 1948, estrenada en un rodeo en San Fernando', 'La compuso Clara Solovera y la grabó Ester Soré', 'Le canta a la belleza de nuestro país'], ['chile lindo']),
+  C('Los momentos', 'Eduardo Gatti (Los Blops)', ['Canción de 1970, de las más queridas del folk chileno', 'La compuso Eduardo Gatti y la grabó con Los Blops', 'Habla de los momentos de la vida'], ['los momentos']),
+  C('Sin despertar', 'Kudai', ['Pop rock de 2004', 'La canta una banda juvenil chilena', 'Habla de seguir dormido, sin abrir los ojos'], ['sin despertar']),
+);
+exports.pistaMusicalKids.push(
+  C('Pin Pon', 'Canción tradicional', ['Canción infantil tradicional', 'Su protagonista es un muñeco de cartón', 'Se lava la carita con agua y con jabón'], ['pin pon', 'pin pon es un muneco']),
+  C('Arroz con leche', 'Canción tradicional', ['Canción infantil tradicional para jugar en ronda', 'Alguien se quiere casar', 'Su título es un postre'], ['arroz con leche']),
+  C('El patio de mi casa', 'Canción tradicional', ['Canción infantil tradicional para jugar en ronda', 'Dice que es «particular»', 'Cuando llueve se moja como los demás'], ['el patio de mi casa']),
+  C('La araña pequeñita', 'Canción tradicional', ['Canción infantil que se canta con las manos', 'Viene la lluvia y la hace caer', 'Una araña sube, sube, sube'], ['la arana pequenita', 'witzy witzy arana', 'la arana chiquitita']),
+  C('Recuérdame', 'Coco (Disney · Pixar)', ['Canción de una película de 2017 ambientada en el Día de Muertos', 'La canta Miguel, un niño que sueña con ser músico', 'Pide que no lo olviden'], ['recuerdame', 'remember me']),
+  C('Un mundo ideal', 'Aladdín (Disney)', ['Canción de una película de Disney de 1992', 'La cantan un joven y una princesa sobre una alfombra mágica', 'Habla de un mundo perfecto'], ['un mundo ideal', 'a whole new world']),
+);
+exports.todosContraTodos.push(
+  T('Smooth', 'Santana y Rob Thomas', ['santana', 'carlos santana', 'rob thomas']),
+  T('Umbrella', 'Rihanna', ['rihanna']),
+  T('Single Ladies', 'Beyoncé', ['beyonce']),
+  T('Toxic', 'Britney Spears', ['britney spears', 'britney']),
+  T('Viva la Vida', 'Coldplay', ['coldplay']),
+  T('Mr. Brightside', 'The Killers', ['the killers', 'killers']),
+  T('Sweet Child o\' Mine', 'Guns N\' Roses', ['guns n roses', 'guns and roses']),
+  T('Every Breath You Take', 'The Police', ['the police', 'police', 'sting']),
+  T('Take On Me', 'a-ha', ['a-ha', 'aha']),
+  T('Me gustas tú', 'Manu Chao', ['manu chao']),
+  T('Lamento boliviano', 'Enanitos Verdes', ['enanitos verdes', 'los enanitos verdes']),
+  T('Matador', 'Los Fabulosos Cadillacs', ['los fabulosos cadillacs', 'fabulosos cadillacs']),
+  T('Pepas', 'Farruko', ['farruko']),
+  T('Felices los 4', 'Maluma', ['maluma']),
+  T('Mi gente', 'J Balvin y Willy William', ['j balvin', 'willy william']),
+  T('Quédate', 'Quevedo y Bizarrap', ['quevedo', 'bizarrap']),
+);
+exports.todosContraTodosChile.push(
+  T('Huele a peligro', 'Myriam Hernández', ['myriam hernandez']),
+  T('Ven aquí', 'Los Bunkers', ['los bunkers', 'bunkers']),
+  T('El duelo', 'La Ley', ['la ley']),
+  T('Antes de ti', 'Mon Laferte', ['mon laferte']),
+  T('Peces', 'Francisca Valenzuela', ['francisca valenzuela']),
+  T('Corazón de sandía', 'Los Tetas', ['los tetas']),
+  T('Traicionera', 'Américo', ['americo']),
+  T('Lejos del amor', 'Illapu', ['illapu']),
+  T('Ya nada queda', 'Kudai', ['kudai']),
+  T('El mercado Testaccio', 'Inti-Illimani', ['inti-illimani', 'inti illimani']),
+);
+exports.todosContraTodosKids.push(
+  T('Roar', 'Katy Perry', ['katy perry']),
+  T('Can\'t Stop the Feeling!', 'Justin Timberlake', ['justin timberlake']),
+  T('Gangnam Style', 'PSY', ['psy']),
+  T('Calma', 'Pedro Capó', ['pedro capo']),
+);
+exports.todosContraTodosObra.push(
+  O('(I\'ve Had) The Time of My Life', 'Dirty Dancing', ['dirty dancing']),
+  O('Footloose', 'Footloose', ['footloose']),
+  O('Mrs. Robinson', 'El graduado', ['el graduado', 'the graduate']),
+  O('Tema principal', 'Los Simpson', ['los simpson', 'simpson', 'the simpsons']),
+  O('Tema principal', 'La Pantera Rosa', ['la pantera rosa', 'pantera rosa']),
+  O('Tema principal', 'Misión imposible', ['mision imposible', 'mission impossible']),
+);
+exports.todosContraTodosObraChile.push(
+  O('Bailan sin cesar', '31 minutos', ['31 minutos', 'treinta y un minutos']),
+  O('Lala', '31 minutos', ['31 minutos', 'treinta y un minutos']),
+);
+exports.todosContraTodosObraKids.push(
+  O('Tema principal', 'Bob Esponja', ['bob esponja', 'spongebob']),
+  O('Tema principal', 'Pokémon', ['pokemon']),
+  O('Tema principal', 'Los Picapiedra', ['los picapiedra', 'picapiedra', 'the flintstones']),
+);
