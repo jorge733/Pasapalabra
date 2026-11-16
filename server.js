@@ -112,6 +112,12 @@ const pub = (f) => path.join(__dirname, 'public', f);
 // Las páginas llevan etiquetas Open Graph (vista previa al compartir el enlace en WhatsApp, redes, etc.),
 // que exigen direcciones absolutas: se reemplaza __BASE__ por la dirección pública o la del propio pedido.
 const paginas = {};
+// Versión del juego: cambia cuando se publica código nuevo. Las páginas abiertas la comparan y se recargan solas,
+// porque al reconectarse a un servidor actualizado seguirían usando el código viejo (y no mostrarían las pruebas nuevas).
+const VERSION = require('crypto').createHash('sha1')
+  .update(['server.js', 'contenido.js', 'contenido-pasapalabra.js', 'public/tv.html', 'public/play.html', 'public/host.html', 'public/style.css']
+    .map((f) => { try { return require('fs').readFileSync(path.join(__dirname, f), 'utf8'); } catch (e) { return ''; } }).join('\n'))
+  .digest('hex').slice(0, 12);
 const pagina = (f) => (req, res) => {
   const html = (paginas[f] ??= fs.readFileSync(pub(f), 'utf8'));
   const base = URL_PUBLICA || `${req.protocol}://${req.get('host')}`;
@@ -1185,6 +1191,7 @@ function publico() {
       actual: L && r.stage === 'play' ? { letra: L.letra, tipo: L.tipo, pista: oculto ? null : L.pista } : null };
   } else if (G.phase === 'fin') s.fin = G.fin;
   s.reloj = reloj();
+  s.version = VERSION;
   s.acumulado = G.historial;
   s.secuencia = G.secuencia; s.paso = G.paso; // para el recorrido de pruebas del panel del presentador
   if (G.enCurso) s.enPrueba = { A: G.teams.A.bonus - G.enCurso.A, B: G.teams.B.bonus - G.enCurso.B }; // lo ganado en la prueba en curso

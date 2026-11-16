@@ -89,7 +89,16 @@ try { me = JSON.parse(localStorage.getItem('letramania-yo')); } catch (e) {}
 const sock = io();
 sock.on('connect', () => { if (me) sock.emit('join', me); });
 sock.on('me', (m) => { me = m; try { localStorage.setItem('letramania-yo', JSON.stringify(m)); } catch (e) {} });
+// Si el servidor se actualizó (se publicó una versión nueva), recarga la página para usar el código nuevo
+let versionInicial = null;
+function revisarVersion(s) {
+  if (!s || !s.version) return false;
+  if (versionInicial && s.version !== versionInicial) { location.reload(); return true; }
+  versionInicial = versionInicial || s.version;
+  return false;
+}
 sock.on('state', (s, ev) => {
+  if (revisarVersion(s)) return;
   S = s;
   if (me && ev === 'turno' && s.phase === 'rueda' && s.rueda.turno === me.team) vibra([80, 60, 80]);
   if (me && ev === 'listo') vibra(40); // el botón «¡Lo sé!» se acaba de activar
