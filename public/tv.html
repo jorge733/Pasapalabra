@@ -105,6 +105,16 @@
   .mcel.A,.mcel.B{border-color:var(--team);box-shadow:inset 0 0 0 .5vmin var(--team)}
   .mcel.cur{border-color:#fff;box-shadow:0 0 0 .5vmin #fff,0 0 4vmin var(--o1);background:var(--o1);animation:latido 1.2s infinite}
   .mcel.cur .num{color:#fff}
+  .tile .ord{position:absolute;top:.3vmin;left:.7vmin;font-size:2.2vmin;color:var(--B);font-weight:900}
+  .tile.on .ord{color:var(--o1)}
+  /* pruebas por turnos */
+  .letrasG{display:flex;gap:1.5vmin;justify-content:center;align-items:center;margin:1vmin 0 2vmin;font-size:3vmin;color:var(--muted);font-weight:900}
+  .letrasG .tile{width:10vmin;height:11vmin;font-size:7vmin}
+  .cols{display:grid;grid-template-columns:repeat(2,minmax(22vmin,30vmin));gap:.7vmin 5vmin;justify-content:center;margin:1.2vmin auto}
+  .cols div{background:var(--panel);border:.4vmin solid var(--pend);border-radius:1.2vmin;padding:.4vmin 2vmin;font-size:3vmin;font-weight:900;text-align:center}
+  .cols div.ok{background:var(--ok);border-color:var(--ok);color:#fff;opacity:.55}
+  .cols div.cur{border-color:#fff;box-shadow:0 0 0 .4vmin #fff}
+  .flashT{display:inline-block;padding:.6vmin 3vmin;border-radius:999px;color:#fff;animation:pop .35s}
   .vfila.nadie .tile.on{background:var(--pend);border-color:var(--pend);color:var(--muted)}
   @keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
   .aviso{font-size:4.4vmin;font-weight:900;text-align:center;min-height:6vmin}
@@ -281,7 +291,7 @@ function fundido(a, hasta, ms, alTerminar) {
 let bucleActual = null, tipoBucle = null, esperaBucle = null;
 function controlarBucle() {
   if (!sonidoActivo || !S) return;
-  const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria'];
+  const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'cruzadas'];
   // la sala de espera va sin música de fondo
   const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) ? 'pregunta' : null;
   if (quiero === tipoBucle) return;
@@ -416,7 +426,7 @@ function render() {
   } else if (S.intro) {
     const extra = S.intro.prueba === 'rueda'
       ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
-    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', rueda: '🎡' };
+    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', letraaletra: '🔠', pistas: '🔍', cruzadas: '🔗', rueda: '🎡' };
     h = `<div style="text-align:center"><div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div><div class="big intro-titulo">${esc(S.intro.titulo)}</div><div class="sub intro-texto">${esc(S.intro.texto)}</div>${extra}
       <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
   } else if (S.quiz && S.modo === 'presentador' && S.quiz.stage === 'ask') {
@@ -466,6 +476,48 @@ function render() {
     h = `<div class="q"><div class="pista">${esc(v.titulo)} · ${v.n} de ${v.total}</div>${cuerpo}
       ${rev ? '' : `<div class="bar"><i style="width:${(100 * v.rem / v.total_ms).toFixed(1)}%"></i></div>`}
       <div class="estado">${chips}</div></div>`;
+  } else if (S.turnos) {
+    const u = S.turnos, nom = (t) => esc(S.teams[t].name), R = u.resumen[u.turno];
+    const marcador = `<div class="estado">${u.orden.map((t) => { const x = u.resumen[t];
+      return `<span class="chip ${t} ${t === u.turno || u.stage === 'reveal' ? 'on' : ''}">${nom(t)}: ${x && x.jugado ? `${x.aciertos} ✔ · +${x.gana} s` : 'espera su turno'}</span>`; }).join('')}</div>`;
+    let cuerpo = '', aviso = '';
+    const ul = u.ultimo && Date.now() - u.ultimo.t < 1600 ? u.ultimo : null;
+    if (ul) aviso = { acierto: '<span class="flashT" style="background:var(--ok)">¡Correcto!</span>', paso: '<span class="flashT" style="background:#6366f1">¡Pasapalabra!</span>',
+      fallo: `<span class="flashT" style="background:var(--ko)">Incorrecto${ul.correcta ? ' · era ' + esc(ul.correcta) : ''}</span>` }[ul.tipo] || '';
+    if (u.stage === 'elegir') {
+      cuerpo = `<div class="big">Turno de <span class="${u.turno}" style="color:var(--team)">${nom(u.turno)}</span></div><div class="sub">Elijan un tema en el celular</div>
+        <div class="opts" style="max-width:110vmin;margin:4vmin auto">${u.temas.map((t, k) => `<div class="opt o${k + 1}"><span class="k">${k + 1}</span><span style="flex:1">${esc(t)}</span></div>`).join('')}</div>`;
+    } else if (u.stage === 'reveal') {
+      cuerpo = `<div class="equipos" style="max-width:100vmin;margin:3vmin auto">${u.orden.map((t) => { const x = u.resumen[t] || { aciertos: 0, gana: 0 };
+        return `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${nom(t)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">+${x.gana} s</div></div>`; }).join('')}</div>`;
+    } else if (u.stage === 'finTurno') {
+      cuerpo = `<div class="big ${u.turno}" style="color:var(--team);margin-top:3vmin">${nom(u.turno)}</div><div class="big" style="margin:2vmin 0">${R.aciertos} ${R.aciertos === 1 ? 'acierto' : 'aciertos'} · +${R.gana} s</div>`
+        + (u.kind === 'memoria' && u.celdas ? `<div class="mgrid">${u.celdas.map((c) => `<div class="mcel ver ${c.ok ? u.turno : ''}"><div class="e">${c.emoji}</div><div class="t">${esc(c.nombre)}</div></div>`).join('')}</div>` : '');
+    } else if (u.kind === 'letraaletra') {
+      cuerpo = `<div class="letrasG">Todas contienen ${[...u.letras].map((l) => `<div class="tile on">${l}</div>`).join('')}</div>
+        ${u.pista ? `<div class="qtxt">${esc(u.pista)}</div><div class="tiles">${u.molde.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>` : ''}
+        <div class="sub" style="margin:0 auto">${R.aciertos} de ${R.total} palabras</div>`;
+    } else if (u.kind === 'cruzadas') {
+      const col = (xs) => xs.map((x) => `<div class="${x.ok ? 'ok' : ''} ${x.cur ? 'cur' : ''}">${esc(x.t)}</div>`);
+      const iz = col(u.izq), de = col(u.der);
+      cuerpo = `<div class="big" style="font-size:4.6vmin">Tema: <span style="color:var(--B)">${esc(u.tema)}</span></div>
+        <div class="cols">${iz.map((x, k) => x + de[k]).join('')}</div>
+        ${u.pista ? `<div class="qtxt" style="font-size:4.6vmin;margin-bottom:1vmin">${esc(u.pista)}</div>` : ''}
+        ${u.resueltas.length ? `<div class="sub" style="margin:0 auto;font-size:2.6vmin">✔ ${u.resueltas.map(esc).join(' · ')}</div>` : ''}`;
+    } else if (u.kind === 'memoria') {
+      const celdas = u.celdas.map((c, k) => c.emoji
+        ? `<div class="mcel ver ${c.ok ? u.turno : ''}"><div class="e">${c.emoji}</div><div class="t">${esc(c.nombre)}</div></div>`
+        : `<div class="mcel ${k === u.actual ? 'cur' : ''}"><div class="num">${k === u.actual ? '?' : k + 1}</div></div>`).join('');
+      cuerpo = `<div class="big" style="font-size:4.4vmin;margin-top:.5vmin">${u.memorizar ? `🧠 ¡Memoricen! Tema: <span style="color:var(--B)">${esc(u.tema)}</span>`
+        : `¿Qué había en la casilla <span style="color:var(--o1);filter:brightness(1.6)">${u.actual + 1}</span>?`}</div>
+        <div class="mgrid">${celdas}</div>${u.reinicios ? `<div class="sub" style="margin:0 auto;font-size:2.4vmin">Tablero reiniciado ${u.reinicios} ${u.reinicios === 1 ? 'vez' : 'veces'}</div>` : ''}`;
+    } else if (u.kind === 'unade4' && u.opciones) {
+      cuerpo = `<div class="qtxt">${esc(u.pista)}</div>
+        <div class="opts">${u.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
+        <div class="sub" style="margin:2vmin auto 0">${R.aciertos} aciertos · ${R.fallos} fallos</div>`;
+    }
+    const cab = `${esc(u.titulo)} · turno ${u.n} de 2${u.stage === 'reveal' ? ' · resultado' : ' · ' + nom(u.turno)}${u.kind === 'unade4' && u.tema && u.stage === 'play' ? ' · ' + esc(u.tema) : ''}`;
+    h = `<div class="q" style="width:100%"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div>${marcador}</div>`;
   } else if (S.tuti) {
     const u = S.tuti, letra = `<div class="tile on" style="width:20vmin;height:22vmin;font-size:15vmin;border-radius:3vmin;flex:none">${esc(u.letra)}</div>`;
     if (u.stage === 'ask') {
@@ -512,11 +564,11 @@ function render() {
       const letras = rev ? [...p.respuesta.replace(/\s/g, '')] : [...p.revuelta];
       cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b></div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista</div>')}
         <div class="tiles">${letras.map((ch) => `<div class="tile on" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>`;
-    } else if (p.kind === 'quiensoy') {
-      const dots = [1, 2, 3].map((k) => `<span style="display:inline-block;width:3vmin;height:3vmin;border-radius:50%;margin:0 .6vmin;background:${k <= p.numPistas ? 'var(--B)' : 'var(--pend)'}"></span>`).join('');
+    } else if (p.kind === 'quiensoy' || p.kind === 'pistas') {
+      const dots = Array.from({ length: p.maxPistas || 3 }, (_, k) => k + 1).map((k) => `<span style="display:inline-block;width:3vmin;height:3vmin;border-radius:50%;margin:0 .6vmin;background:${k <= p.numPistas ? 'var(--B)' : 'var(--pend)'}"></span>`).join('');
       cuerpo = `<div style="text-align:center;margin:2vmin 0">${dots}</div>` + (p.pistas
         ? `<div style="max-width:120vmin;margin:0 auto">${p.pistas.map((t, k) => `<div class="qtxt" style="font-size:4.4vmin;margin:1.5vmin 0;animation:pop .35s">${k + 1}. ${esc(t)}</div>`).join('')}</div>`
-        : `<div class="big" style="margin:3vmin 0">🎙️ Escuchen la pista ${p.numPistas} de 3</div>`)
+        : `<div class="big" style="margin:3vmin 0">🎙️ Escuchen la pista ${p.numPistas} de ${p.maxPistas || 3}</div>`)
         + (rev ? `<div class="big" style="color:var(--ok);margin-top:2vmin">${esc(p.respuesta.toUpperCase())}</div>` : '');
     } else if (p.kind === 'adivinanza') {
       cuerpo = `<div class="qtxt" style="font-size:5.6vmin;max-width:140vmin;margin:3vmin auto;font-style:italic">«${esc(p.texto)}»</div>`
@@ -525,11 +577,15 @@ function render() {
       cuerpo = `<div class="tiles">${[...p.sigla].map((ch) => `<div class="tile on" style="width:13vmin;height:15vmin;font-size:10vmin">${esc(ch)}</div>`).join('')}</div>`
         + (rev ? `<div class="qtxt" style="color:var(--ok)">${esc((t => t.charAt(0).toUpperCase() + t.slice(1))(p.respuesta.split(': ').slice(1).join(': ')))}</div>` : '');
     } else if (p.kind === 'deletrea') {
-      const letras = rev ? [...p.respuesta] : p.molde;
-      cuerpo = `<div class="qtxt" style="max-width:140vmin;margin:2vmin auto 0">${esc(p.definicion)}</div>
+      // como en el programa: un cuadro con rayitas; en «al azar» y «al revés» cada casilla muestra en qué turno se deletrea
+      const MODO = { normal: '🔤 Deletreo normal', azar: '🎲 Deletreo al azar: sigan los números', reves: '🔁 Deletreo al revés: desde la última letra' };
+      const letras = rev ? [...p.palabra] : p.molde;
+      cuerpo = `<div class="big" style="font-size:4.2vmin;color:var(--B)">${MODO[p.modo]}</div>
+        <div class="qtxt" style="max-width:140vmin;margin:2vmin auto 0">${esc(p.definicion)}</div>
         <div class="tiles">${letras.map((ch, k) => ch === ' ' ? '<div class="tile sp"></div>'
-          : `<div class="tile ${ch ? 'on' : ''}" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>
-        ${rev ? '' : `<div class="sub" style="margin:0 auto">${p.molde.filter((ch) => ch !== ' ').length} letras · ¡a deletrear!</div>`}`;
+          : `<div class="tile ${ch ? 'on' : ''}" style="position:relative;${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}${p.numeros && p.numeros[k] ? `<small class="ord">${p.numeros[k]}</small>` : ''}</div>`).join('')}</div>
+        ${rev ? (p.modo !== 'normal' ? `<div class="sub" style="margin:0 auto">Deletreo: <b style="color:var(--ink)">${esc(p.respuesta.split('→')[1] || '')}</b></div>` : '')
+              : `<div class="sub" style="margin:0 auto">${p.molde.filter((ch) => ch !== ' ').length} letras · ¡a deletrear!</div>`}`;
     } else if (p.kind === 'quitaletras') {
       const letras = rev ? [...p.palabra] : [...p.revuelta];
       cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b> · sobra una letra</div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista · sobra una letra</div>')}
@@ -546,13 +602,6 @@ function render() {
       cuerpo = `<div class="big" style="font-size:5vmin;margin-top:1vmin">Concepto: <span style="color:var(--B)">${esc(tb.concepto)}</span></div>
         <div class="vgrid">${filas}</div>
         ${tb.pista ? `<div class="qtxt" style="font-size:4.4vmin;margin:0 auto 1vmin;max-width:140vmin">Fila ${tb.actual + 1}: ${esc(tb.pista)}</div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista</div>')}`;
-    } else if (p.kind === 'memoria') {
-      const m = p.memoria;
-      const celdas = m.celdas.map((c, k) => c.emoji
-        ? `<div class="mcel ver ${c.quien === 'A' || c.quien === 'B' ? c.quien : ''}"><div class="e">${c.emoji}</div><div class="t">${esc(c.nombre)}</div></div>`
-        : `<div class="mcel ${k === m.actual ? 'cur' : ''}"><div class="num">${k === m.actual ? '?' : k + 1}</div></div>`).join('');
-      cuerpo = `<div class="big" style="font-size:4.4vmin;margin-top:.5vmin">${m.memorizar ? '🧠 ¡Memoricen el tablero!' : `¿Qué había en la casilla <span style="color:var(--o1);filter:brightness(1.6)">${m.actual + 1}</span>?`}</div>
-        <div class="mgrid">${celdas}</div>`;
     } else {
       cuerpo = rev ? `<div class="qtxt" style="max-width:140vmin;margin:3vmin auto">${esc(p.respuesta)}</div>`
         : p.inicio ? `<div class="qtxt" style="font-size:7vmin;margin:3vmin 0">${esc(p.inicio)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchen el refrán</div>';
@@ -593,7 +642,7 @@ function render() {
         <h3>${esc(S.teams[x.team].name)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">${x.fallos} ${x.fallos === 1 ? 'fallo' : 'fallos'} · ${seg(x.tiempo)} s restantes</div></div>`).join('')}</div></div>`;
   }
   // cada pantalla lleva una clave: si cambia (otra pregunta, otra prueba, otro turno) se anima su entrada
-  const dato = S.quiz || S.vf || S.cifra || S.oculta || S.p || S.tuti;
+  const dato = S.quiz || S.vf || S.cifra || S.oculta || S.p || S.tuti || (S.turnos && { n: S.turnos.n + S.turnos.stage, kind: S.turnos.kind });
   const clave = S.phase + '-' + (S.intro ? S.intro.prueba : '') + (dato ? dato.n + (dato.kind || '') : '') + (S.p && (S.p.tablero || S.p.memoria) ? 't' + (S.p.tablero || S.p.memoria).num + (S.p.memoria && S.p.memoria.memorizar ? 'm' : '') : '') + (S.rueda ? S.rueda.turno : '');
   h = `<div class="vista" id="v-${clave.replace(/[^\w-]/g, '')}">${h}</div>`;
   if (S.paused) h += '<div class="pausa">⏸ Pausa</div>';
