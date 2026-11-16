@@ -301,6 +301,7 @@ function nuevaPartida() {
     modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el celular)
     rondas: G ? G.rondas : [...CLASICAS], // pruebas elegidas por el presentador (las del Pasapalabra chileno se activan en el panel)
     secuencia: [], paso: -1, introDe: null,
+    historial: [], enCurso: null, // segundos ganados por cada equipo en cada prueba (tabla de «tiempo acumulado»)
   };
 }
 nuevaPartida();
@@ -377,6 +378,7 @@ function empezar() {
 }
 // Pasa a la intro de la siguiente prueba
 function avanzar() {
+  cerrarPrueba();
   G.paso++;
   if (G.paso >= G.secuencia.length) return terminar();
   G.phase = 'intro'; G.introDe = G.secuencia[G.paso]; G.r = null;
@@ -384,8 +386,16 @@ function avanzar() {
   G.rem = 16000;
   emitir();
 }
+// Anota cuántos segundos ganó cada equipo en la prueba que termina
+function cerrarPrueba() {
+  const e = G.enCurso;
+  if (!e) return;
+  G.historial.push({ id: e.id, titulo: PRUEBAS[e.id].titulo, A: G.teams.A.bonus - e.A, B: G.teams.B.bonus - e.B });
+  G.enCurso = null;
+}
 function iniciarPrueba(k) {
   G.phase = k;
+  G.enCurso = k === 'rueda' ? null : { id: k, A: G.teams.A.bonus, B: G.teams.B.bonus };
   const n = cfg().porPrueba;
   if (k === 'quiz') { G.r = { kind: k, list: tomar('preguntasRapidas', 'preguntasChile', cfg().preguntasRapidas), i: -1 }; siguientePregunta(); }
   else if (TURNOS.includes(k)) iniciarTurnos(k);
@@ -1134,6 +1144,8 @@ function publico() {
       actual: L && r.stage === 'play' ? { letra: L.letra, tipo: L.tipo, pista: oculto ? null : L.pista } : null };
   } else if (G.phase === 'fin') s.fin = G.fin;
   s.reloj = reloj();
+  s.acumulado = G.historial;
+  if (G.enCurso) s.enPrueba = { A: G.teams.A.bonus - G.enCurso.A, B: G.teams.B.bonus - G.enCurso.B }; // lo ganado en la prueba en curso
   return s;
 }
 // Casillas de una palabra oculta: solo se ve la inicial (sin tilde); los espacios quedan como huecos

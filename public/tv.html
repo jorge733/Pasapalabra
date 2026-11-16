@@ -120,6 +120,32 @@
   .mbar .nb{position:absolute;left:1.4vmin;font-size:2vmin;opacity:.6}
   .mbar.cur{background:var(--o1);box-shadow:0 0 0 .5vmin #fff;animation:latido 1.2s infinite}
   .mbar.ver{animation:voltear .45s ease both}.mbar.A,.mbar.B{box-shadow:inset 0 0 0 .5vmin var(--team)}
+  /* pruebas por turnos: panel lateral del equipo que juega, con su reloj circular */
+  .tlayout{display:grid;grid-template-columns:30vmin minmax(0,1fr);gap:3vmin;width:min(92vw,170vmin);align-items:center}
+  .tlayout.der{grid-template-columns:minmax(0,1fr) 30vmin}.tlayout.der .tlado{order:2}
+  .tlado{background:var(--panel);border-radius:2vmin;border-top:1vmin solid var(--team);padding:2.5vmin 2vmin;text-align:center;display:flex;flex-direction:column;gap:1.6vmin;align-items:center;animation:resaltar 2s ease-in-out infinite}
+  .tnom{font-weight:900;font-size:3.6vmin;color:var(--team);line-height:1.1}
+  .tjug{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5vmin;font-size:2.4vmin;color:var(--muted);font-weight:800}
+  .tgana{font-size:2.6vmin;font-weight:900}
+  .tlayout .tcont{min-width:0;width:auto}
+  #reloj.oculto{visibility:hidden}
+  /* reloj circular (Letramanía): el aro se vacía a medida que pasa el tiempo */
+  .circulo{--p:100;width:20vmin;height:20vmin;border-radius:50%;display:grid;place-items:center;font-size:8vmin;font-weight:900;color:var(--ink);
+    background:radial-gradient(closest-side,var(--bg2) 76%,transparent 78% 100%),conic-gradient(var(--team) calc(var(--p) * 1%),var(--pend) 0)}
+  .circulo.bajo{animation:latido 1s infinite;color:var(--ko)}
+  .circulo.valor{--team:var(--o1);width:15vmin;height:15vmin;font-size:7.5vmin;margin:0 auto 1.5vmin}
+  /* Pistas que despistan: la pista va en una barra con el marcador de cada equipo a los lados */
+  .barraPista{display:grid;grid-template-columns:15vmin 1fr 15vmin;background:var(--panel);border-radius:2vmin;overflow:hidden;margin:2.5vmin auto 1vmin;max-width:150vmin;box-shadow:0 1vmin 3vmin rgba(0,0,0,.35)}
+  .barraPista .mk{background:var(--team);color:#111;font-weight:900;font-size:6vmin;display:grid;place-items:center}
+  .barraPista .txt{padding:2.5vmin 3vmin;font-size:4.4vmin;font-weight:900;text-align:center;line-height:1.2;animation:pop .35s}
+  .pprev{font-size:2.8vmin;color:var(--muted);text-align:center;line-height:1.5;font-weight:800}
+  /* tabla de tiempo acumulado (antes de la Rueda Final) */
+  .acu{margin:2vmin auto 0;border-collapse:separate;border-spacing:.7vmin;font-weight:900}
+  .acu td,.acu th{padding:.5vmin 2vmin;border-radius:1vmin;font-size:2.6vmin}
+  .acu .A,.acu .B{background:var(--team);color:#111;min-width:11vmin;text-align:center}
+  .acu td.nom{background:var(--panel);min-width:52vmin;text-align:center}
+  .acu th.nom{color:var(--muted);letter-spacing:.15em;text-transform:uppercase;font-size:2.2vmin}
+  .acu tr.tot td{font-size:3.4vmin;padding:.8vmin 2vmin}.acu tr.tot td.nom{background:#6d28d9}
   /* palabras ya acertadas, apiladas */
   .apiladas{display:flex;flex-wrap:wrap;gap:.8vmin;justify-content:center;max-width:150vmin;margin:1vmin auto 0}
   .apiladas span{background:#6d4fd8;color:#fff;border-radius:1vmin;padding:.3vmin 1.4vmin;font-weight:900;font-size:2.6vmin;letter-spacing:.05em}
@@ -428,6 +454,7 @@ function cabeceraQuiz(q) {
 }
 function render() {
   pintarReloj();
+  $('#reloj').classList.toggle('oculto', !!S.turnos); // en las pruebas por turnos el reloj va en el panel del equipo
   Idiomorph.morph($('#score'), S.phase === 'rueda' || S.phase === 'fin' ? '' : score(), { morphStyle: 'innerHTML' });
   animarBonus();
   const m = $('#main');
@@ -441,10 +468,15 @@ function render() {
         <div class="equipos">${['A', 'B'].map((t) => `<div class="equipo ${t}"><h3>${esc(S.teams[t].name)}</h3><ul>${lista(t)}</ul></div>`).join('')}</div>
       </div></div>`;
   } else if (S.intro) {
-    const extra = S.intro.prueba === 'rueda'
+    const acu = S.acumulado || [], conTabla = S.intro.prueba === 'rueda' && acu.length > 0;
+    let extra = S.intro.prueba === 'rueda'
       ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
+    // antes de la Rueda Final: lo que ganó cada equipo en cada prueba
+    if (conTabla) extra = `<table class="acu"><tr><th class="A">${esc(S.teams.A.name)}</th><th class="nom">Tiempo acumulado</th><th class="B">${esc(S.teams.B.name)}</th></tr>
+      ${acu.map((x) => `<tr><td class="A">${x.A}</td><td class="nom">${esc(x.titulo)}</td><td class="B">${x.B}</td></tr>`).join('')}
+      <tr class="tot"><td class="A">${S.tiempoBase + S.teams.A.bonus} s</td><td class="nom">Para la Rueda: ${S.tiempoBase} s + lo ganado</td><td class="B">${S.tiempoBase + S.teams.B.bonus} s</td></tr></table>`;
     const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', letraaletra: '🔠', pistas: '🔍', cruzadas: '🔗', rueda: '🎡' };
-    h = `<div style="text-align:center"><div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div><div class="big intro-titulo">${esc(S.intro.titulo)}</div><div class="sub intro-texto">${esc(S.intro.texto)}</div>${extra}
+    h = `<div style="text-align:center">${conTabla ? '' : `<div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div>`}<div class="big intro-titulo"${conTabla ? ' style="font-size:5vmin"' : ''}>${esc(S.intro.titulo)}</div>${conTabla ? '' : `<div class="sub intro-texto">${esc(S.intro.texto)}</div>`}${extra}
       <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
   } else if (S.quiz && S.modo === 'presentador' && S.quiz.stage === 'ask') {
     const q = S.quiz;
@@ -538,7 +570,17 @@ function render() {
         <div class="sub" style="margin:2vmin auto 0">${R.aciertos} aciertos · ${R.fallos} fallos</div>`;
     }
     const cab = `${esc(u.titulo)} · turno ${u.n} de 2${u.stage === 'reveal' ? ' · resultado' : ' · ' + nom(u.turno)}${u.kind === 'unade4' && u.tema && u.stage === 'play' ? ' · ' + esc(u.tema) : ''}`;
-    h = `<div class="q" style="width:100%"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div>${marcador}</div>`;
+    if (['play', 'memorizar', 'finTurno'].includes(u.stage)) {
+      // como en la tele: el panel del equipo que juega va a su lado, con sus jugadores y un reloj circular
+      const t = u.turno, rj = S.reloj, n = rj ? seg(rj.rem) : 0, pct = rj ? Math.round((100 * rj.rem) / rj.total) : 0;
+      const jug = S.players.filter((p) => p.team === t).map((p) => `<li>${esc(p.name)}</li>`).join('');
+      const otro = t === 'A' ? 'B' : 'A', xo = u.resumen[otro];
+      const lado = `<aside class="tlado ${t}"><div class="tnom">${nom(t)}</div>${jug ? `<ul class="tjug">${jug}</ul>` : ''}
+        ${rj ? `<div class="circulo ${t} ${n <= 5 && u.stage === 'play' ? 'bajo' : ''}" style="--p:${pct}">${n}</div>` : `<div class="tgana" style="font-size:5vmin">+${R.gana} s</div>`}
+        <div class="tgana">✔ ${R.aciertos}${u.stage === 'play' && R.gana ? ` · +${R.gana} s` : ''}</div>
+        <div class="tgana ${otro}" style="color:var(--team);opacity:.8">${nom(otro)}: ${xo && xo.jugado ? '+' + xo.gana + ' s' : 'después'}</div></aside>`;
+      h = `<div class="tlayout ${t === 'B' ? 'der' : ''}">${lado}<section class="tcont q"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div></section></div>`;
+    } else h = `<div class="q" style="width:100%"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div>${marcador}</div>`;
   } else if (S.tuti) {
     const u = S.tuti, letra = `<div class="tile on" style="width:20vmin;height:22vmin;font-size:15vmin;border-radius:3vmin;flex:none">${esc(u.letra)}</div>`;
     if (u.stage === 'ask') {
@@ -585,7 +627,14 @@ function render() {
       const letras = rev ? [...p.respuesta.replace(/\s/g, '')] : [...p.revuelta];
       cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b></div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista</div>')}
         <div class="tiles">${letras.map((ch) => `<div class="tile on" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>`;
-    } else if (p.kind === 'quiensoy' || p.kind === 'pistas') {
+    } else if (p.kind === 'pistas') {
+      // la pista va en una barra con lo que lleva cada equipo en esta prueba; el círculo dice cuánto vale acertar ahora
+      const ps = p.pistas || [], actual = ps[ps.length - 1], valor = Math.max(1, (p.maxPistas || 5) + 1 - p.numPistas), ep = S.enPrueba || { A: 0, B: 0 };
+      cuerpo = `<div class="circulo valor" style="--p:${valor * 20}">${valor}</div>
+        ${ps.length > 1 ? `<div class="pprev">${ps.slice(0, -1).map((x, k) => `${k + 1}. ${esc(x)}`).join('<br>')}</div>` : ''}
+        ${rev ? `<div class="big" style="color:var(--ok);margin-top:1.5vmin">${esc(p.respuesta.toUpperCase())}</div>` : ''}
+        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${actual ? `${ps.length}. ${esc(actual)}` : `🎙️ Escuchen la pista ${p.numPistas}`}</div><div class="mk B">${ep.B}</div></div>`;
+    } else if (p.kind === 'quiensoy') {
       const dots = Array.from({ length: p.maxPistas || 3 }, (_, k) => k + 1).map((k) => `<span style="display:inline-block;width:3vmin;height:3vmin;border-radius:50%;margin:0 .6vmin;background:${k <= p.numPistas ? 'var(--B)' : 'var(--pend)'}"></span>`).join('');
       cuerpo = `<div style="text-align:center;margin:2vmin 0">${dots}</div>` + (p.pistas
         ? `<div style="max-width:120vmin;margin:0 auto">${p.pistas.map((t, k) => `<div class="qtxt" style="font-size:4.4vmin;margin:1.5vmin 0;animation:pop .35s">${k + 1}. ${esc(t)}</div>`).join('')}</div>`
