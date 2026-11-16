@@ -87,15 +87,42 @@
   .vfila .tile.ini{background:var(--o1);color:#fff;border-color:var(--o1)}
   .vfila.cur{background:rgba(255,255,255,.12);box-shadow:0 0 0 .4vmin #fff}
   .vfila.A .tile.on,.vfila.B .tile.on{background:var(--team);border-color:var(--team);color:#fff}
-  /* Tuti Fruti (bachillerato) */
-  .tcats{margin:0;padding-left:5vmin;font-size:4.6vmin;font-weight:900;line-height:1.45;text-align:left}
-  .ttab{border-collapse:separate;border-spacing:.8vmin;font-size:3vmin}
-  .ttab th{text-align:left;color:var(--muted);font-weight:900;padding:0 1vmin}
-  .ttab td{background:var(--panel);border-radius:1.2vmin;padding:1vmin 1.8vmin;font-weight:900;min-width:30vmin}
-  .ttab td b{float:right;margin-left:1.5vmin}.ttab td em{float:right;font-style:normal;color:var(--ok)}
-  .ttab td.ok,.ttab td.si{box-shadow:inset .6vmin 0 0 var(--ok)}.ttab td.duda{box-shadow:inset .6vmin 0 0 var(--B)}
-  .ttab td.mal,.ttab td.no{box-shadow:inset .6vmin 0 0 var(--ko);color:var(--muted);text-decoration:line-through}.ttab td.vacia{color:var(--muted)}
-  .ttab .ttot td{background:none;text-align:center;font-size:4vmin;color:var(--ok)}
+  /* Bachillerato (Tuti Fruti): tablero con la letra, las categorías y una columna por equipo */
+  .bach{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4vmin;align-items:center;width:min(94vw,168vmin)}
+  .bletra{display:flex;flex-direction:column;align-items:center;gap:1.6vmin}
+  .bletra .tile{width:24vmin;height:27vmin;font-size:19vmin;border-radius:3.2vmin;box-shadow:0 0 0 .7vmin rgba(255,255,255,.18),0 2vmin 6vmin rgba(0,0,0,.45);flex:none}
+  .bletra small{font-size:2.3vmin;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.18em}
+  .bletra .rondas{display:flex;gap:1vmin}.bletra .rondas i{width:1.8vmin;height:1.8vmin;border-radius:50%;background:var(--pend)}
+  .bletra .rondas i.on{background:#fff}
+  .btab{display:grid;grid-template-columns:minmax(26vmin,auto) minmax(0,1fr) minmax(0,1fr);gap:1vmin 1.2vmin;align-items:stretch}
+  .btab .bh{display:flex;flex-direction:column;justify-content:flex-end;gap:.8vmin;padding:0 .4vmin .4vmin;font-weight:900;font-size:3vmin;color:var(--team);min-width:0}
+  .btab .bh .nb{display:flex;justify-content:space-between;align-items:baseline;gap:1vmin;white-space:nowrap;overflow:hidden}
+  .btab .bh .nb .cnt{color:var(--ink);font-size:2.4vmin}
+  .btab .bh .prog{height:1vmin;border-radius:1vmin;background:var(--pend);overflow:hidden}
+  .btab .bh .prog i{display:block;height:100%;background:var(--team);transition:width .4s}
+  .btab .bh.basta .nb .nom::after{content:' ✋'}
+  .bcat{display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.06);border-radius:1.4vmin;padding:1vmin 1.8vmin;min-height:8.4vmin}
+  .bcat b{font-size:3.2vmin;line-height:1.1}.bcat b .k{color:var(--muted);margin-right:1vmin}
+  .bcat small{font-size:2vmin;color:var(--muted);font-weight:800;margin-top:.4vmin}
+  .bcel{position:relative;display:flex;align-items:center;gap:1.2vmin;background:var(--panel);border-radius:1.4vmin;padding:1vmin 1.6vmin;min-height:8.4vmin;min-width:0;
+    border:.35vmin solid transparent;font-weight:900;font-size:3.3vmin;transition:background .3s,border-color .3s}
+  .bcel .txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bcel .ic{flex:none;width:4.4vmin;height:4.4vmin;border-radius:50%;display:grid;place-items:center;font-size:2.6vmin;color:#fff;background:var(--pend)}
+  .bcel .pt{flex:none;font-size:2.8vmin;padding:.2vmin 1.3vmin;border-radius:999px;background:var(--ok);color:#06240f;animation:pop .35s}
+  .bcel.pend{background:none;border:.35vmin dashed var(--pend);color:var(--muted);font-size:2.6vmin;justify-content:center}
+  .bcel.lista{background:color-mix(in srgb,var(--team) 22%,var(--panel));border-color:var(--team);color:var(--ink);font-size:2.6vmin;justify-content:center;animation:pop .35s}
+  .bcel.ok .ic,.bcel.si .ic{background:var(--ok)}
+  .bcel.duda .ic{background:#0ea5e9}
+  .bcel.mal,.bcel.no{color:var(--muted)}.bcel.mal .txt,.bcel.no .txt{text-decoration:line-through}.bcel.mal .ic,.bcel.no .ic{background:var(--ko)}
+  .bcel.vacia{color:var(--muted);background:rgba(34,29,77,.5)}
+  .bcel.gana{border-color:var(--ok);box-shadow:0 0 2.5vmin rgba(34,197,94,.35)}
+  .btot{display:flex;align-items:center;justify-content:center;gap:1vmin;font-size:5vmin;font-weight:900;color:var(--team);padding-top:.6vmin}
+  .btot.top{text-shadow:0 0 3vmin var(--team);animation:latido 1.4s ease-in-out 2}
+  .bley{display:flex;flex-wrap:wrap;justify-content:center;gap:1vmin 2.4vmin;margin-top:2.4vmin;font-size:2.2vmin;color:var(--muted);font-weight:800}
+  .bley span{display:inline-flex;align-items:center;gap:.8vmin}
+  .bley .ic{width:3vmin;height:3vmin;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-size:1.8vmin}
+  .bbanner{text-align:center;font-size:4.2vmin;font-weight:900;min-height:6vmin;margin-bottom:1.6vmin}
+  .bbanner .basta{display:inline-block;background:var(--team);color:#140f2e;padding:.6vmin 3vmin;border-radius:999px;animation:latido 1s infinite}
   /* La Memoria: tablero de 3 × 3 casillas */
   .mgrid{display:grid;grid-template-columns:repeat(3,22vmin);gap:1.6vmin;justify-content:center;margin:2vmin auto}
   .mcel{height:15vmin;border-radius:2vmin;background:var(--panel);border:.5vmin solid var(--pend);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900}
@@ -594,27 +621,42 @@ function render() {
       h = `<div class="tlayout ${t === 'B' ? 'der' : ''}">${lado}<section class="tcont q"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div></section></div>`;
     } else h = `<div class="q" style="width:100%"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div>${marcador}</div>`;
   } else if (S.tuti) {
-    const u = S.tuti, letra = `<div class="tile on" style="width:20vmin;height:22vmin;font-size:15vmin;border-radius:3vmin;flex:none">${esc(u.letra)}</div>`;
-    if (u.stage === 'ask') {
-      const aviso = u.basta ? `<span class="${u.basta}" style="color:var(--team)">✋ ¡Basta! gritó ${esc(S.teams[u.basta].name)}</span>` : 'Escriban en el celular una palabra por categoría';
-      h = `<div class="q"><div class="pista">Tuti Fruti · letra ${u.n} de ${u.total}</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:5vmin;margin:2.5vmin 0">${letra}
-          <ol class="tcats">${u.categorias.map((c) => `<li>${esc(c)}</li>`).join('')}</ol></div>
-        <div class="aviso">${aviso}</div>
-        <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)} · ${u.llenas[t]}/${u.categorias.length}</span>`).join('')}</div></div>`;
-    } else {
-      const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '—' };
-      const celda = (t, k) => {
-        const m = u.marcas[t][k], pts = u.puntos ? u.puntos[k][t] : null;
-        return `<td class="tm ${m}"><span>${esc(u.resp[t][k]) || '—'}</span> <b>${ICON[m]}</b>${pts ? ` <em>+${pts}</em>` : ''}</td>`;
-      };
-      h = `<div class="q" style="width:100%"><div class="pista">Tuti Fruti · letra ${u.n} de ${u.total} · ${u.stage === 'reveal' ? 'Resultado' : 'Revisando respuestas…'}</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:4vmin;margin-top:2vmin">${letra}
-        <table class="ttab"><tr><th></th>${['A', 'B'].map((t) => `<th class="${t}" style="color:var(--team)">${esc(S.teams[t].name)}</th>`).join('')}</tr>
-          ${u.categorias.map((c, k) => `<tr><th>${esc(c)}</th>${celda('A', k)}${celda('B', k)}</tr>`).join('')}
-          ${u.gana ? `<tr class="ttot"><th>Total</th>${['A', 'B'].map((t) => `<td>+${u.gana[t]} s</td>`).join('')}</tr>` : ''}</table></div>
-        <div class="sub" style="font-size:2.4vmin">✔ válida · ? no está en la lista (vale salvo que el presentador la rechace) · ✘ no vale · iguales: 1 s · distintas: 2 s · solo un equipo: 3 s</div></div>`;
-    }
+    // Bachillerato: la letra a la izquierda y el tablero (categorías × equipos) a la derecha
+    const u = S.tuti, nc = u.categorias.length, ask = u.stage === 'ask', rev = u.stage === 'reveal';
+    const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '' };
+    const llenaK = (t, k) => (u.llenasK ? u.llenasK[t][k] : k < u.llenas[t]);
+    const top = rev && u.gana && u.gana.A !== u.gana.B ? (u.gana.A > u.gana.B ? 'A' : 'B') : null;
+    const cab = (t) => {
+      const n = ask ? u.llenas[t] : null;
+      return `<div class="bh ${t} ${u.basta === t ? 'basta' : ''}"><div class="nb"><span class="nom">${esc(S.teams[t].name)}</span>${ask ? `<span class="cnt">${n}/${nc}</span>` : ''}</div>
+        ${ask ? `<div class="prog"><i style="width:${(100 * n) / nc}%"></i></div>` : ''}</div>`;
+    };
+    const celda = (t, k) => {
+      if (ask) return llenaK(t, k) ? `<div class="bcel ${t} lista">✔ Lista</div>` : `<div class="bcel pend">${u.basta ? '⏳' : '✎ …'}</div>`;
+      const m = u.marcas[t][k], pts = u.puntos ? u.puntos[k][t] : 0;
+      return `<div class="bcel ${t} ${m} ${pts ? 'gana' : ''}"><span class="txt">${esc(u.resp[t][k]) || '—'}</span>
+        ${pts ? `<span class="pt">+${pts}</span>` : ''}${ICON[m] ? `<span class="ic">${ICON[m]}</span>` : ''}</div>`;
+    };
+    const filas = u.categorias.map((c, k) => {
+      const ej = rev && u.ejemplos && u.ejemplos[k] && u.ejemplos[k].length ? `<small>p. ej. ${u.ejemplos[k].map(esc).join(', ')}</small>` : '';
+      return `<div class="bcat"><b><span class="k">${k + 1}</span>${esc(c)}</b>${ej}</div>${celda('A', k)}${celda('B', k)}`;
+    }).join('');
+    const total = rev && u.gana ? `<div></div>${['A', 'B'].map((t) => `<div class="btot ${t} ${top === t ? 'top' : ''}">+${u.gana[t]} s</div>`).join('')}` : '';
+    const etapa = ask ? '' : rev ? ' · resultado' : ' · revisando respuestas';
+    let banner;
+    if (ask && u.basta) banner = `<span class="basta ${u.basta}">✋ ¡Basta! gritó ${esc(S.teams[u.basta].name)}</span>`;
+    else if (ask) banner = 'Escriban en el celular una palabra por categoría';
+    else if (rev) banner = top ? `<span class="${top}" style="color:var(--team)">¡${esc(S.teams[top].name)} gana la letra!</span>` : (u.gana && u.gana.A ? '¡Empate en esta letra!' : 'Nadie suma en esta letra');
+    else banner = '<span style="color:var(--muted)">🔎 El presentador revisa las respuestas…</span>';
+    const ley = ask
+      ? `<span>Solo un equipo: <b style="color:var(--ink)">3 s</b></span><span>Distintas: <b style="color:var(--ink)">2 s</b></span><span>Iguales: <b style="color:var(--ink)">1 s</b></span>`
+      : `<span><i class="ic" style="background:var(--ok)">✔</i> válida</span><span><i class="ic" style="background:#0ea5e9">?</i> fuera de la lista: vale salvo que el presentador la rechace</span><span><i class="ic" style="background:var(--ko)">✘</i> no vale</span><span>Solo uno 3 s · distintas 2 s · iguales 1 s</span>`;
+    h = `<div class="q" style="width:auto"><div class="pista" style="margin-bottom:1.4vmin">Bachillerato · letra ${u.n} de ${u.total}${etapa}</div>
+      <div class="bbanner">${banner}</div>
+      <div class="bach"><div class="bletra"><div class="tile on">${esc(u.letra)}</div><small>Letra</small>
+        <div class="rondas">${Array.from({ length: u.total }, (_, k) => `<i class="${k < u.n ? 'on' : ''}"></i>`).join('')}</div></div>
+        <div class="btab"><div></div>${cab('A')}${cab('B')}${filas}${total}</div></div>
+      <div class="bley">${ley}</div></div>`;
   } else if (S.phase === 'cifra') {
     const c = S.cifra, rev = c.stage === 'reveal';
     const num = (x) => (c.unidad ? Number(x).toLocaleString('es-CL') : String(x)); // años sin punto de miles

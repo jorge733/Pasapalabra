@@ -1109,6 +1109,7 @@ function publico() {
     const ver = r.stage !== 'ask';
     s.tuti = { n: r.i + 1, total: r.list.length, letra: r.item.letra, categorias: r.item.cats.map((c) => c.categoria), stage: r.stage, basta: r.basta,
       llenas: { A: r.resp.A.filter((x) => x.trim()).length, B: r.resp.B.filter((x) => x.trim()).length },
+      llenasK: { A: r.resp.A.map((x) => !!x.trim()), B: r.resp.B.map((x) => !!x.trim()) }, // qué casillas ya llenó cada equipo (sin mostrar el texto)
       resp: ver ? r.resp : null, marcas: ver ? r.marcas : null, puntos: r.puntos, gana: r.stage === 'reveal' ? r.gana : null,
       ejemplos: r.stage === 'reveal' ? r.item.cats.map((c) => c.palabras.slice(0, 2)) : null };
   } else if (G.phase === 'oculta') {

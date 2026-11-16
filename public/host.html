@@ -289,7 +289,7 @@ function enviarClave() {
   try { localStorage.setItem('letramania-clave', clave); } catch (e) {}
   sock.emit('soyHost', clave);
 }
-const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', unade4: 'Una de cuatro', deletrea: 'Deletrea', tutifruti: 'Tuti Fruti', quitaletras: 'El Quitaletras', vertical: 'La palabra vertical', memoria: 'La Memoria', letraaletra: 'Letra a letra', pistas: 'Pistas que despistan', musical: 'La pista musical', todos: 'Todos contra todos', cruzadas: 'Palabras cruzadas', rueda: 'Rueda final', fin: 'Partida terminada' };
+const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', unade4: 'Una de cuatro', deletrea: 'Deletrea', tutifruti: 'Bachillerato', quitaletras: 'El Quitaletras', vertical: 'La palabra vertical', memoria: 'La Memoria', letraaletra: 'Letra a letra', pistas: 'Pistas que despistan', musical: 'La pista musical', todos: 'Todos contra todos', cruzadas: 'Palabras cruzadas', rueda: 'Rueda final', fin: 'Partida terminada' };
 let S = null, X = null, ultimaLectura = '';
 const cache = {}; // evita redibujar (y perder clics) si el HTML no cambió
 const pon = (sel, html) => { if (cache[sel] !== html) { cache[sel] = html; $(sel).innerHTML = html; } };
