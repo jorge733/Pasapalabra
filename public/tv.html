@@ -80,6 +80,23 @@
   .tile{width:9vmin;height:11vmin;border-radius:1.4vmin;background:var(--panel);border:.4vmin solid var(--pend);display:grid;place-items:center;font-size:7vmin;font-weight:900}
   .tile.on{background:#fff;color:var(--bg);border-color:#fff;animation:pop .35s}
   .tile.sp{background:none;border:0;width:4vmin}
+  /* La palabra vertical: la primera casilla de cada fila forma la palabra vertical */
+  .vgrid{display:flex;flex-direction:column;gap:1vmin;align-items:flex-start;margin:2.5vmin auto;width:max-content;max-width:100%}
+  .vfila{display:flex;gap:.8vmin;align-items:center;border-radius:1.4vmin;padding:.4vmin;transition:background .3s}
+  .vfila .tile{width:6.4vmin;height:7.4vmin;font-size:4.6vmin;border-radius:1vmin}
+  .vfila .tile.ini{background:var(--o1);color:#fff;border-color:var(--o1)}
+  .vfila.cur{background:rgba(255,255,255,.12);box-shadow:0 0 0 .4vmin #fff}
+  .vfila.A .tile.on,.vfila.B .tile.on{background:var(--team);border-color:var(--team);color:#fff}
+  /* La Memoria: tablero de 3 × 3 casillas */
+  .mgrid{display:grid;grid-template-columns:repeat(3,22vmin);gap:1.6vmin;justify-content:center;margin:2vmin auto}
+  .mcel{height:15vmin;border-radius:2vmin;background:var(--panel);border:.5vmin solid var(--pend);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900}
+  .mcel .e{font-size:7.5vmin;line-height:1}.mcel .t{font-size:2.3vmin;margin-top:.6vmin;text-transform:uppercase}
+  .mcel .num{font-size:6vmin;color:var(--muted)}
+  .mcel.ver{background:#fff;color:var(--bg);border-color:#fff;animation:voltear .5s ease both}
+  .mcel.A,.mcel.B{border-color:var(--team);box-shadow:inset 0 0 0 .5vmin var(--team)}
+  .mcel.cur{border-color:#fff;box-shadow:0 0 0 .5vmin #fff,0 0 4vmin var(--o1);background:var(--o1);animation:latido 1.2s infinite}
+  .mcel.cur .num{color:#fff}
+  .vfila.nadie .tile.on{background:var(--pend);border-color:var(--pend);color:var(--muted)}
   @keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
   .aviso{font-size:4.4vmin;font-weight:900;text-align:center;min-height:6vmin}
 
@@ -255,7 +272,7 @@ function fundido(a, hasta, ms, alTerminar) {
 let bucleActual = null, tipoBucle = null, esperaBucle = null;
 function controlarBucle() {
   if (!sonidoActivo || !S) return;
-  const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran'];
+  const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria'];
   // la sala de espera va sin música de fondo
   const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) ? 'pregunta' : null;
   if (quiero === tipoBucle) return;
@@ -369,6 +386,10 @@ function pintarReloj() {
   if (n !== ultimoSeg && n <= 5 && n > 0 && !r.parado) tono([1000], .05, 'square'); // tic en los últimos segundos
   ultimoSeg = n;
 }
+// Cabecera de las pruebas con cuatro alternativas (Respuesta rápida y Una de cuatro)
+function cabeceraQuiz(q) {
+  return q.kind === 'unade4' ? `Una de cuatro · ${q.n} de ${q.total} · Tema: <span style="color:var(--B)">${esc(q.tema)}</span>` : `Pregunta ${q.n} de ${q.total}`;
+}
 function render() {
   pintarReloj();
   Idiomorph.morph($('#score'), S.phase === 'rueda' || S.phase === 'fin' ? '' : score(), { morphStyle: 'innerHTML' });
@@ -386,21 +407,21 @@ function render() {
   } else if (S.intro) {
     const extra = S.intro.prueba === 'rueda'
       ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
-    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', rueda: '🎡' };
+    const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', rueda: '🎡' };
     h = `<div style="text-align:center"><div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div><div class="big intro-titulo">${esc(S.intro.titulo)}</div><div class="sub intro-texto">${esc(S.intro.texto)}</div>${extra}
       <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
-  } else if (S.phase === 'quiz' && S.modo === 'presentador' && S.quiz.stage === 'ask') {
+  } else if (S.quiz && S.modo === 'presentador' && S.quiz.stage === 'ask') {
     const q = S.quiz;
     const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : q.espera > 0 ? `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(q.espera)}</span>` : '¡Ya pueden presionar «¡Lo sé!»!';
-    h = `<div class="q"><div class="pista">Pregunta ${q.n} de ${q.total}</div>
+    h = `<div class="q"><div class="pista">${cabeceraQuiz(q)}</div>
       <div class="qtxt">${esc(q.texto)}</div>
       <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
       <div class="aviso" style="margin-top:3vmin">${aviso}</div>
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${q.bloqueado[t] ? ' · falló' : ''}</span>`).join('')}</div></div>`;
-  } else if (S.phase === 'quiz') {
+  } else if (S.quiz) {
     const q = S.quiz, rev = q.stage === 'reveal';
     const quien = (k) => rev ? ['A', 'B'].filter((t) => q.resp[t] && q.resp[t].opt === k).map((t) => `<span class="chip ${t}" style="font-size:2.4vmin">${esc(S.teams[t].name)}</span>`).join(' ') : '';
-    h = `<div class="q"><div class="pista">Pregunta ${q.n} de ${q.total}</div>
+    h = `<div class="q"><div class="pista">${cabeceraQuiz(q)}</div>
       <div class="qtxt">${esc(q.texto)}</div>
       <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k} ${rev ? (k === q.correcta ? 'win' : 'dim') : ''}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span>${quien(k)}</div>`).join('')}</div>
       ${rev ? `<div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${q.gana[t] ? '+' + q.gana[t] + ' s' : '—'}</span>`).join('')}</div>`
@@ -447,7 +468,7 @@ function render() {
       ${rev ? `<div class="big" style="font-size:12vmin;color:var(--ok)">${num(c.respuesta)} <span style="font-size:4vmin">${esc(c.unidad)}</span></div>`
             : '<div class="sub">Escriban su número en el celular</div>'}
       <div class="estado" style="margin-top:3vmin">${chips}</div></div>`;
-  } else if (S.p && ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas'].includes(S.phase)) {
+  } else if (S.p) {
     const p = S.p, rev = p.stage === 'reveal';
     let aviso = '';
     if (p.ganador) aviso = `<span class="${p.ganador.team}" style="color:var(--team)">¡${esc(S.teams[p.ganador.team].name)} acierta! +${p.ganador.seg} s</span>`;
@@ -472,11 +493,47 @@ function render() {
     } else if (p.kind === 'siglas') {
       cuerpo = `<div class="tiles">${[...p.sigla].map((ch) => `<div class="tile on" style="width:13vmin;height:15vmin;font-size:10vmin">${esc(ch)}</div>`).join('')}</div>`
         + (rev ? `<div class="qtxt" style="color:var(--ok)">${esc((t => t.charAt(0).toUpperCase() + t.slice(1))(p.respuesta.split(': ').slice(1).join(': ')))}</div>` : '');
+    } else if (p.kind === 'deletrea') {
+      const letras = rev ? [...p.respuesta] : p.molde;
+      cuerpo = `<div class="qtxt" style="max-width:140vmin;margin:2vmin auto 0">${esc(p.definicion)}</div>
+        <div class="tiles">${letras.map((ch, k) => ch === ' ' ? '<div class="tile sp"></div>'
+          : `<div class="tile ${ch ? 'on' : ''}" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>
+        ${rev ? '' : `<div class="sub" style="margin:0 auto">${p.molde.filter((ch) => ch !== ' ').length} letras · ¡a deletrear!</div>`}`;
+    } else if (p.kind === 'tutifruti') {
+      cuerpo = `<div style="display:flex;align-items:center;justify-content:center;gap:5vmin;margin:3vmin 0">
+          <div class="tile on" style="width:22vmin;height:24vmin;font-size:17vmin;border-radius:3vmin">${esc(p.letra)}</div>
+          <div style="text-align:left"><div class="pista" style="text-align:left">Categoría</div><div class="big" style="text-align:left;font-size:8vmin">${esc(p.categoria)}</div></div></div>`
+        + (rev ? `<div class="sub" style="margin:0 auto">Algunas válidas: <b style="color:var(--ok)">${esc(p.respuesta)}</b></div>` : '');
+    } else if (p.kind === 'quitaletras') {
+      const letras = rev ? [...p.palabra] : [...p.revuelta];
+      cuerpo = `${p.pista ? `<div class="sub" style="margin:0 auto">Pista: <b style="color:var(--ink)">${esc(p.pista)}</b> · sobra una letra</div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista · sobra una letra</div>')}
+        <div class="tiles">${letras.map((ch) => `<div class="tile on" style="${rev ? 'background:var(--ok);color:#fff;border-color:var(--ok)' : ''}">${esc(ch)}</div>`).join('')}</div>
+        ${rev ? `<div class="sub" style="margin:0 auto">Sobraba la <b class="tile on" style="display:inline-grid;width:7vmin;height:8vmin;font-size:5vmin;vertical-align:middle;background:var(--ko);color:#fff;border-color:var(--ko)">${esc(p.sobra)}</b></div>` : ''}`;
+    } else if (p.kind === 'vertical') {
+      const tb = p.tablero;
+      const filas = tb.filas.map((f, k) => {
+        const letras = f.palabra ? [...f.palabra] : f.molde;
+        const cls = f.quien === 'A' || f.quien === 'B' ? f.quien : f.quien === 'nadie' ? 'nadie' : '';
+        return `<div class="vfila ${cls} ${k === tb.actual && !rev ? 'cur' : ''}">${letras.map((ch, j) => ch === ' ' ? '<div class="tile sp"></div>'
+          : `<div class="tile ${j === 0 && !f.palabra ? 'on ini' : ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>`;
+      }).join('');
+      cuerpo = `<div class="big" style="font-size:5vmin;margin-top:1vmin">Concepto: <span style="color:var(--B)">${esc(tb.concepto)}</span></div>
+        <div class="vgrid">${filas}</div>
+        ${tb.pista ? `<div class="qtxt" style="font-size:4.4vmin;margin:0 auto 1vmin;max-width:140vmin">Fila ${tb.actual + 1}: ${esc(tb.pista)}</div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista</div>')}`;
+    } else if (p.kind === 'memoria') {
+      const m = p.memoria;
+      const celdas = m.celdas.map((c, k) => c.emoji
+        ? `<div class="mcel ver ${c.quien === 'A' || c.quien === 'B' ? c.quien : ''}"><div class="e">${c.emoji}</div><div class="t">${esc(c.nombre)}</div></div>`
+        : `<div class="mcel ${k === m.actual ? 'cur' : ''}"><div class="num">${k === m.actual ? '?' : k + 1}</div></div>`).join('');
+      cuerpo = `<div class="big" style="font-size:4.4vmin;margin-top:.5vmin">${m.memorizar ? '🧠 ¡Memoricen el tablero!' : `¿Qué había en la casilla <span style="color:var(--o1);filter:brightness(1.6)">${m.actual + 1}</span>?`}</div>
+        <div class="mgrid">${celdas}</div>`;
     } else {
       cuerpo = rev ? `<div class="qtxt" style="max-width:140vmin;margin:3vmin auto">${esc(p.respuesta)}</div>`
         : p.inicio ? `<div class="qtxt" style="font-size:7vmin;margin:3vmin 0">${esc(p.inicio)}</div>` : '<div class="big" style="margin:3vmin 0">🎙️ Escuchen el refrán</div>';
     }
-    h = `<div style="width:100%"><div class="pista">${esc(p.titulo)} · ${p.n} de ${p.total}</div>${cuerpo}
+    const tb = p.tablero || p.memoria;
+    const cab = tb ? `${esc(p.titulo)} · tablero ${tb.num} de ${tb.de}${p.memoria ? ' · ' + esc(p.memoria.tema) : ''}` : `${esc(p.titulo)} · ${p.n} de ${p.total}`;
+    h = `<div style="width:100%"><div class="pista">${cab}</div>${cuerpo}
       <div class="aviso">${aviso}</div>
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${p.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${p.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
   } else if (S.phase === 'rueda') {
@@ -511,7 +568,7 @@ function render() {
   }
   // cada pantalla lleva una clave: si cambia (otra pregunta, otra prueba, otro turno) se anima su entrada
   const dato = S.quiz || S.vf || S.cifra || S.oculta || S.p;
-  const clave = S.phase + '-' + (S.intro ? S.intro.prueba : '') + (dato ? dato.n + (dato.kind || '') : '') + (S.rueda ? S.rueda.turno : '');
+  const clave = S.phase + '-' + (S.intro ? S.intro.prueba : '') + (dato ? dato.n + (dato.kind || '') : '') + (S.p && (S.p.tablero || S.p.memoria) ? 't' + (S.p.tablero || S.p.memoria).num + (S.p.memoria && S.p.memoria.memorizar ? 'm' : '') : '') + (S.rueda ? S.rueda.turno : '');
   h = `<div class="vista" id="v-${clave.replace(/[^\w-]/g, '')}">${h}</div>`;
   if (S.paused) h += '<div class="pausa">⏸ Pausa</div>';
   // pantalla nueva → se reemplaza entera (y se anima su entrada); misma pantalla → solo se actualiza lo que cambió

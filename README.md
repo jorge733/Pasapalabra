@@ -51,7 +51,15 @@ Dos equipos compiten en varias pruebas cortas para ganar segundos. Después vien
 | **¿Quién soy?** | Tres pistas, cada vez más fáciles | 12 / 8 / 5 s según las pistas usadas |
 | **Adivinanzas** | Adivinanzas tradicionales | 8 s |
 | **Completa el refrán** | Decir cómo termina el refrán (incluye dichos chilenos) | 8 s |
+| 🇨🇱 **Una de cuatro** | Un tema, una pista y cuatro alternativas | 8 s (con presentador) / 5 + 3 s al más rápido (automático) |
+| 🇨🇱 **Deletrea** | Una definición: solo se ve la primera letra y hay que deletrear la palabra sin faltas | 8 s |
+| 🇨🇱 **Tuti Fruti** | Una letra y una categoría (país, fruta, comuna de Chile…): decir algo que empiece por esa letra | 5 s |
+| 🇨🇱 **El Quitaletras** | Letras revueltas con una de más: quitarla y formar la palabra | 8 s |
+| 🇨🇱 **La palabra vertical** | Un concepto y varias filas relacionadas; sus iniciales forman la palabra vertical | 5 s por fila |
+| 🇨🇱 **La Memoria** | Se ve un tablero de 9 dibujos unos segundos y luego se tapa: hay que recordar qué había en la casilla marcada | 5 s por casilla |
 | **La Rueda Final** | Una palabra por letra (25 letras: sin K ni W). Si fallas o pasas, le toca al otro equipo | Gana quien más acierte |
+
+Las marcadas con 🇨🇱 son pruebas del **Pasapalabra chileno** (Chilevisión). Vienen desactivadas para que la partida no se alargue: actívalas una por una en el panel del presentador o con el botón **«🇨🇱 Solo las del Pasapalabra chileno»** (también hay «Solo las clásicas» y «Todas»). Su contenido está en [`contenido-pasapalabra.js`](contenido-pasapalabra.js).
 
 El presentador elige en su panel qué pruebas se juegan antes de empezar. Si un equipo presiona y falla, el otro puede intentarlo.
 
@@ -135,6 +143,7 @@ Si el juego no reconoce una respuesta válida (un sinónimo, por ejemplo), el pr
 | `contenido.js` | Preguntas, palabras y ruedas |
 | `contenido-variedad.js` | Más preguntas de temas variados para todas las pruebas y niveles |
 | `contenido-kids.js` | Contenido del modo Kids (7 a 12 años) |
+| `contenido-pasapalabra.js` | Contenido de las pruebas del Pasapalabra chileno |
 | `public/tv.html` | Pantalla de la tele |
 | `public/play.html` | Control del celular |
 | `public/host.html` | Panel del presentador |

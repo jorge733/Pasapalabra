@@ -623,3 +623,6 @@ for (const [k, v] of Object.entries(KIDS)) exports[k] = [...(exports[k] || []), 
 // Más definiciones para la Rueda Final
 const RUEDAS = require('./contenido-ruedas');
 for (const [k, v] of Object.entries(RUEDAS)) exports[k] = [...(exports[k] || []), ...v];
+// Pruebas del Pasapalabra chileno (Una de cuatro, Deletrea, Tuti Fruti, El Quitaletras, La palabra vertical)
+const PASAPALABRA = require('./contenido-pasapalabra');
+for (const [k, v] of Object.entries(PASAPALABRA)) exports[k] = [...(exports[k] || []), ...v];

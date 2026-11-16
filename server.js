@@ -19,7 +19,14 @@ const CONFIG = {
   segVFPresentador: 15,    //   segundos para responder (con presentador: incluye la lectura)
   palabrasOcultas: 4,      // Palabra oculta: nº de palabras
   revelarCadaMs: 2200,     //   cada cuánto aparece una letra
-  porPrueba: 4,            // Letras revueltas, Siglas, ¿Quién soy?, Adivinanzas y Completa el refrán: nº de rondas de cada una
+  porPrueba: 4,            // Letras revueltas, Siglas, ¿Quién soy?, Adivinanzas, Completa el refrán, Deletrea y El Quitaletras: nº de rondas de cada una
+  unaDeCuatro: 5,          // Una de cuatro: nº de preguntas
+  tutiFruti: 5,            // Tuti Fruti: nº de letras
+  palabrasVerticales: 2,   // La palabra vertical: nº de tableros (cada uno tiene 4 a 6 filas)
+  segPulsadorCorto: 20,    // Tuti Fruti, La palabra vertical y La Memoria: segundos antes de dar la ronda por perdida
+  memorias: 2,             // La Memoria: nº de tableros
+  memoriaPreguntas: 5,     //   casillas que se preguntan de cada tablero (de 9)
+  segMemorizar: 15,        //   segundos para memorizar el tablero antes de taparlo
   queFueAntes: 5,          // ¿Qué fue antes?: nº de preguntas
   cifras: 4,               // Adivina la cifra: nº de preguntas
   segCifra: 25,            //   segundos para escribir el número
@@ -40,6 +47,8 @@ const CONFIG_KIDS = {
   revelarCadaMs: 2800,
   segCifra: 35,
   segPulsador: 40,
+  segPulsadorCorto: 28,
+  segMemorizar: 20,
   quienSoyCadaMs: 13000,
   segRebote: 7,
   segParaResponder: 20,
@@ -194,14 +203,56 @@ const PRUEBAS = {
     auto: '¿Qué significan estas siglas? Presionen «¡Lo sé!» y escriban el significado completo. Acertar suma 8 segundos.',
     presentador: '¿Qué significan estas siglas? Presionen «¡Lo sé!» y digan el significado completo en voz alta. Acertar suma 8 segundos.',
   },
+  // --- Pruebas del Pasapalabra chileno (Chilevisión) ---
+  unade4: {
+    titulo: 'Una de cuatro',
+    pasapalabra: true,
+    auto: 'Hay un tema, una pista y cuatro alternativas: elijan la correcta en el celular. Acertar suma 5 segundos y el equipo más rápido gana 3 más.',
+    presentador: 'El presentador da un tema y una pista. En la tele hay cuatro alternativas: presionen «¡Lo sé!» y digan cuál es. Acertar suma 8 segundos.',
+  },
+  deletrea: {
+    titulo: 'Deletrea',
+    pasapalabra: true,
+    auto: 'Lean la definición: solo se ve la primera letra. Presionen «¡Lo sé!» y escriban la palabra sin faltas. Acertar suma 8 segundos.',
+    presentador: 'El presentador lee una definición. Presionen «¡Lo sé!» y deletreen la palabra letra por letra, sin equivocarse. Acertar suma 8 segundos.',
+  },
+  tutifruti: {
+    titulo: 'Tuti Fruti',
+    pasapalabra: true,
+    auto: 'Sale una letra y una categoría. Presionen «¡Lo sé!» y escriban algo de esa categoría que empiece por esa letra. Acertar suma 5 segundos.',
+    presentador: 'Sale una letra y una categoría. Presionen «¡Lo sé!» y digan algo de esa categoría que empiece por esa letra. Acertar suma 5 segundos.',
+  },
+  quitaletras: {
+    titulo: 'El Quitaletras',
+    pasapalabra: true,
+    auto: 'Las letras están revueltas y sobra una. Quítenla y ordenen el resto: presionen «¡Lo sé!» y escriban la palabra. Acertar suma 8 segundos.',
+    presentador: 'Las letras están revueltas y sobra una. Presionen «¡Lo sé!» y digan la palabra y qué letra sobra. Acertar suma 8 segundos.',
+  },
+  vertical: {
+    titulo: 'La palabra vertical',
+    pasapalabra: true,
+    auto: 'Cada fila es una palabra relacionada con el concepto, y sus iniciales forman la palabra vertical. Presionen «¡Lo sé!» y escriban la de la fila marcada. Cada fila suma 5 segundos.',
+    presentador: 'El presentador da el concepto y una pista por fila. Las iniciales forman la palabra vertical. Presionen «¡Lo sé!» y digan la palabra de la fila. Cada fila suma 5 segundos.',
+  },
+  memoria: {
+    titulo: 'La Memoria',
+    pasapalabra: true,
+    auto: 'Memoricen el tablero de la tele: luego se tapa. Se marca una casilla: presionen «¡Lo sé!» y escriban qué había en ella. Cada acierto suma 5 segundos.',
+    presentador: 'Memoricen el tablero de la tele: luego se tapa. El presentador señala una casilla: presionen «¡Lo sé!» y digan qué había. Cada acierto suma 5 segundos.',
+  },
   rueda: {
     titulo: 'La Rueda Final',
     auto: 'Una palabra por cada letra. Si fallas o dices «Paso», le toca al otro equipo. ¡Gana quien más acierte!',
     presentador: 'El presentador lee una definición por cada letra. Respondan en voz alta o digan «Paso». Si fallas o pasas, le toca al otro equipo. ¡Gana quien más acierte!',
   },
 };
-const ORDEN = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran']; // la rueda va siempre al final
-const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas']; // pruebas de «presiona y responde»
+const CLASICAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran'];
+const CHILENAS = ['unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria']; // pruebas del Pasapalabra chileno
+const ORDEN = [...CLASICAS, ...CHILENAS]; // orden en que se juegan; la rueda va siempre al final
+const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria']; // pruebas de «presiona y responde»
+const RAPIDA = ['quiz', 'unade4']; // pruebas con cuatro alternativas
+const PREMIO = { quiensoy: [12, 8, 5], tutifruti: 5, vertical: 5, memoria: 5 }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
+const PULSADOR_CORTO = ['tutifruti', 'vertical', 'memoria'];
 const ELECCION = ['vf', 'antes']; // pruebas en que ambos equipos eligen una opción en el celular
 
 // ---------- estado ----------
@@ -216,7 +267,7 @@ function nuevaPartida() {
     dificultad: G ? G.dificultad : 'dificil', // 'kids', 'normal' o 'dificil'
     musicaFondo: G ? G.musicaFondo : true,   // música de fondo en la sala de espera y en la rueda
     modo: G ? G.modo : 'presentador', // 'presentador' (se responde en voz alta) o 'auto' (se escribe en el celular)
-    rondas: G ? G.rondas : [...ORDEN], // pruebas elegidas por el presentador
+    rondas: G ? G.rondas : [...CLASICAS], // pruebas elegidas por el presentador (las del Pasapalabra chileno se activan en el panel)
     secuencia: [], paso: -1, introDe: null,
   };
 }
@@ -304,7 +355,29 @@ function avanzar() {
 function iniciarPrueba(k) {
   G.phase = k;
   const n = cfg().porPrueba;
-  if (k === 'quiz') { G.r = { list: tomar('preguntasRapidas', 'preguntasChile', cfg().preguntasRapidas), i: -1 }; siguientePregunta(); }
+  if (k === 'quiz') { G.r = { kind: k, list: tomar('preguntasRapidas', 'preguntasChile', cfg().preguntasRapidas), i: -1 }; siguientePregunta(); }
+  else if (k === 'unade4') {
+    const list = tomar('unaDeCuatro', 'unaDeCuatroChile', cfg().unaDeCuatro).map((x) => ({ pregunta: x.pista, opciones: x.opciones, tema: x.tema }));
+    G.r = { kind: k, list, i: -1 }; siguientePregunta();
+  }
+  else if (k === 'deletrea') { G.r = { kind: k, list: tomar('deletrea', 'deletreaChile', n), i: -1 }; siguientePulsador(); }
+  else if (k === 'tutifruti') { G.r = { kind: k, list: tomar('tutiFruti', 'tutiFrutiChile', cfg().tutiFruti), i: -1 }; siguientePulsador(); }
+  else if (k === 'quitaletras') { G.r = { kind: k, list: tomar('quitaletras', 'quitaletrasChile', n), i: -1 }; siguientePulsador(); }
+  else if (k === 'vertical') {
+    // cada tablero aporta sus filas; se juegan una tras otra y la tele muestra el tablero completo
+    const tableros = tomar('palabraVertical', 'palabraVerticalChile', cfg().palabrasVerticales);
+    const list = tableros.flatMap((tb, t) => tb.filas.map((f, k2) => ({ ...f, tablero: t, fila: k2 })));
+    G.r = { kind: k, list, i: -1, tableros: tableros.map((tb) => ({ concepto: tb.concepto, filas: tb.filas.map(() => null) })) };
+    siguientePulsador();
+  }
+  else if (k === 'memoria') {
+    // de cada tablero (9 casillas) se preguntan algunas, en orden al azar
+    const tableros = tomar('memoria', 'memoriaChile', cfg().memorias);
+    const list = tableros.flatMap((tb, t) => shuffle(tb.elementos.map((e, pos) => ({ ...e, respuestas: [e.nombre, ...(e.otras || [])], tablero: t, pos })))
+      .slice(0, cfg().memoriaPreguntas));
+    G.r = { kind: k, list, i: -1, tableros: tableros.map((tb) => ({ tema: tb.tema, elementos: tb.elementos, celdas: tb.elementos.map(() => null) })) };
+    siguientePulsador();
+  }
   else if (k === 'vf') { G.r = { kind: k, list: tomar('verdaderoFalso', 'verdaderoFalsoChile', cfg().verdaderoFalso), i: -1 }; siguienteVF(); }
   else if (k === 'antes') { G.r = { kind: k, list: tomar('queFueAntes', 'queFueAntesChile', cfg().queFueAntes), i: -1 }; siguienteVF(); }
   else if (k === 'cifra') { G.r = { list: tomar('cifras', 'cifrasChile', cfg().cifras), i: -1 }; siguienteCifra(); }
@@ -325,7 +398,7 @@ function siguientePregunta() {
   if (r.i >= r.list.length) return avanzar();
   const q = r.list[r.i];
   const opts = shuffle(q.opciones.map((t, k) => ({ t, ok: k === 0 }))); // la primera opción es la correcta
-  r.q = { texto: q.pregunta, opciones: opts.map((o) => o.t), correcta: opts.findIndex((o) => o.ok) };
+  r.q = { texto: q.pregunta, tema: q.tema || null, opciones: opts.map((o) => o.t), correcta: opts.findIndex((o) => o.ok) };
   r.stage = 'ask'; r.rem = (conPresentador() ? cfg().segPreguntaPresentador : cfg().segPregunta) * 1000; r.elapsed = 0;
   r.resp = { A: null, B: null };
   r.buzz = null; r.bloqueado = { A: false, B: false }; r.gana = {};
@@ -339,7 +412,7 @@ function pulsarQuiz(team) {
 }
 function responderQuiz(team, opt) {
   const r = G.r;
-  if (G.phase !== 'quiz' || conPresentador() || r.stage !== 'ask' || r.resp[team]) return;
+  if (!RAPIDA.includes(G.phase) || conPresentador() || r.stage !== 'ask' || r.resp[team]) return;
   r.resp[team] = { opt, ms: r.elapsed, ok: opt === r.q.correcta };
   if (r.resp.A && r.resp.B) revelarQuiz(); else emitir();
 }
@@ -467,12 +540,16 @@ function fallarOculta(team) {
 
 // ---- Pruebas de pulsador: letras revueltas, ¿quién soy?, completa el refrán ----
 function respuestasDe(r) {
-  if (r.kind === 'anagrama') return [r.item.palabra];
+  if (['anagrama', 'deletrea', 'quitaletras'].includes(r.kind)) return [r.item.palabra];
   if (r.kind === 'refran') return r.item.finales;
   return r.item.respuestas; // ¿quién soy?, adivinanzas, siglas
 }
 function textoRespuesta(r) {
-  if (r.kind === 'anagrama') return r.item.palabra.toUpperCase();
+  if (['anagrama', 'deletrea'].includes(r.kind)) return r.item.palabra.toUpperCase();
+  if (r.kind === 'quitaletras') return `${r.item.palabra.toUpperCase()} (sobraba la ${r.item.sobra.toUpperCase()})`;
+  if (r.kind === 'tutifruti') return r.item.respuestas.slice(0, 4).map((x) => x.charAt(0).toUpperCase() + x.slice(1)).join(', ');
+  if (r.kind === 'vertical') return r.item.respuestas[0].toUpperCase();
+  if (r.kind === 'memoria') return `${r.item.emoji} ${r.item.nombre.charAt(0).toUpperCase() + r.item.nombre.slice(1)}`;
   if (r.kind === 'refran') return r.item.inicio.replace(/…$/, '') + ' ' + r.item.finales[0];
   if (r.kind === 'siglas') return `${r.item.sigla}: ${r.item.respuestas[0]}`;
   return r.item.respuestas[0];
@@ -484,10 +561,26 @@ function siguientePulsador() {
   r.item = r.list[r.i];
   r.stage = 'play'; r.buzz = null; r.bloqueado = { A: false, B: false }; r.ganador = null; r.intento = null;
   r.pistas = 1;
-  r.rem = r.kind === 'quiensoy' ? cfg().quienSoyCadaMs : cfg().segPulsador * 1000; // tiempo hasta la siguiente pista o hasta rendirse
+  r.rem = tiempoP(r); // tiempo hasta la siguiente pista o hasta rendirse
   if (r.kind === 'anagrama') r.revuelta = revolver(r.item.palabra);
+  if (r.kind === 'quitaletras') r.revuelta = revolver(r.item.palabra + r.item.sobra);
+  // La Memoria: al empezar cada tablero, se muestra destapado unos segundos para memorizarlo
+  const previo = r.list[r.i - 1];
+  if (r.kind === 'memoria' && (!previo || previo.tablero !== r.item.tablero)) { r.stage = 'memorizar'; r.rem = cfg().segMemorizar * 1000; }
   r.espera = cfg().segPensar * 1000;
 }
+// Tiempo de cada ronda de pulsador (en ¿Quién soy?, hasta la siguiente pista)
+function tiempoP(r) {
+  if (r.kind === 'quiensoy') return cfg().quienSoyCadaMs;
+  return (PULSADOR_CORTO.includes(r.kind) ? cfg().segPulsadorCorto : cfg().segPulsador) * 1000;
+}
+// La palabra vertical y La Memoria: anota quién resolvió la fila o la casilla (o 'nadie')
+function anotarFila(r, quien) {
+  if (r.kind === 'vertical') r.tableros[r.item.tablero].filas[r.item.fila] = quien;
+  if (r.kind === 'memoria') r.tableros[r.item.tablero].celdas[r.item.pos] = quien;
+}
+// La Memoria: se acaba el tiempo de memorizar y se tapa el tablero
+function taparMemoria() { const r = G.r; r.stage = 'play'; r.rem = tiempoP(r); r.espera = cfg().segPensar * 1000; emitir('reveal'); }
 function pulsarP(team) {
   const r = G.r;
   if (r.stage !== 'play' || r.buzz || r.bloqueado[team] || r.espera > 0) return;
@@ -502,16 +595,18 @@ function responderP(team, texto) {
 }
 function acertarP(team) {
   const r = G.r;
-  const seg = r.kind === 'quiensoy' ? [12, 8, 5][r.pistas - 1] : 8;
+  const p = PREMIO[r.kind];
+  const seg = Array.isArray(p) ? p[r.pistas - 1] : p || 8;
   G.teams[team].bonus += seg;
   r.ganador = { team, seg }; r.buzz = null;
+  anotarFila(r, team);
   r.stage = 'reveal'; r.rem = 5000;
   emitir('ok');
 }
 function fallarP(team) {
   const r = G.r;
   r.bloqueado[team] = true; r.buzz = null;
-  if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; }
+  if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; anotarFila(r, 'nadie'); }
   else {
     // el otro equipo tiene al menos unos segundos para presionar
     const quedan = (r.kind === 'quiensoy' ? (3 - r.pistas) * cfg().quienSoyCadaMs : 0) + r.rem;
@@ -519,7 +614,7 @@ function fallarP(team) {
   }
   emitir('fail');
 }
-function rendirP() { const r = G.r; r.buzz = null; r.stage = 'reveal'; r.rem = 5000; emitir('reveal'); }
+function rendirP() { const r = G.r; r.buzz = null; r.stage = 'reveal'; r.rem = ['vertical', 'memoria'].includes(r.kind) ? 3500 : 5000; anotarFila(r, 'nadie'); emitir('reveal'); }
 
 // ---- Rueda final ----
 function iniciarRueda() {
@@ -580,7 +675,7 @@ function terminar() {
 function juzgar(res) {
   const r = G.r;
   if (!r || !conPresentador() || G.paused) return;
-  if (G.phase === 'quiz' && r.stage === 'ask') {
+  if (RAPIDA.includes(G.phase) && r.stage === 'ask') {
     if (res === 'nadie') { r.buzz = null; r.stage = 'reveal'; r.rem = 5000; return emitir('reveal'); }
     if (!r.buzz) return;
     const t = r.buzz.team;
@@ -601,6 +696,8 @@ function juzgar(res) {
     if (!r.buzz) return;
     if (res === 'ok') return acertarOculta(r.buzz.team);
     if (res === 'ko') return fallarOculta(r.buzz.team);
+  } else if (G.phase === 'memoria' && r.stage === 'memorizar') {
+    if (res === 'nadie') return taparMemoria(); // el presentador tapa el tablero antes de tiempo
   } else if (PULSADOR.includes(G.phase) && r.stage === 'play') {
     if (res === 'nadie') return rendirP();
     if (res === 'pista' && r.kind === 'quiensoy' && !r.buzz && r.pistas < 3) { r.pistas++; r.rem = cfg().quienSoyCadaMs; return emitir('reveal'); }
@@ -621,12 +718,12 @@ setInterval(() => {
   const r = G.r;
   if (G.phase === 'intro') { G.rem -= dt; if (G.rem <= 0) iniciarPrueba(G.introDe); return; }
   // tiempo para pensar: el botón está bloqueado y el resto del reloj no corre
-  if (r && r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && ['quiz', 'oculta', ...PULSADOR].includes(G.phase)) {
+  if (r && r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && [...RAPIDA, 'oculta', ...PULSADOR].includes(G.phase)) {
     r.espera -= dt;
     if (r.espera <= 0) { r.espera = 0; emitir('listo'); }
     return;
   }
-  if (G.phase === 'quiz') {
+  if (RAPIDA.includes(G.phase)) {
     if (r.stage === 'ask') {
       if (!conPresentador()) { r.rem -= dt; r.elapsed += dt; if (r.rem <= 0) revelarQuiz(); }
       // con presentador, el reloj se detiene mientras un equipo responde; si se acaba, nadie suma
@@ -653,7 +750,8 @@ setInterval(() => {
       }
     } else { r.rem -= dt; if (r.rem <= 0) { siguienteOculta(); emitir(); } }
   } else if (PULSADOR.includes(G.phase)) {
-    if (r.stage === 'play') {
+    if (r.stage === 'memorizar') { r.rem -= dt; if (r.rem <= 0) taparMemoria(); }
+    else if (r.stage === 'play') {
       if (r.buzz) { if (!conPresentador()) { r.buzz.rem -= dt; if (r.buzz.rem <= 0) fallarP(r.buzz.team); } }
       else {
         r.rem -= dt;
@@ -677,7 +775,8 @@ setInterval(() => { if (!['lobby', 'fin'].includes(G.phase)) emitir(); }, 500);
 function publico() {
   const s = {
     phase: G.phase, paused: G.paused, rem: G.rem, base: BASE, tema: G.tema, modo: G.modo, tiempoBase: cfg().tiempoBaseRueda,
-    dificultad: G.dificultad, musicaFondo: G.musicaFondo, rondas: G.rondas, catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo })),
+    dificultad: G.dificultad, musicaFondo: G.musicaFondo, rondas: G.rondas,
+    catalogo: ORDEN.map((k) => ({ id: k, titulo: PRUEBAS[k].titulo, pasapalabra: !!PRUEBAS[k].pasapalabra })),
     teams: G.teams,
     players: Object.values(players),
     intro: null,
@@ -688,9 +787,9 @@ function publico() {
   }
   const oculto = false; // las preguntas y pistas se ven en la tele en ambos modos (las respuestas, nunca hasta el final)
   const r = G.r;
-  if (G.phase === 'quiz') {
+  if (RAPIDA.includes(G.phase)) {
     const ver = !oculto || r.stage === 'reveal';
-    s.quiz = { n: r.i + 1, total: r.list.length, texto: ver ? r.q.texto : null, opciones: ver ? r.q.opciones : null, stage: r.stage, rem: r.rem,
+    s.quiz = { kind: r.kind, titulo: PRUEBAS[r.kind].titulo, tema: r.q.tema, n: r.i + 1, total: r.list.length, texto: ver ? r.q.texto : null, opciones: ver ? r.q.opciones : null, stage: r.stage, rem: r.rem,
       respondido: { A: !!r.resp.A, B: !!r.resp.B }, buzz: r.buzz, bloqueado: r.bloqueado, espera: r.espera || 0 };
     if (r.stage === 'reveal') Object.assign(s.quiz, { correcta: r.q.correcta, resp: r.resp, gana: r.gana });
   } else if (ELECCION.includes(G.phase)) {
@@ -711,13 +810,36 @@ function publico() {
   } else if (PULSADOR.includes(G.phase)) {
     const rev = r.stage === 'reveal', ver = !oculto || rev, it = r.item;
     s.p = { kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, stage: r.stage,
-      buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento, numPistas: r.pistas, espera: r.espera || 0,
+      buzz: r.buzz, bloqueado: r.bloqueado, ganador: r.ganador, intento: r.intento, numPistas: r.pistas, espera: r.stage === 'memorizar' ? 0 : r.espera || 0,
       respuesta: rev ? textoRespuesta(r) : null };
     if (r.kind === 'anagrama') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null });
     if (r.kind === 'quiensoy') s.p.pistas = ver ? it.pistas.slice(0, rev ? 3 : r.pistas) : null;
     if (r.kind === 'refran') s.p.inicio = ver ? it.inicio : null;
     if (r.kind === 'adivinanza') s.p.texto = it.texto;
     if (r.kind === 'siglas') s.p.sigla = it.sigla;
+    if (r.kind === 'deletrea') Object.assign(s.p, { definicion: it.definicion, molde: molde(it.palabra) });
+    if (r.kind === 'tutifruti') Object.assign(s.p, { letra: it.letra.toUpperCase(), categoria: it.categoria });
+    if (r.kind === 'quitaletras') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null, sobra: rev ? it.sobra.toUpperCase() : null, palabra: rev ? it.palabra.toUpperCase() : null });
+    if (r.kind === 'vertical') {
+      // el tablero en curso: cada fila muestra su inicial y, si ya se resolvió, la palabra completa
+      const tb = r.tableros[it.tablero], filas = r.list.filter((f) => f.tablero === it.tablero);
+      s.p.n = it.fila + 1; s.p.total = filas.length;
+      s.p.tablero = { num: it.tablero + 1, de: r.tableros.length, concepto: tb.concepto, actual: it.fila, pista: ver ? it.pista : null,
+        filas: filas.map((f, k) => {
+          const quien = tb.filas[k], palabra = f.respuestas[0].toUpperCase();
+          return { inicial: palabra.charAt(0).normalize('NFD').charAt(0), molde: molde(palabra), quien, palabra: quien ? palabra : null };
+        }) };
+    }
+    if (r.kind === 'memoria') {
+      // destapado mientras se memoriza; después solo las casillas ya resueltas (y la actual al revelarla)
+      const tb = r.tableros[it.tablero], filas = r.list.filter((f) => f.tablero === it.tablero), mem = r.stage === 'memorizar';
+      s.p.n = filas.indexOf(it) + 1; s.p.total = filas.length;
+      s.p.memoria = { num: it.tablero + 1, de: r.tableros.length, tema: tb.tema, memorizar: mem, actual: mem ? null : it.pos,
+        celdas: tb.elementos.map((e, k) => {
+          const quien = tb.celdas[k], ver = mem || quien || (rev && k === it.pos);
+          return ver ? { emoji: e.emoji, nombre: e.nombre, quien } : { quien: null };
+        }) };
+    }
   } else if (G.phase === 'rueda') {
     const eq = {};
     for (const t of ['A', 'B']) {
@@ -732,13 +854,15 @@ function publico() {
   s.reloj = reloj();
   return s;
 }
+// Casillas de una palabra oculta: solo se ve la inicial (sin tilde); los espacios quedan como huecos
+const molde = (palabra) => [...palabra.toUpperCase()].map((ch, k) => (ch === ' ' ? ' ' : k === 0 ? ch.normalize('NFD').charAt(0) : ''));
 // Cuenta atrás de la pregunta en curso (null si no hay ninguna); 'parado' = mientras un equipo responde
 function reloj() {
   const r = G.r;
   if (!r) return null;
-  if (r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && ['quiz', 'oculta', ...PULSADOR].includes(G.phase))
+  if (r.espera > 0 && (r.stage === 'ask' || r.stage === 'play') && [...RAPIDA, 'oculta', ...PULSADOR].includes(G.phase))
     return { rem: r.espera, total: cfg().segPensar * 1000, parado: false, pensar: true };
-  if (G.phase === 'quiz' && r.stage === 'ask')
+  if (RAPIDA.includes(G.phase) && r.stage === 'ask')
     return { rem: r.rem, total: (conPresentador() ? cfg().segPreguntaPresentador : cfg().segPregunta) * 1000, parado: !!r.buzz };
   if (G.phase === 'cifra' && r.stage === 'ask') return { rem: r.rem, total: cfg().segCifra * 1000, parado: false };
   if (ELECCION.includes(G.phase) && r.stage === 'ask')
@@ -747,9 +871,10 @@ function reloj() {
     const ocultas = r.visibles.filter((v) => !v).length;
     return { rem: Math.max(0, ocultas - 2) * cfg().revelarCadaMs + r.revealRem, total: r.totalMs, parado: !!r.buzz };
   }
+  if (G.phase === 'memoria' && r.stage === 'memorizar') return { rem: r.rem, total: cfg().segMemorizar * 1000, parado: false };
   if (PULSADOR.includes(G.phase) && r.stage === 'play') {
     if (r.kind === 'quiensoy') return { rem: (3 - r.pistas) * cfg().quienSoyCadaMs + r.rem, total: 3 * cfg().quienSoyCadaMs, parado: !!r.buzz };
-    return { rem: r.rem, total: cfg().segPulsador * 1000, parado: !!r.buzz };
+    return { rem: r.rem, total: tiempoP(r), parado: !!r.buzz };
   }
   return null;
 }
@@ -757,12 +882,19 @@ function reloj() {
 function secreto() {
   const r = G.r;
   if (!r) return null;
-  if (G.phase === 'quiz') return { tipo: 'quiz', n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, correcta: r.q.correcta, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage, espera: r.espera || 0 };
+  if (RAPIDA.includes(G.phase)) return { tipo: 'quiz', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, tema: r.q.tema, n: r.i + 1, total: r.list.length, texto: r.q.texto, opciones: r.q.opciones, correcta: r.q.correcta, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage, espera: r.espera || 0 };
   if (ELECCION.includes(G.phase)) return { tipo: 'vf', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, texto: r.item.texto, opciones: r.item.opciones, correcta: r.item.correcta, detalle: r.item.detalle, stage: r.stage, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
   if (G.phase === 'cifra') return { tipo: 'cifra', n: r.i + 1, total: r.list.length, texto: r.item.pregunta, respuesta: r.item.respuesta, unidad: r.item.unidad, stage: r.stage, respondido: { A: r.resp.A !== null, B: r.resp.B !== null } };
   if (G.phase === 'oculta') return { tipo: 'oculta', n: r.i + 1, total: r.list.length, pista: r.pista, palabra: r.palabra, buzz: r.buzz, bloqueado: r.bloqueado, stage: r.stage };
-  if (PULSADOR.includes(G.phase)) return { tipo: 'p', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: r.i + 1, total: r.list.length, stage: r.stage, buzz: r.buzz, bloqueado: r.bloqueado,
-    item: r.item, revuelta: r.revuelta, numPistas: r.pistas, respuesta: textoRespuesta(r) };
+  if (PULSADOR.includes(G.phase)) {
+    // en La palabra vertical y La Memoria se cuenta dentro del tablero en curso
+    const tablero = ['vertical', 'memoria'].includes(r.kind) ? r.list.filter((f) => f.tablero === r.item.tablero) : null;
+    return { tipo: 'p', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: tablero ? tablero.indexOf(r.item) + 1 : r.i + 1, total: tablero ? tablero.length : r.list.length,
+      stage: r.stage, buzz: r.buzz, bloqueado: r.bloqueado, item: r.item, revuelta: r.revuelta, numPistas: r.pistas, respuesta: textoRespuesta(r),
+      concepto: r.kind === 'vertical' ? r.tableros[r.item.tablero].concepto : null,
+      tablero: tablero ? { num: r.item.tablero + 1, de: r.tableros.length } : null,
+      memoria: r.kind === 'memoria' ? { tema: r.tableros[r.item.tablero].tema, elementos: r.tableros[r.item.tablero].elementos, pos: r.item.pos } : null };
+  }
   if (G.phase === 'rueda') {
     const T = r.eq[r.turno], L = T.idx >= 0 ? T.letras[T.idx] : null;
     return { tipo: 'rueda', turno: r.turno, stage: r.stage, tiempo: T.tiempo, letra: L && L.letra, tipoLetra: L && L.tipo, pista: L && L.pista, respuestas: L && L.respuestas, ultimo: r.ultimo };
@@ -792,7 +924,7 @@ io.on('connection', (sock) => {
   sock.on('buzz', () => {
     const t = team();
     if (!t || !G.r) return;
-    if (G.phase === 'quiz') pulsarQuiz(t);
+    if (RAPIDA.includes(G.phase)) pulsarQuiz(t);
     else if (G.phase === 'oculta') pulsarOculta(t);
     else if (PULSADOR.includes(G.phase)) pulsarP(t);
   });
@@ -828,6 +960,11 @@ io.on('connection', (sock) => {
     else if (cmd === 'modo' && G.phase === 'lobby' && ['presentador', 'auto'].includes(arg)) { G.modo = arg; emitir(); }
     else if (cmd === 'ronda' && G.phase === 'lobby' && ORDEN.includes(arg)) {
       G.rondas = G.rondas.includes(arg) ? G.rondas.filter((k) => k !== arg) : [...G.rondas, arg];
+      emitir();
+    }
+    // atajos: solo las pruebas del Pasapalabra chileno, solo las clásicas de Letramanía o todas
+    else if (cmd === 'rondasGrupo' && G.phase === 'lobby' && ['chilenas', 'clasicas', 'todas'].includes(arg)) {
+      G.rondas = arg === 'chilenas' ? [...CHILENAS] : arg === 'clasicas' ? [...CLASICAS] : [...ORDEN];
       emitir();
     }
     else if (cmd === 'juzgar') juzgar(arg);
