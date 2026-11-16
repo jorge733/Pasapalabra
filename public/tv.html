@@ -114,6 +114,15 @@
   .cols div{background:var(--panel);border:.4vmin solid var(--pend);border-radius:1.2vmin;padding:.4vmin 2vmin;font-size:3vmin;font-weight:900;text-align:center}
   .cols div.ok{background:var(--ok);border-color:var(--ok);color:#fff;opacity:.55}
   .cols div.cur{border-color:#fff;box-shadow:0 0 0 .4vmin #fff}
+  /* La Memoria (como en el programa): columna de 9 barras que se llena de abajo hacia arriba */
+  .mcol{display:flex;flex-direction:column;gap:.7vmin;width:56vmin;margin:1.2vmin auto}
+  .mbar{height:4.8vmin;border-radius:1.2vmin;background:#6d4fd8;color:#fff;font-weight:900;font-size:3.2vmin;display:grid;place-items:center;letter-spacing:.04em;position:relative}
+  .mbar .nb{position:absolute;left:1.4vmin;font-size:2vmin;opacity:.6}
+  .mbar.cur{background:var(--o1);box-shadow:0 0 0 .5vmin #fff;animation:latido 1.2s infinite}
+  .mbar.ver{animation:voltear .45s ease both}.mbar.A,.mbar.B{box-shadow:inset 0 0 0 .5vmin var(--team)}
+  /* palabras ya acertadas, apiladas */
+  .apiladas{display:flex;flex-wrap:wrap;gap:.8vmin;justify-content:center;max-width:150vmin;margin:1vmin auto 0}
+  .apiladas span{background:#6d4fd8;color:#fff;border-radius:1vmin;padding:.3vmin 1.4vmin;font-weight:900;font-size:2.6vmin;letter-spacing:.05em}
   .flashT{display:inline-block;padding:.6vmin 3vmin;border-radius:999px;color:#fff;animation:pop .35s}
   .vfila.nadie .tile.on{background:var(--pend);border-color:var(--pend);color:var(--muted)}
   @keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
@@ -405,6 +414,14 @@ function pintarReloj() {
   if (n !== ultimoSeg && n <= 5 && n > 0 && !r.parado) tono([1000], .05, 'square'); // tic en los últimos segundos
   ultimoSeg = n;
 }
+// La Memoria: 9 barras; la palabra 1 va abajo y se llena hacia arriba
+function columnaMemoria(u) {
+  return `<div class="mcol">${u.celdas.map((c, k) => ({ c, k })).reverse().map(({ c, k }) => c.nombre
+    ? `<div class="mbar ver ${c.ok ? u.turno : ''}"><span class="nb">${k + 1}</span>${esc(c.nombre.toUpperCase())}</div>`
+    : `<div class="mbar ${k === u.actual ? 'cur' : ''}"><span class="nb">${k + 1}</span>${k === u.actual ? '?' : ''}</div>`).join('')}</div>`;
+}
+// Palabras ya acertadas en el turno (Letra a letra, Deletrea)
+const apiladas = (u) => (u.resueltas && u.resueltas.length ? `<div class="apiladas">${u.resueltas.map((w) => `<span>${esc(w)}</span>`).join('')}</div>` : '');
 // Cabecera de las pruebas con cuatro alternativas (Respuesta rápida y Una de cuatro)
 function cabeceraQuiz(q) {
   return q.kind === 'unade4' ? `Una de cuatro · ${q.n} de ${q.total} · Tema: <span style="color:var(--B)">${esc(q.tema)}</span>` : `Pregunta ${q.n} de ${q.total}`;
@@ -492,11 +509,11 @@ function render() {
         return `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${nom(t)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">+${x.gana} s</div></div>`; }).join('')}</div>`;
     } else if (u.stage === 'finTurno') {
       cuerpo = `<div class="big ${u.turno}" style="color:var(--team);margin-top:3vmin">${nom(u.turno)}</div><div class="big" style="margin:2vmin 0">${R.aciertos} ${R.aciertos === 1 ? 'acierto' : 'aciertos'} · +${R.gana} s</div>`
-        + (u.kind === 'memoria' && u.celdas ? `<div class="mgrid">${u.celdas.map((c) => `<div class="mcel ver ${c.ok ? u.turno : ''}"><div class="e">${c.emoji}</div><div class="t">${esc(c.nombre)}</div></div>`).join('')}</div>` : '');
+        + (u.kind === 'memoria' && u.celdas ? columnaMemoria(u) : '');
     } else if (u.kind === 'letraaletra') {
       cuerpo = `<div class="letrasG">Todas contienen ${[...u.letras].map((l) => `<div class="tile on">${l}</div>`).join('')}</div>
-        ${u.pista ? `<div class="qtxt">${esc(u.pista)}</div><div class="tiles">${u.molde.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>` : ''}
-        <div class="sub" style="margin:0 auto">${R.aciertos} de ${R.total} palabras</div>`;
+        ${u.pista ? `<div class="qtxt" style="margin-bottom:1vmin">${esc(u.pista)}</div><div class="tiles" style="margin:1.5vmin 0">${u.molde.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>` : ''}
+        <div class="sub" style="margin:0 auto;font-size:2.4vmin">${R.aciertos} de ${R.total} palabras</div>${apiladas(u)}`;
     } else if (u.kind === 'cruzadas') {
       const col = (xs) => xs.map((x) => `<div class="${x.ok ? 'ok' : ''} ${x.cur ? 'cur' : ''}">${esc(x.t)}</div>`);
       const iz = col(u.izq), de = col(u.der);
@@ -505,12 +522,16 @@ function render() {
         ${u.pista ? `<div class="qtxt" style="font-size:4.6vmin;margin-bottom:1vmin">${esc(u.pista)}</div>` : ''}
         ${u.resueltas.length ? `<div class="sub" style="margin:0 auto;font-size:2.6vmin">✔ ${u.resueltas.map(esc).join(' · ')}</div>` : ''}`;
     } else if (u.kind === 'memoria') {
-      const celdas = u.celdas.map((c, k) => c.emoji
-        ? `<div class="mcel ver ${c.ok ? u.turno : ''}"><div class="e">${c.emoji}</div><div class="t">${esc(c.nombre)}</div></div>`
-        : `<div class="mcel ${k === u.actual ? 'cur' : ''}"><div class="num">${k === u.actual ? '?' : k + 1}</div></div>`).join('');
-      cuerpo = `<div class="big" style="font-size:4.4vmin;margin-top:.5vmin">${u.memorizar ? `🧠 ¡Memoricen! Tema: <span style="color:var(--B)">${esc(u.tema)}</span>`
-        : `¿Qué había en la casilla <span style="color:var(--o1);filter:brightness(1.6)">${u.actual + 1}</span>?`}</div>
-        <div class="mgrid">${celdas}</div>${u.reinicios ? `<div class="sub" style="margin:0 auto;font-size:2.4vmin">Tablero reiniciado ${u.reinicios} ${u.reinicios === 1 ? 'vez' : 'veces'}</div>` : ''}`;
+      cuerpo = `<div class="big" style="font-size:4.2vmin;margin-top:.5vmin">${u.memorizar ? `🧠 ¡Memoricen! Tema: <span style="color:var(--B)">${esc(u.tema)}</span>`
+        : `Tema: <span style="color:var(--B)">${esc(u.tema)}</span> · palabra <span style="color:var(--o1);filter:brightness(1.6)">${u.actual + 1}</span> de 9`}</div>
+        ${columnaMemoria(u)}${u.reinicios ? `<div class="sub" style="margin:0 auto;font-size:2.4vmin">Reiniciado ${u.reinicios} ${u.reinicios === 1 ? 'vez' : 'veces'}</div>` : ''}`;
+    } else if (u.kind === 'deletrea') {
+      const MODO = { normal: '🔤 Deletreo normal', azar: '🎲 Deletreo al azar: sigan los números', reves: '🔁 Deletreo al revés: desde la última letra' };
+      cuerpo = u.pista ? `<div class="big" style="font-size:4.2vmin;color:var(--B)">${MODO[u.modo]}</div>
+        <div class="qtxt" style="margin:1.5vmin auto">${esc(u.pista)}</div>
+        <div class="tiles" style="margin:1.5vmin 0">${u.molde.map((ch, k) => ch === ' ' ? '<div class="tile sp"></div>'
+          : `<div class="tile" style="position:relative">${u.numeros && u.numeros[k] ? `<small class="ord">${u.numeros[k]}</small>` : ''}</div>`).join('')}</div>
+        <div class="sub" style="margin:0 auto;font-size:2.4vmin">Palabra ${u.nPalabra} de ${R.total} · un error y se deletrea desde el inicio</div>${apiladas(u)}` : '';
     } else if (u.kind === 'unade4' && u.opciones) {
       cuerpo = `<div class="qtxt">${esc(u.pista)}</div>
         <div class="opts">${u.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>

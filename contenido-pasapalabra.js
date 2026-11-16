@@ -458,3 +458,47 @@ exports.pistasQueDespistanChile = [
   { pistas: ['Somos casi mil', 'Nos tallaron en piedra volcánica del Rano Raraku', 'Algunos llevamos un pukao en la cabeza', 'Casi todos miramos hacia el interior de la isla', 'Somos las estatuas gigantes de Rapa Nui'], respuestas: ['moai', 'moais', 'los moais'] },
   { pistas: ['Nací en Santiago en 1975', 'Soy zurdo', 'Me apodaban «el Chino»', 'Gané Indian Wells y Miami el mismo año', 'Fui el primer latinoamericano número uno del ranking ATP'], respuestas: ['marcelo rios', 'rios', 'chino rios'] },
 ];
+
+// --- Ajustes según el capítulo de estreno de 2026 (Chilevisión) ---
+// Letra a letra: 15 palabras por equipo, como en el programa
+const masLetras = {
+  RS: [['Persona que vende flores', 'florista'], ['Capital de Francia', 'París'], ['El número que va después del dos', 'tres'],
+    ['Lugar donde se estudia una carrera después del colegio', 'universidad'], ['El oso blanco del Polo Norte', 'oso polar']],
+  CL: [['Deporte de canastas y balón naranjo', 'baloncesto'], ['Fiesta del día en que naciste', 'cumpleaños'], ['Lugar donde aprenden los niños', 'escuela'],
+    ['Instrumento de viento de madera con llaves', 'clarinete'], ['El único mamífero que vuela', 'murciélago']],
+  PE: [['Persona que escribe poemas', 'poeta'], ['Se patea en el fútbol', 'pelota'], ['Deporte con raqueta y paredes de vidrio', 'pádel'],
+    ['Lo que ves en el cine', 'película'], ['Ave que abre su cola como un abanico', 'pavo real']],
+  TN: [['El número que va después del diecinueve', 'veinte'], ['Prenda que cubre las dos piernas', 'pantalón'], ['Pez de dientes afilados', 'tiburón'],
+    ['Médico de los dientes', 'dentista'], ['Mal tiempo con lluvia, viento y relámpagos', 'tormenta']],
+  CH: [['Guiso espeso de jaibas o locos con pan y queso', 'chupe'], ['Pájaro del bosque del sur, de pecho rojizo, que canta fuerte', 'chucao'],
+    ['Mina de cobre a tajo abierto cerca de Calama', 'Chuquicamata'], ['Sándwich con carne, porotos verdes, tomate y ají', 'chacarero'], ['Palabra chilena para preguntar si entendiste', 'cachai']],
+  AR: [['Nombre originario de la Isla de Pascua', 'Rapa Nui'], ['Capital de la región de O\'Higgins', 'Rancagua'], ['Cerro de Santiago con una gran Virgen en la cima', 'San Cristóbal'],
+    ['Ciudad del faro monumental, en la región de Coquimbo', 'La Serena'], ['Fiesta, en chileno', 'carrete']],
+};
+for (const set of [...exports.letraALetra, ...exports.letraALetraChile])
+  for (const [pista, palabra, ...otras] of masLetras[set.letras] || []) set.palabras.push({ pista, palabra, otras });
+
+// Palabras cruzadas: 9 palabras por panel, como en el programa
+const novena = { 'Animales': X('El rey de la selva', 'le', 'ón'), 'Países': X('El país de las pirámides', 'egip', 'to'),
+  'Instrumentos': X('Instrumento de cuerdas grande que se toca sentado y con arco', 'violon', 'chelo'), 'Profesiones': X('Diseña casas y edificios', 'arqui', 'tecto'),
+  'Comida chilena': X('Carne a la parrilla', 'asa', 'do'), 'Lugares de Chile': X('Capital de la región de O\'Higgins', 'ranca', 'gua') };
+for (const p of [...exports.palabrasCruzadas, ...exports.palabrasCruzadasChile]) if (novena[p.tema]) p.palabras.push(novena[p.tema]);
+exports.palabrasCruzadasChile.push({ tema: 'Pescados', palabras: [
+  X('Pescado azul muy común en las conservas', 'jur', 'el'), X('Pescado de carne rosada que se cría en el sur', 'sal', 'món'),
+  X('Pescado blanco que se come frito en las caletas', 'mer', 'luza'), X('Pescado pequeño que viene en lata', 'sar', 'dina'),
+  X('El pescado del famoso caldillo de Neruda', 'con', 'grio'), X('Pescado plano y plateado, muy pedido a la plancha', 'rei', 'neta'),
+  X('Así le decimos en Chile al pez espada', 'alb', 'acora'), X('Pescado de estuario del sur, de carne blanca', 'rób', 'alo'),
+  X('Pescado plano con los dos ojos del mismo lado', 'leng', 'uado')] });
+
+// Pistas que despistan: no solo personajes; también objetos y conceptos (en el estreno salió un clip)
+exports.pistasQueDespistan.push(
+  { pistas: ['Un joven canadiense logró cambiar uno rojo por una casa', 'Me inventaron hace más de cien años', 'Estoy hecho de un alambre doblado', 'Un asistente de Office tenía mi forma', 'Sirvo para juntar hojas de papel'], respuestas: ['clip', 'clips', 'sujetapapeles'] },
+  { pistas: ['Los caballeros ingleses me llevaban aunque no lloviera', 'Mary Poppins volaba conmigo', 'Tengo varillas y una tela', 'Dicen que abrirme dentro de la casa trae mala suerte', 'Me usas cuando llueve'], respuestas: ['paraguas'] },
+  { pistas: ['Mi antepasado no tenía pedales y lo inventó un barón alemán en 1817', 'Tengo cadena', 'Mi carrera más famosa es el Tour de Francia', 'Tengo manubrio y sillín', 'Tengo dos ruedas y me mueves pedaleando'], respuestas: ['bicicleta', 'bici'] },
+  { pistas: ['Los aztecas me tomaban amargo y con ají', 'Mis semillas sirvieron como moneda', 'Puedo ser blanco, con leche o amargo', 'En Pascua me regalan con forma de huevo', 'Me hacen con cacao'], respuestas: ['chocolate'] },
+);
+exports.pistasQueDespistanChile.push(
+  { pistas: ['En China me usaban para mandar señales militares', 'Necesito viento', 'En Chile peleamos con hilo curado', 'Tengo cola y cuerpo de papel', 'Me elevas en septiembre en el cerro o la playa'], respuestas: ['volantin', 'cometa', 'pandorga'] },
+  { pistas: ['Tengo un día nacional en Chile: el 4 de abril', 'Puedo ser de mariscos, de queso o de pino', 'Me hornean o me fríen', 'Tengo repulgue', 'Soy infaltable en las Fiestas Patrias'], respuestas: ['empanada'] },
+  { pistas: ['El de 1960 en Valdivia es el más fuerte que se ha registrado', 'Después de mí vienen las réplicas', 'Me producen las placas tectónicas', 'Me miden en grados de magnitud', 'También soy un trago con pipeño y helado de piña'], respuestas: ['terremoto', 'sismo'] },
+);

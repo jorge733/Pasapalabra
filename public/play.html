@@ -176,7 +176,7 @@ function vista() {
         <button class="btn" style="margin-top:12px">Enviar</button></form>`, after: () => $('#resp').focus() };
     }
     case 'anagrama': case 'quiensoy': case 'refran': case 'adivinanza': case 'siglas':
-    case 'deletrea': case 'quitaletras': case 'vertical': case 'pistas': {
+    case 'quitaletras': case 'vertical': case 'pistas': {
       const p = S.p, k = p.kind + p.n + (p.tablero ? 't' + p.tablero.num : '');
       const MODO = { normal: 'Escribe la palabra', azar: 'Escribe las letras en el orden de los números de la tele', reves: 'Escribe la palabra al revés, desde la última letra' };
       const ayuda = { deletrea: `${MODO[p.modo] || ''}. Definición: ${esc(p.definicion)}`,
@@ -195,7 +195,7 @@ function vista() {
       return { key: 'pp' + k + (p.espera > 0), html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
         ${botonLoSe(p.espera)}`, tick: () => tickLoSe(p.espera) };
     }
-    case 'letraaletra': case 'cruzadas': case 'memoria': case 'unade4': {
+    case 'letraaletra': case 'cruzadas': case 'memoria': case 'unade4': case 'deletrea': {
       const u = S.turnos, mio = u.turno === mt, R = u.resumen[mt];
       if (u.stage === 'reveal') return { key: 'tr' + u.kind, html: () => `<div class="grow"></div><div class="res ${R && R.gana ? 'ok' : 'ko'}">${R && R.gana ? '¡Bien! +' + R.gana + ' s' : 'Esta vez no'}</div>
         <p>${R ? R.aciertos + (R.aciertos === 1 ? ' acierto' : ' aciertos') : ''}</p><div class="grow"></div>` };
@@ -207,10 +207,12 @@ function vista() {
       if (u.stage === 'finTurno') return { key: 'tf' + u.n, html: () => `<div class="grow"></div><div class="res ${R.gana ? 'ok' : 'ko'}">${R.aciertos} ${R.aciertos === 1 ? 'acierto' : 'aciertos'} · +${R.gana} s</div><div class="grow"></div>` };
       const fb = u.ultimo ? { acierto: '<p style="color:var(--ok)">¡Correcto!</p>', fallo: `<p style="color:var(--ko)">Incorrecto${u.ultimo.correcta ? ' · era ' + esc(u.ultimo.correcta) : ''}${u.kind === 'memoria' ? ' · el tablero se reinició' : ''}</p>`,
         paso: `<p style="color:#a5b4fc">Pasapalabra${u.kind === 'memoria' ? ' · el tablero se reinició' : ''}</p>` }[u.ultimo.tipo] : '';
-      const pregunta = u.kind === 'memoria' ? (u.actual !== null && u.actual !== undefined ? `¿Qué había en la casilla ${u.actual + 1}?` : '')
+      const MODO_D = { normal: 'Deletreo normal', azar: 'Al azar: escriban las letras en el orden de los números de la tele', reves: 'Al revés: desde la última letra' };
+      const pregunta = u.kind === 'memoria' ? (u.actual !== null && u.actual !== undefined ? `¿Cuál era la palabra ${u.actual + 1}? (se cuentan desde abajo)` : '')
+        : u.kind === 'deletrea' ? (u.pista ? `${MODO_D[u.modo]}. ${esc(u.pista)}` : '')
         : !u.pista ? '' : u.kind === 'letraaletra' ? `Contiene ${esc([...u.letras].join(' y '))}: ${esc(u.pista)}` : esc(u.pista);
       const clave = 'tp' + u.n + '-' + u.actual + '-' + (u.ultimo ? u.ultimo.t : '');
-      const paso = `<button type="button" class="btn sec" onclick="sock.emit('turno',{paso:true});vibra(30)">Pasapalabra</button>`;
+      const paso = u.kind === 'deletrea' ? '' : `<button type="button" class="btn sec" onclick="sock.emit('turno',{paso:true});vibra(30)">Pasapalabra</button>`; // en Deletrea no se pasa
       if (S.modo === 'presentador') return { key: clave, html: () => `<div class="reloj" id="cuenta"></div>${fb}<h2>${pregunta}</h2>
         <p>🎙️ Respondan en voz alta</p><div class="grow"></div>${paso}`, tick: () => { const c = $('#cuenta'); if (c) c.textContent = seg(u.resumen[mt].tiempo); } };
       if (u.kind === 'unade4') return { key: clave, html: () => `<div class="reloj" id="cuenta"></div>${fb}<h2>${pregunta}</h2>

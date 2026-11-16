@@ -285,15 +285,17 @@ function renderLectura() {
       <div class="estadoL">El equipo memoriza el tablero…</div><div class="juicio">${btn('bNadie', 'nadie', 'Tapar el tablero ya →', 'N')}</div>`;
     else if (X.stage === 'play' && X.item) {
       let leer = '';
-      if (X.kind === 'memoria') leer = `<div class="leer">¿Qué había en la casilla ${X.pos + 1}?</div>
+      if (X.kind === 'memoria') leer = `<div class="leer">¿Cuál era la palabra ${X.pos + 1}? (desde abajo)</div>
         <div class="ops" style="grid-template-columns:1fr 1fr 1fr">${X.elementos.map((e, k) => `<div class="${k === X.pos ? 'ok' : ''}">${k + 1}. ${esc(e)}</div>`).join('')}</div>
-        <p class="hint">Un error o un pase reinicia el tablero desde la casilla 1.</p>`;
+        <p class="hint">Un error o un pase reinicia desde la palabra 1.</p>`;
       else if (X.kind === 'unade4') leer = `<div class="leer">${esc(X.item.pista)}</div><div class="ops">${X.item.opciones.map((o, k) => `<div class="${k === X.item.correcta ? 'ok' : ''}">${'ABCD'[k]}) ${esc(o)}${k === X.item.correcta ? ' ✔' : ''}</div>`).join('')}</div>`;
+      else if (X.kind === 'deletrea') leer = `<div class="meta">${{ normal: 'Deletreo normal', azar: 'Deletreo al azar (según los números de la tele)', reves: 'Deletreo al revés' }[X.item.modo]} · palabra: ${esc(X.item.palabra.toUpperCase())}</div>
+        <div class="leer">${esc(X.item.pista)}</div><p class="hint">Con un error, se deletrea esa palabra desde el inicio. No se puede pasar.</p>`;
       else leer = `<div class="leer">${esc(X.item.pista)}</div>${X.item.partes ? `<div class="meta">En la tele: ${esc(X.item.partes.join(' + '))}</div>` : ''}`;
       const otras = X.item.respuestas.slice(1);
       html = `${head}<div class="meta">⏱ <span id="relojH"></span> s · quedan ${X.pendientes}</div>${leer}
-        <div class="resp">Respuesta: ${esc(X.kind === 'unade4' ? X.item.opciones[X.item.correcta] : X.item.respuestas[0])}${otras.length && X.kind !== 'unade4' ? ` <span class="meta">(también: ${otras.map(esc).join(', ')})</span>` : ''}</div>
-        <div class="juicio">${btn('bOk', 'ok', '✔ Correcto', 'C')}${btn('bKo', 'ko', '✘ Incorrecto', 'X')}${btn('bPaso', 'paso', '⏭ Pasapalabra', 'P')}</div>
+        <div class="resp">Respuesta: ${esc(X.kind === 'unade4' ? X.item.opciones[X.item.correcta] : X.kind === 'deletrea' ? [...X.item.secuencia].join(' - ') : X.item.respuestas[0])}${otras.length && X.kind !== 'unade4' ? ` <span class="meta">(también: ${otras.map(esc).join(', ')})</span>` : ''}</div>
+        <div class="juicio">${btn('bOk', 'ok', '✔ Correcto', 'C')}${btn('bKo', 'ko', '✘ Incorrecto', 'X')}${X.kind === 'deletrea' ? '' : btn('bPaso', 'paso', '⏭ Pasapalabra', 'P')}</div>
         <div class="juicio">${btn('bNadie', 'nadie', 'Terminar el turno →', 'N')}</div>`;
     } else html = `${head}<div class="estadoL">${X.stage === 'reveal' ? 'Mostrando el resultado en la tele…' : 'Fin del turno…'}</div>`;
   } else if (X.tipo === 'rueda') {

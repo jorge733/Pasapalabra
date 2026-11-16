@@ -20,7 +20,7 @@ const CONFIG = {
   palabrasOcultas: 4,      // Palabra oculta: nº de palabras
   revelarCadaMs: 2200,     //   cada cuánto aparece una letra
   porPrueba: 4,            // Letras revueltas, Siglas, ¿Quién soy?, Adivinanzas, Completa el refrán, El Quitaletras y Pistas que despistan: nº de rondas de cada una
-  deletrea: 6,             // Deletrea la palabra: nº de palabras (un tercio normal, un tercio al azar y un tercio al revés)
+  deletrea: 9,             // Deletrea la palabra: palabras por equipo (3 normal, 3 al azar y 3 al revés, como en el programa)
   tutiFruti: 3,            // Bachillerato (Tuti Fruti): nº de letras
   categoriasTuti: 4,       //   categorías por letra (como en el programa)
   segTuti: 90,             //   segundos para llenar las categorías (como en el programa)
@@ -29,11 +29,10 @@ const CONFIG = {
   palabrasVerticales: 2,   // La palabra vertical: nº de tableros (cada uno tiene 4 a 6 filas)
   segPulsadorCorto: 20,    // La palabra vertical: segundos antes de dar la ronda por perdida
   // Pruebas por turnos (Letra a letra, Palabras cruzadas, La Memoria, Una de cuatro): cada equipo juega solo contra el reloj
-  segTurno: 60,            //   segundos de cada equipo
-  segTurnoUnaDeCuatro: 45, //   segundos de cada equipo en Una de cuatro
+  segTurno: { letraaletra: 90, cruzadas: 75, memoria: 75, deletrea: 120, unade4: 45 }, //   segundos de cada equipo (los del programa)
   segElegir: 12,           //   segundos para elegir entre los dos temas
   segMemorizar: 15,        //   La Memoria: segundos para memorizar el tablero antes de taparlo
-  pistasCadaMs: 8000,      // Pistas que despistan: cada cuánto sale una pista nueva (son 5)
+  pistasCadaMs: 8000,      // Pistas que despistan: cada cuánto sale una pista nueva (son 5; el acierto vale 5, 4, 3, 2 o 1 s)
   queFueAntes: 5,          // ¿Qué fue antes?: nº de preguntas
   cifras: 4,               // Adivina la cifra: nº de preguntas
   segCifra: 25,            //   segundos para escribir el número
@@ -56,8 +55,7 @@ const CONFIG_KIDS = {
   segPulsador: 40,
   segPulsadorCorto: 28,
   segMemorizar: 20,
-  segTurno: 80,
-  segTurnoUnaDeCuatro: 60,
+  segTurno: { letraaletra: 120, cruzadas: 100, memoria: 100, deletrea: 150, unade4: 60 },
   pistasCadaMs: 10000,
   segTuti: 120,
   segBasta: 15,
@@ -219,14 +217,14 @@ const PRUEBAS = {
   letraaletra: {
     titulo: 'Letra a letra',
     pasapalabra: true,
-    auto: 'Juega un equipo a la vez contra el reloj. Todas las palabras contienen las dos letras de la tele: lean la pista y escriban la palabra. Si fallan o pasan, la palabra vuelve al final. Cada acierto suma 2 segundos.',
-    presentador: 'Juega un equipo a la vez contra el reloj. Todas las palabras contienen las dos letras de la tele. El presentador da una pista por palabra: respondan en voz alta o digan «Pasapalabra». Cada acierto suma 2 segundos.',
+    auto: 'Juega un equipo a la vez contra el reloj. Todas las palabras contienen las dos letras de la tele: lean la pista y escriban la palabra. Si fallan o pasan, la palabra vuelve al final. Cada acierto suma 1 segundo.',
+    presentador: 'Juega un equipo a la vez contra el reloj. Todas las palabras contienen las dos letras de la tele. El presentador da una pista por palabra: respondan en voz alta o digan «Pasapalabra». Cada acierto suma 1 segundo.',
   },
   pistas: {
     titulo: 'Pistas que despistan',
     pasapalabra: true,
-    auto: 'Hay un personaje o cosa secreta y van saliendo hasta cinco pistas, de la más difícil a la más fácil. Presionen «¡Lo sé!» y escriban quién es. Con la 1.ª pista se ganan 10 s, y 2 s menos por cada pista más.',
-    presentador: 'El presentador lee hasta cinco pistas sobre un personaje o cosa secreta, de la más difícil a la más fácil. Presionen «¡Lo sé!» y digan quién es. Con la 1.ª pista se ganan 10 s, y 2 s menos por cada pista más.',
+    auto: 'Hay un personaje o cosa secreta y van saliendo hasta cinco pistas, de la más difícil a la más fácil. Presionen «¡Lo sé!» y escriban qué es. Con la 1.ª pista se ganan 5 s, y 1 s menos por cada pista más.',
+    presentador: 'El presentador lee hasta cinco pistas sobre un personaje o cosa secreta, de la más difícil a la más fácil. Presionen «¡Lo sé!» y digan qué es. Con la 1.ª pista se ganan 5 s, y 1 s menos por cada pista más.',
   },
   cruzadas: {
     titulo: 'Palabras cruzadas',
@@ -237,14 +235,14 @@ const PRUEBAS = {
   memoria: {
     titulo: 'La Memoria',
     pasapalabra: true,
-    auto: 'Juega un equipo a la vez: elijan uno de dos temas y memoricen el tablero de 9 casillas. Luego se tapa y hay que decir, en orden, qué había en cada casilla. ¡Un error o un pase y el tablero se reinicia! Cada casilla al final suma 2 segundos.',
-    presentador: 'Juega un equipo a la vez: elijan uno de dos temas y memoricen el tablero de 9 casillas. Luego se tapa y hay que decir, en orden, qué había en cada casilla. ¡Un error o un pase y el tablero se reinicia! Cada casilla al final suma 2 segundos.',
+    auto: 'Juega un equipo a la vez: elijan uno de dos temas y memoricen las 9 palabras. Luego se tapan y hay que decirlas en orden, de abajo hacia arriba. ¡Un error o un pase y se reinicia! Cada palabra destapada al final suma 1 segundo.',
+    presentador: 'Juega un equipo a la vez: elijan uno de dos temas y memoricen las 9 palabras. Luego se tapan y hay que decirlas en orden, de abajo hacia arriba. ¡Un error o un pase y se reinicia! Cada palabra destapada al final suma 1 segundo.',
   },
   deletrea: {
     titulo: 'Deletrea la palabra',
     pasapalabra: true,
-    auto: 'Lean la definición y deletreen la palabra sin faltas: primero normal, después en el orden al azar que marca la tele y al final al revés. Presionen «¡Lo sé!» y escriban las letras en ese orden. Normal: 4 s; al azar o al revés: 6 s.',
-    presentador: 'El presentador lee la definición. Presionen «¡Lo sé!» y deletreen la palabra letra por letra: primero normal, después en el orden al azar que marca la tele y al final al revés. Un error y no vale. Normal: 4 s; al azar o al revés: 6 s.',
+    auto: 'Juega un equipo a la vez contra el reloj: deletreen 9 palabras sin faltas, 3 normal, 3 en el orden al azar que marca la tele y 3 al revés. Escriban las letras en ese orden. Si se equivocan, hay que deletrear esa palabra desde el inicio. Normal o al azar: 1 s; al revés: 2 s.',
+    presentador: 'Juega un equipo a la vez contra el reloj: deletreen 9 palabras letra por letra, 3 normal, 3 en el orden al azar que marca la tele y 3 al revés. Con un error, se deletrea desde el inicio. Normal o al azar: 1 s; al revés: 2 s.',
   },
   tutifruti: {
     titulo: 'Bachillerato',
@@ -255,8 +253,8 @@ const PRUEBAS = {
   unade4: {
     titulo: 'Una de cuatro',
     pasapalabra: true,
-    auto: 'Juega un equipo a la vez contra el reloj: pregunta y cuatro alternativas, elijan en el celular. Acierten o fallen, sale otra pregunta. Cada acierto suma 2 segundos.',
-    presentador: 'Juega un equipo a la vez contra el reloj: el presentador hace una pregunta con cuatro alternativas y respondan en voz alta. Acierten o fallen, sale otra. Cada acierto suma 2 segundos.',
+    auto: 'Juega un equipo a la vez contra el reloj: pregunta y cuatro alternativas, elijan en el celular. Acierten o fallen, sale otra pregunta. Cada acierto suma 1 segundo.',
+    presentador: 'Juega un equipo a la vez contra el reloj: el presentador hace una pregunta con cuatro alternativas y respondan en voz alta. Acierten o fallen, sale otra. Cada acierto suma 1 segundo.',
   },
   vertical: {
     titulo: 'La palabra vertical',
@@ -280,12 +278,12 @@ const CLASICAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra'
 // Pruebas del Pasapalabra chileno: primero las 7 de la temporada 2026 que se pueden jugar sin música, luego otras de temporadas anteriores
 const CHILENAS = ['letraaletra', 'pistas', 'memoria', 'cruzadas', 'deletrea', 'tutifruti', 'unade4', 'vertical', 'quitaletras'];
 const ORDEN = [...CLASICAS, ...CHILENAS]; // orden en que se juegan; la rueda va siempre al final
-const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'deletrea', 'quitaletras', 'vertical', 'pistas']; // pruebas de «presiona y responde»
+const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'quitaletras', 'vertical', 'pistas']; // pruebas de «presiona y responde»
 const RAPIDA = ['quiz']; // pruebas con cuatro alternativas en que responden los dos equipos
-const PREMIO = { quiensoy: [12, 8, 5], pistas: [10, 8, 6, 4, 2], vertical: 5, deletrea: { normal: 4, azar: 6, reves: 6 } }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
+const PREMIO = { quiensoy: [12, 8, 5], pistas: [5, 4, 3, 2, 1], vertical: 5 }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
 const PULSADOR_CORTO = ['vertical'];
 const CON_PISTAS = ['quiensoy', 'pistas']; // pruebas de pulsador en que van saliendo pistas
-const TURNOS = ['letraaletra', 'cruzadas', 'memoria', 'unade4']; // pruebas en que cada equipo juega solo contra el reloj
+const TURNOS = ['letraaletra', 'cruzadas', 'memoria', 'deletrea', 'unade4']; // pruebas en que cada equipo juega solo contra el reloj
 const ELIGE_TEMA = ['cruzadas', 'memoria']; // pruebas por turnos en que el equipo elige entre dos temas
 const ELECCION = ['vf', 'antes']; // pruebas en que ambos equipos eligen una opción en el celular
 
@@ -392,17 +390,6 @@ function iniciarPrueba(k) {
   if (k === 'quiz') { G.r = { kind: k, list: tomar('preguntasRapidas', 'preguntasChile', cfg().preguntasRapidas), i: -1 }; siguientePregunta(); }
   else if (TURNOS.includes(k)) iniciarTurnos(k);
   else if (k === 'pistas') { G.r = { kind: k, list: tomar('pistasQueDespistan', 'pistasQueDespistanChile', n), i: -1 }; siguientePulsador(); }
-  else if (k === 'deletrea') {
-    // como en el programa: un tercio con deletreo normal, otro en un orden al azar y el último al revés
-    const lista = tomar('deletrea', 'deletreaChile', cfg().deletrea);
-    const list = lista.map((x, i) => {
-      const modo = ['normal', 'azar', 'reves'][Math.floor((i * 3) / lista.length)];
-      const pos = [...x.palabra].map((ch, j) => j).filter((j) => x.palabra[j] !== ' ');
-      const orden = modo === 'azar' ? shuffle(pos) : modo === 'reves' ? [...pos].reverse() : pos;
-      return { ...x, modo, orden, secuencia: orden.map((j) => x.palabra[j].toUpperCase()).join('') };
-    });
-    G.r = { kind: k, list, i: -1 }; siguientePulsador();
-  }
   else if (k === 'tutifruti') { G.r = { kind: k, list: rondasTuti(cfg().tutiFruti), i: -1 }; siguienteTuti(); }
   else if (k === 'quitaletras') { G.r = { kind: k, list: tomar('quitaletras', 'quitaletrasChile', n), i: -1 }; siguientePulsador(); }
   else if (k === 'vertical') {
@@ -575,13 +562,11 @@ function fallarOculta(team) {
 // ---- Pruebas de pulsador: letras revueltas, ¿quién soy?, completa el refrán ----
 function respuestasDe(r) {
   if (['anagrama', 'quitaletras'].includes(r.kind)) return [r.item.palabra];
-  if (r.kind === 'deletrea') return [r.item.secuencia];
   if (r.kind === 'refran') return r.item.finales;
   return r.item.respuestas; // ¿quién soy?, adivinanzas, siglas
 }
 function textoRespuesta(r) {
   if (r.kind === 'anagrama') return r.item.palabra.toUpperCase();
-  if (r.kind === 'deletrea') return r.item.modo === 'normal' ? r.item.palabra.toUpperCase() : `${r.item.palabra.toUpperCase()} → ${[...r.item.secuencia].join('-')}`;
   if (r.kind === 'quitaletras') return `${r.item.palabra.toUpperCase()} (sobraba la ${r.item.sobra.toUpperCase()})`;
   if (r.kind === 'vertical') return r.item.respuestas[0].toUpperCase();
   if (r.kind === 'refran') return r.item.inicio.replace(/…$/, '') + ' ' + r.item.finales[0];
@@ -622,13 +607,13 @@ function responderP(team, texto) {
   const r = G.r;
   if (conPresentador() || !r.buzz || r.buzz.team !== team) return;
   r.intento = { team, texto };
-  const ok = r.kind === 'deletrea' ? soloLetras(texto) === soloLetras(r.item.secuencia) : coincide(texto, respuestasDe(r));
+  const ok = coincide(texto, respuestasDe(r));
   if (ok) acertarP(team); else fallarP(team);
 }
 function acertarP(team) {
   const r = G.r;
   const p = PREMIO[r.kind];
-  const seg = Array.isArray(p) ? p[r.pistas - 1] : r.kind === 'deletrea' ? p[r.item.modo] : p || 8;
+  const seg = Array.isArray(p) ? p[r.pistas - 1] : p || 8;
   G.teams[team].bonus += seg;
   r.ganador = { team, seg }; r.buzz = null;
   anotarFila(r, team);
@@ -651,9 +636,20 @@ function rendirP() { const r = G.r; r.buzz = null; r.stage = 'reveal'; r.rem = r
 // ---- Pruebas por turnos (Letra a letra, Palabras cruzadas, La Memoria, Una de cuatro) ----
 // Como en el programa: juega un equipo y después el otro, cada uno con su propio reloj y su propio panel.
 // Empieza el equipo con más segundos acumulados (si hay empate, el primero).
-const PREMIO_TURNO = 2; // segundos por acierto
-const segTurno = (k) => (k === 'unade4' ? cfg().segTurnoUnaDeCuatro : cfg().segTurno);
+// segundos por acierto, como en el programa (Deletrea: 2 s solo al revés)
+const premioTurno = (k, it) => (k === 'cruzadas' ? 2 : k === 'deletrea' && it.modo === 'reves' ? 2 : 1);
+const segTurno = (k) => cfg().segTurno[k];
 const FUENTE_TURNO = { letraaletra: ['letraALetra', 'letraALetraChile'], cruzadas: ['palabrasCruzadas', 'palabrasCruzadasChile'], memoria: ['memoria', 'memoriaChile'] };
+// Deletrea: 3 palabras con deletreo normal, 3 en un orden al azar y 3 al revés
+function deletreos(lista) {
+  return lista.map((x, i) => {
+    const modo = ['normal', 'azar', 'reves'][Math.min(2, Math.floor((i * 3) / lista.length))];
+    const pos = [...x.palabra].map((ch, j) => j).filter((j) => x.palabra[j] !== ' ');
+    const orden = modo === 'azar' ? shuffle(pos) : modo === 'reves' ? [...pos].reverse() : pos;
+    const secuencia = orden.map((j) => x.palabra[j].toUpperCase()).join('');
+    return { pista: x.definicion, palabra: x.palabra, modo, orden, secuencia, respuestas: [secuencia] };
+  });
+}
 const sinTilde = (ch) => ch.normalize('NFD').charAt(0);
 // Lo que juega un equipo a partir de un panel del contenido
 function panelTurno(k, p) {
@@ -664,6 +660,7 @@ function panelTurno(k, p) {
     return { tema: p.tema, items, izq: shuffle(idx), der: shuffle(idx) };
   }
   if (k === 'memoria') return { tema: p.tema, items: p.elementos.map((e) => ({ emoji: e.emoji, nombre: e.nombre, respuestas: [e.nombre, ...(e.otras || [])] })) };
+  if (k === 'deletrea') return { items: deletreos(p) };
   // Una de cuatro: p es una lista de preguntas
   return { items: p.map((q) => {
     const o = shuffle(q.opciones.map((t, i) => ({ t, ok: i === 0 })));
@@ -677,7 +674,11 @@ function nuevoEquipoTurno(k, panel) {
 function iniciarTurnos(k) {
   const orden = G.teams.B.bonus > G.teams.A.bonus ? ['B', 'A'] : ['A', 'B'];
   const r = (G.r = { kind: k, orden, k: -1, eq: {}, opciones: {}, turno: orden[0], stage: 'elegir', rem: 0 });
-  if (k === 'unade4') {
+  if (k === 'deletrea') {
+    const n = cfg().deletrea, ws = tomar('deletrea', 'deletreaChile', 2 * n);
+    const deA = ws.slice(0, n), deB = ws.slice(n).length >= n ? ws.slice(n, 2 * n) : shuffle(ws).slice(0, n);
+    r.eq.A = nuevoEquipoTurno(k, panelTurno(k, deA)); r.eq.B = nuevoEquipoTurno(k, panelTurno(k, deB));
+  } else if (k === 'unade4') {
     const qs = tomar('unaDeCuatro', 'unaDeCuatroChile', 24), mitad = Math.ceil(qs.length / 2);
     r.eq.A = nuevoEquipoTurno(k, panelTurno(k, qs.slice(0, mitad)));
     r.eq.B = nuevoEquipoTurno(k, panelTurno(k, qs.slice(mitad).length ? qs.slice(mitad) : qs));
@@ -721,6 +722,7 @@ function responderTurno(team, { texto, opcion, paso, forzado } = {}) {
   const T = r.eq[team], i = T.cola[0];
   if (i === undefined) return;
   const it = T.items[i];
+  if (paso && r.kind === 'deletrea') return; // en Deletrea no se puede pasar palabra
   if (paso) {
     if (r.kind === 'memoria') reiniciarMemoria(T);
     else if (r.kind === 'unade4') { T.estado[i] = 'paso'; T.cola.shift(); }
@@ -729,17 +731,19 @@ function responderTurno(team, { texto, opcion, paso, forzado } = {}) {
     if (!T.cola.length) return terminarTurno();
     return emitir('paso');
   }
-  const ok = forzado !== undefined ? forzado : r.kind === 'unade4' ? Number(opcion) === it.correcta : coincide(texto, it.respuestas);
+  const ok = forzado !== undefined ? forzado : r.kind === 'unade4' ? Number(opcion) === it.correcta
+    : r.kind === 'deletrea' ? soloLetras(texto) === soloLetras(it.secuencia) // el deletreo debe ser exacto
+    : coincide(texto, it.respuestas);
   if (ok) {
     T.estado[i] = 'ok'; T.cola.shift(); T.aciertos++;
-    if (r.kind !== 'memoria') { T.gana += PREMIO_TURNO; G.teams[team].bonus += PREMIO_TURNO; } // en La Memoria se cuenta al final
+    if (r.kind !== 'memoria') { const p = premioTurno(r.kind, it); T.gana += p; G.teams[team].bonus += p; } // en La Memoria se cuenta al final
     T.ultimo = { tipo: 'acierto', t: Date.now() };
   } else {
     T.fallos++;
     T.ultimo = { tipo: 'fallo', dada: texto, t: Date.now(), correcta: r.kind === 'unade4' ? it.opciones[it.correcta] : null };
     if (r.kind === 'memoria') reiniciarMemoria(T);
     else if (r.kind === 'unade4') { T.estado[i] = 'fallo'; T.cola.shift(); } // se reemplaza por otra pregunta
-    else T.cola.push(T.cola.shift()); // se retoma al final
+    else if (r.kind !== 'deletrea') T.cola.push(T.cola.shift()); // se retoma al final (en Deletrea, se deletrea de nuevo desde el inicio)
   }
   if (!T.cola.length) return terminarTurno();
   emitir(ok ? 'ok' : 'fail');
@@ -747,7 +751,7 @@ function responderTurno(team, { texto, opcion, paso, forzado } = {}) {
 function terminarTurno() {
   const r = G.r, T = r.eq[r.turno];
   if (r.stage !== 'play') return;
-  if (r.kind === 'memoria') { T.gana = T.aciertos * PREMIO_TURNO; G.teams[r.turno].bonus += T.gana; } // lo que quede destapado al final
+  if (r.kind === 'memoria') { T.gana = T.aciertos; G.teams[r.turno].bonus += T.gana; } // lo que quede destapado al final
   r.stage = 'finTurno'; r.rem = 4500;
   emitir(T.gana ? 'ok' : 'tiempo');
 }
@@ -772,6 +776,7 @@ function publicoTurnos(r) {
       s.pista = it.pista;
       s.molde = [...w].map((ch) => (ch === ' ' ? ' ' : T.letras.includes(sinTilde(ch)) ? ch : ''));
     }
+    s.resueltas = T.items.filter((_, j) => T.estado[j] === 'ok').map((x) => x.respuestas[0].toUpperCase()); // se apilan como en el programa
   } else if (r.kind === 'cruzadas') {
     s.tema = T.tema;
     s.izq = T.izq.map((j) => ({ t: T.items[j].partes[0], ok: T.estado[j] === 'ok', cur: j === i && jugando }));
@@ -783,6 +788,14 @@ function publicoTurnos(r) {
     s.memorizar = r.stage === 'memorizar';
     s.celdas = T.items.map((x, j) => (s.memorizar || T.estado[j] === 'ok' || r.stage === 'finTurno' ? { emoji: x.emoji, nombre: x.nombre, ok: T.estado[j] === 'ok' } : {}));
     s.reinicios = T.reinicios;
+  } else if (r.kind === 'deletrea') {
+    s.resueltas = T.items.filter((_, j) => T.estado[j] === 'ok').map((x) => x.palabra.toUpperCase());
+    if (it && jugando) {
+      const num = [...it.palabra].map(() => null);
+      it.orden.forEach((j, k2) => { num[j] = k2 + 1; });
+      Object.assign(s, { pista: it.pista, modo: it.modo, molde: [...it.palabra].map((ch) => (ch === ' ' ? ' ' : '')), numeros: it.modo === 'normal' ? null : num,
+        nPalabra: T.aciertos + 1 });
+    }
   } else if (r.kind === 'unade4' && it && jugando) {
     Object.assign(s, { tema: it.tema, pista: it.pista, opciones: it.opciones });
   }
@@ -794,8 +807,8 @@ function secretoTurnos(r) {
   return { tipo: 'turnos', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, stage: r.stage, turno: r.turno,
     temas: r.stage === 'elegir' ? r.opciones[r.turno].map((p) => p.tema) : null,
     tema: T && T.tema, letras: T && T.letras, tiempo: T ? T.tiempo : null, pendientes: T ? T.cola.length : 0,
-    pos: i, item: it ? { pista: it.pista, respuestas: it.respuestas, opciones: it.opciones, correcta: it.correcta, partes: it.partes, emoji: it.emoji } : null,
-    elementos: r.kind === 'memoria' && T ? T.items.map((x) => `${x.emoji} ${x.nombre}`) : null };
+    pos: i, item: it ? { pista: it.pista, respuestas: it.respuestas, opciones: it.opciones, correcta: it.correcta, partes: it.partes, modo: it.modo, palabra: it.palabra, secuencia: it.secuencia } : null,
+    elementos: r.kind === 'memoria' && T ? T.items.map((x) => x.nombre.toUpperCase()) : null };
 }
 
 // ---- Tuti Fruti (el bachillerato): una letra y varias categorías; los dos equipos escriben a la vez ----
@@ -1098,13 +1111,6 @@ function publico() {
     if (r.kind === 'refran') s.p.inicio = ver ? it.inicio : null;
     if (r.kind === 'adivinanza') s.p.texto = it.texto;
     if (r.kind === 'siglas') s.p.sigla = it.sigla;
-    if (r.kind === 'deletrea') {
-      // casillas vacías (como en el programa); en «al azar» cada casilla lleva el número de su turno; al revés se cuenta desde el final
-      const num = [...it.palabra].map(() => null);
-      it.orden.forEach((j, k2) => { num[j] = k2 + 1; });
-      Object.assign(s.p, { definicion: it.definicion, modo: it.modo, molde: [...it.palabra].map((ch) => (ch === ' ' ? ' ' : '')), numeros: it.modo === 'normal' ? null : num,
-        palabra: rev ? it.palabra.toUpperCase() : null });
-    }
     if (r.kind === 'quitaletras') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null, sobra: rev ? it.sobra.toUpperCase() : null, palabra: rev ? it.palabra.toUpperCase() : null });
     if (r.kind === 'vertical') {
       // el tablero en curso: cada fila muestra su inicial y, si ya se resolvió, la palabra completa
