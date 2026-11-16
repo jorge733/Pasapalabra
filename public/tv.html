@@ -81,9 +81,9 @@
   .tile.on{background:#fff;color:var(--bg);border-color:#fff;animation:pop .35s}
   .tile.sp{background:none;border:0;width:4vmin}
   /* La palabra vertical: la primera casilla de cada fila forma la palabra vertical */
-  .vgrid{display:flex;flex-direction:column;gap:1vmin;align-items:flex-start;margin:2.5vmin auto;width:max-content;max-width:100%}
+  .vgrid{display:flex;flex-direction:column;gap:.5vmin;align-items:flex-start;margin:1.2vmin auto;width:max-content;max-width:100%}
   .vfila{display:flex;gap:.8vmin;align-items:center;border-radius:1.4vmin;padding:.4vmin;transition:background .3s}
-  .vfila .tile{width:6.4vmin;height:7.4vmin;font-size:4.6vmin;border-radius:1vmin}
+  .vfila .tile{width:5.6vmin;height:6.2vmin;font-size:4vmin;border-radius:1vmin}
   .vfila .tile.ini{background:var(--o1);color:#fff;border-color:var(--o1)}
   .vfila.cur{background:rgba(255,255,255,.12);box-shadow:0 0 0 .4vmin #fff}
   .vfila.A .tile.on,.vfila.B .tile.on{background:var(--team);border-color:var(--team);color:#fff}
@@ -356,7 +356,16 @@ function tocarMusica(s) {
   if (!sonidoActivo) return; // el sonido aún no está activado
   tocarPista('intro'); // la cortina de Letramanía suena en la presentación de cada prueba
 }
+// Si el servidor se actualizó (se publicó una versión nueva), recarga la página para usar el código nuevo
+let versionInicial = null;
+function revisarVersion(s) {
+  if (!s || !s.version) return false;
+  if (versionInicial && s.version !== versionInicial) { location.reload(); return true; }
+  versionInicial = versionInicial || s.version;
+  return false;
+}
 sock.on('state', (s, ev) => {
+  if (revisarVersion(s)) return;
   tocarMusica(s);
   S = s; controlarBucle();
   S = s;
@@ -549,10 +558,9 @@ function render() {
     } else if (u.kind === 'cruzadas') {
       const col = (xs) => xs.map((x) => `<div class="${x.ok ? 'ok' : ''} ${x.cur ? 'cur' : ''}">${esc(x.t)}</div>`);
       const iz = col(u.izq), de = col(u.der);
-      cuerpo = `<div class="big" style="font-size:4.6vmin">Tema: <span style="color:var(--B)">${esc(u.tema)}</span></div>
-        <div class="cols">${iz.map((x, k) => x + de[k]).join('')}</div>
-        ${u.pista ? `<div class="qtxt" style="font-size:4.6vmin;margin-bottom:1vmin">${esc(u.pista)}</div>` : ''}
-        ${u.resueltas.length ? `<div class="sub" style="margin:0 auto;font-size:2.6vmin">✔ ${u.resueltas.map(esc).join(' · ')}</div>` : ''}`;
+      cuerpo = `<div class="big" style="font-size:3.8vmin">Tema: <span style="color:var(--B)">${esc(u.tema)}</span></div>
+        ${u.pista ? `<div class="qtxt" style="font-size:4.2vmin;margin:1vmin auto 0">${esc(u.pista)}</div>` : ''}
+        <div class="cols">${iz.map((x, k) => x + de[k]).join('')}</div>`;
     } else if (u.kind === 'memoria') {
       cuerpo = `<div class="big" style="font-size:4.2vmin;margin-top:.5vmin">${u.memorizar ? `🧠 ¡Memoricen! Tema: <span style="color:var(--B)">${esc(u.tema)}</span>`
         : `Tema: <span style="color:var(--B)">${esc(u.tema)}</span> · palabra <span style="color:var(--o1);filter:brightness(1.6)">${u.actual + 1}</span> de 9`}</div>
@@ -569,7 +577,8 @@ function render() {
         <div class="opts">${u.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
         <div class="sub" style="margin:2vmin auto 0">${R.aciertos} aciertos · ${R.fallos} fallos</div>`;
     }
-    const cab = `${esc(u.titulo)} · turno ${u.n} de 2${u.stage === 'reveal' ? ' · resultado' : ' · ' + nom(u.turno)}${u.kind === 'unade4' && u.tema && u.stage === 'play' ? ' · ' + esc(u.tema) : ''}`;
+    const enPanel = ['play', 'memorizar', 'finTurno'].includes(u.stage); // el nombre del equipo ya va en su panel lateral
+    const cab = `${esc(u.titulo)} · turno ${u.n} de 2${u.stage === 'reveal' ? ' · resultado' : enPanel ? '' : ' · ' + nom(u.turno)}${u.kind === 'unade4' && u.tema && u.stage === 'play' ? ' · ' + esc(u.tema) : ''}`;
     if (['play', 'memorizar', 'finTurno'].includes(u.stage)) {
       // como en la tele: el panel del equipo que juega va a su lado, con sus jugadores y un reloj circular
       const t = u.turno, rj = S.reloj, n = rj ? seg(rj.rem) : 0, pct = rj ? Math.round((100 * rj.rem) / rj.total) : 0;
@@ -669,7 +678,7 @@ function render() {
         return `<div class="vfila ${cls} ${k === tb.actual && !rev ? 'cur' : ''}">${letras.map((ch, j) => ch === ' ' ? '<div class="tile sp"></div>'
           : `<div class="tile ${j === 0 && !f.palabra ? 'on ini' : ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>`;
       }).join('');
-      cuerpo = `<div class="big" style="font-size:5vmin;margin-top:1vmin">Concepto: <span style="color:var(--B)">${esc(tb.concepto)}</span></div>
+      cuerpo = `<div class="big" style="font-size:4.2vmin">Concepto: <span style="color:var(--B)">${esc(tb.concepto)}</span></div>
         <div class="vgrid">${filas}</div>
         ${tb.pista ? `<div class="qtxt" style="font-size:4.4vmin;margin:0 auto 1vmin;max-width:140vmin">Fila ${tb.actual + 1}: ${esc(tb.pista)}</div>` : (rev ? '' : '<div class="sub" style="margin:0 auto">🎙️ Escuchen la pista</div>')}`;
     } else {

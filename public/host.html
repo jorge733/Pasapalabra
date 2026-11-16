@@ -303,7 +303,15 @@ let S = null, X = null, ultimaLectura = '';
 const cache = {}; // evita redibujar (y perder clics) si el HTML no cambió
 const pon = (sel, html) => { if (cache[sel] !== html) { cache[sel] = html; $(sel).innerHTML = html; } };
 
-sock.on('state', (s) => { S = s; render(); });
+// Si el servidor se actualizó (se publicó una versión nueva), recarga la página para usar el código nuevo
+let versionInicial = null;
+function revisarVersion(s) {
+  if (!s || !s.version) return false;
+  if (versionInicial && s.version !== versionInicial) { location.reload(); return true; }
+  versionInicial = versionInicial || s.version;
+  return false;
+}
+sock.on('state', (s) => { if (revisarVersion(s)) return; S = s; render(); });
 sock.on('secreto', (x) => { X = x; renderLectura(); });
 
 function detalleFase(s) {
