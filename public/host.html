@@ -145,6 +145,30 @@
   .ops div.ok{background:#14532d;outline:2px solid var(--ok)}
   .estadoL{font-size:20px;font-weight:900;padding:10px 14px;border-radius:10px;background:var(--bg)}
   #lecturaBody{display:flex;flex-direction:column;gap:10px}
+  /* Bachillerato */
+  .tfCab{display:flex;align-items:center;gap:14px}
+  .tfCab .lt{flex:none;width:68px;height:76px;border-radius:14px;background:#fff;color:var(--bg);display:grid;place-items:center;font-size:52px;font-weight:900}
+  .tfCab .tx{font-size:20px;font-weight:900;line-height:1.25}
+  .tfProg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .tfProg > div{min-width:0;background:var(--bg);border-radius:10px;padding:8px 10px;font-weight:900;border-left:5px solid var(--team);display:flex;flex-direction:column;gap:6px}
+  .tfProg span span:first-child{color:var(--team)}
+  .tfProg span{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 6px}
+  .tfProg i{display:block;height:6px;border-radius:6px;background:var(--pend);overflow:hidden}.tfProg i b{display:block;height:100%;background:var(--team)}
+  .tfCat{background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .tfCat .nc{font-weight:900;font-size:18px}.tfCat .ej{color:var(--muted);font-weight:700;font-size:14px}
+  .tfR{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;width:100%;text-align:left;padding:10px 12px;border-radius:10px;background:var(--panel);color:var(--ink);border-left:6px solid var(--team);font-weight:900;font-size:19px}
+  .tfR .eqn{display:block;font-size:12px;color:var(--team);font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+  .tfR .t{flex:1 1 5em;min-width:0;overflow-wrap:break-word}
+  .tfR .m{flex:none;font-size:13px;font-weight:900;padding:4px 9px;border-radius:999px;background:var(--pend);white-space:nowrap}
+  .tfR .pt{flex:none;padding:2px 9px;border-radius:999px;background:var(--ok);color:#06240f;font-size:15px}
+  .tfR.ok .m,.tfR.si .m{background:#15803d}.tfR.mal .m,.tfR.no .m{background:#b91c1c}
+  .tfR.mal .v,.tfR.no .v{text-decoration:line-through;color:var(--muted)}
+  .tfR.duda.rv{box-shadow:inset 0 0 0 2px #0ea5e9}.tfR.duda .m{background:#0369a1}.tfR.duda:not(.rv) .m{background:#15803d}
+  .tfR.vacia{color:var(--muted);font-weight:800}
+  button.tfR:active{transform:scale(.98)}
+  .tfTot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .tfTot div{background:var(--bg);border-radius:10px;padding:10px;text-align:center;font-weight:900;font-size:22px;color:var(--team);border-top:4px solid var(--team)}
+  .tfTot small{display:block;font-size:13px;color:var(--muted)}
   .juicio{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
   .juicio:empty{display:none}
   /* los botones para juzgar quedan siempre a mano aunque la pregunta sea larga */
@@ -478,25 +502,32 @@ function renderLectura() {
       <div class="estadoL">${X.stage === 'reveal' ? 'Mostrando la respuesta en la tele…' : `Los equipos responden en el celular · ${['A', 'B'].map((t) => team(t) + (X.respondido[t] ? ' ✓' : ' …')).join(' ')}`}</div>
       <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
   } else if (X.tipo === 'tuti') {
-    const head = `<div class="meta">Tuti Fruti · letra ${X.n} de ${X.total}</div><div><span class="letraG" style="color:var(--B)">${esc(X.letra)}</span></div>`;
+    // Bachillerato: la letra, las categorías con ejemplos y, al revisar, cada respuesta con un toque para aceptarla o rechazarla
+    const nc = X.cats.length, rev = X.stage === 'revision';
+    const etapa = X.stage === 'ask' ? '' : rev ? ' · revisión' : ' · resultado';
+    const head = `<div class="meta">Bachillerato · letra ${X.n} de ${X.total}${etapa}</div>
+      <div class="tfCab"><div class="lt">${esc(X.letra)}</div><div class="tx">${X.stage === 'ask' ? `Di en voz alta: «¡Letra ${esc(X.letra)}!» y lee las categorías` : rev ? 'Revisa las respuestas: toca una para aceptarla o rechazarla' : 'Puntos de esta letra'}</div></div>`;
     if (X.stage === 'ask') {
       const ll = S.tuti ? S.tuti.llenas : { A: 0, B: 0 };
-      html = `${head}<div class="leer" style="font-size:22px">Di la letra en voz alta. Categorías:</div>
-        ${X.cats.map((c) => `<div><b>${esc(c.categoria)}</b> <span class="meta">(p. ej.: ${c.ejemplos.map(esc).join(', ')})</span></div>`).join('')}
-        <div class="estadoL">${X.basta ? `✋ ${team(X.basta)} gritó «¡Basta!»` : 'Los equipos escriben en el celular'} · ${['A', 'B'].map((t) => `${team(t)} ${ll[t]}/${X.cats.length}`).join(' ')}</div>
+      html = `${head}
+        <div class="tfProg">${['A', 'B'].map((t) => `<div class="${t}"><span><span>${esc(S.teams[t].name)}${X.basta === t ? ' ✋' : ''}</span><span>${ll[t]}/${nc}</span></span><i><b style="width:${(100 * ll[t]) / nc}%"></b></i></div>`).join('')}</div>
+        ${X.cats.map((c, k) => `<div class="tfCat"><div class="nc">${k + 1}. ${esc(c.categoria)}</div><div class="ej">p. ej. ${c.ejemplos.map(esc).join(', ')}</div></div>`).join('')}
+        <div class="estadoL">${X.basta ? `✋ ${team(X.basta)} gritó «¡Basta!»: al otro equipo le quedan unos segundos` : 'Los equipos escriben en el celular. Puedes cerrar antes si ya terminaron.'}</div>
         <div class="juicio">${btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
     } else {
-      const ICON = { ok: '✔', si: '✔ (aceptada)', duda: '? (no está en la lista)', mal: '✘ (otra letra)', no: '✘ (rechazada)', vacia: '—' };
-      const celda = (t, k) => {
-        const m = X.marcas[t][k], vale = ['ok', 'si', 'duda'].includes(m);
-        const txt = `${esc(X.resp[t][k]) || '—'} <span class="meta">${ICON[m]}${X.puntos ? ' · +' + X.puntos[k][t] : ''}</span>`;
-        return X.stage === 'revision' && m !== 'vacia'
-          ? `<button style="text-align:left;padding:10px;background:${vale ? '#14532d' : '#7f1d1d'}" onclick="h('tutiMarca',{team:'${t}',k:${k}})">${txt}</button>`
-          : `<div>${txt}</div>`;
+      const MARCA = { ok: '✔ En la lista', si: '✔ Aceptada', duda: rev ? '? Revisar' : '✔ Vale', mal: '✘ Otra letra', no: '✘ Rechazada', vacia: 'Sin respuesta' };
+      const dudas = ['A', 'B'].reduce((n, t) => n + X.marcas[t].filter((m) => m === 'duda').length, 0);
+      const fila = (t, k) => {
+        const m = X.marcas[t][k], pts = X.puntos ? X.puntos[k][t] : 0;
+        const dentro = `<span class="t"><span class="eqn">${esc(S.teams[t].name)}</span><span class="v">${m === 'vacia' ? '—' : esc(X.resp[t][k])}</span></span>${pts ? `<span class="pt">+${pts}</span>` : ''}<span class="m">${MARCA[m]}</span>`;
+        return rev && m !== 'vacia' ? `<button class="tfR ${t} ${m} rv" onclick="h('tutiMarca',{team:'${t}',k:${k}})">${dentro}</button>` : `<div class="tfR ${t} ${m}">${dentro}</div>`;
       };
-      html = `${head}<div class="ops"><div>${team('A')}</div><div>${team('B')}</div></div>${X.cats.map((c, k) => `<div class="meta" style="margin-top:6px">${esc(c.categoria)}</div><div class="ops">${celda('A', k)}${celda('B', k)}</div>`).join('')}
-        <div class="estadoL">${X.stage === 'revision' ? 'Toca una respuesta para aceptarla o rechazarla. Iguales: 1 s · distintas: 2 s · solo un equipo: 3 s.' : `Puntos: ${['A', 'B'].map((t) => `${team(t)} +${X.gana[t]} s`).join(' ')}`}</div>
-        <div class="juicio">${X.stage === 'revision' ? btn('bOk', 'nadie', 'Confirmar puntos →', 'N') : ''}</div>`;
+      html = `${head}
+        ${rev ? `<div class="estadoL">${dudas ? `Hay ${dudas} ${dudas === 1 ? 'respuesta' : 'respuestas'} con «?» (no están en la lista): valen salvo que las rechaces.` : 'Todo revisado automáticamente. Puedes cambiar cualquiera con un toque.'}</div>` : ''}
+        ${X.cats.map((c, k) => `<div class="tfCat"><div class="nc">${k + 1}. ${esc(c.categoria)}</div>${fila('A', k)}${fila('B', k)}<div class="ej">p. ej. ${c.ejemplos.map(esc).join(', ')}</div></div>`).join('')}
+        ${rev ? '<p class="hint">Solo un equipo: 3 s · respuestas distintas: 2 s cada uno · iguales: 1 s cada uno.</p>'
+          : `<div class="tfTot">${['A', 'B'].map((t) => `<div class="${t}"><small>${esc(S.teams[t].name)}</small>+${X.gana[t]} s</div>`).join('')}</div>`}
+        <div class="juicio">${rev ? btn('bOk', 'nadie', 'Confirmar puntos →', 'N') : ''}</div>`;
     }
   } else if (X.tipo === 'cifra') {
     html = `<div class="meta">Adivina la cifra · ${X.n} de ${X.total}</div><div class="leer">${esc(X.texto)}</div>
