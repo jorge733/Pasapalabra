@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="/style.css">
 <style>
   body{min-height:100dvh;font-size:18px}
-  #top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:4px solid var(--team,var(--pend))}
+  #top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:4px solid var(--team,var(--pend))}
   #top b{font-weight:900}
   #v{padding:20px 16px;display:flex;flex-direction:column;gap:14px;min-height:calc(100dvh - 60px)}
   h1{font-size:28px;margin:0;font-weight:900;text-align:center}
@@ -56,6 +56,41 @@
   .ok{background:var(--ok)} .ko{background:var(--ko)}
   .row{display:grid;grid-template-columns:2fr 1fr;gap:10px}
   .grow{flex:1}
+
+  /* Bachillerato */
+  .bcab{display:flex;align-items:center;gap:14px;background:var(--panel);border-radius:18px;padding:12px 14px;position:sticky;top:0;z-index:2;box-shadow:0 8px 18px rgba(0,0,0,.35)}
+  .bcab .lt{flex:none;width:72px;height:80px;border-radius:14px;background:#fff;color:var(--bg);display:grid;place-items:center;font-size:56px;font-weight:900;line-height:1;animation:popM .45s both}
+  .bcab .inf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .bcab .inf small{color:var(--muted);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.12em}
+  .bcab .inf b{font-size:17px;line-height:1.2}
+  .bprog{height:8px;border-radius:8px;background:var(--pend);overflow:hidden}.bprog i{display:block;height:100%;background:var(--team);transition:width .3s}
+  .bcats{display:flex;flex-direction:column;gap:10px}
+  .bc{display:block;background:var(--panel);border-radius:16px;padding:10px 12px 12px;border:3px solid transparent;transition:border-color .2s}
+  .bc .et{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;margin-bottom:8px}
+  .bc .et .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--pend);display:grid;place-items:center;font-size:13px}
+  .bc .et .st{margin-left:auto;font-size:13px;font-weight:800;color:var(--muted)}
+  .bc input{width:100%;padding:13px 14px;font-size:20px;font-weight:800;border-radius:12px;border:2px solid var(--pend);background:var(--bg);color:var(--ink);outline:none}
+  .bc input:focus{border-color:var(--team)}
+  .bc.ok{border-color:var(--ok)}.bc.ok .et .n{background:var(--ok)}.bc.ok .et .st{color:var(--ok)}
+  .bc.mal{border-color:var(--ko)}.bc.mal .et .n{background:var(--ko)}.bc.mal .et .st{color:var(--ko)}
+  .bc.eq .et .st{color:var(--team)}
+  .bpie{position:sticky;bottom:0;padding:10px 0 4px;background:linear-gradient(transparent,var(--bg) 30%);display:flex;flex-direction:column;gap:8px}
+  .bpie .btn[disabled]{background:var(--pend);color:var(--muted)}
+  .bpie .btn.listo{animation:pulsoM 1.4s ease-in-out infinite}
+  .baviso{border-radius:14px;padding:10px 12px;font-weight:900;text-align:center;background:var(--ko);color:#fff;animation:popM .4s both}
+  .baviso.mio{background:var(--team);color:#111}
+  .bres{display:flex;flex-direction:column;gap:8px}
+  .br{background:var(--panel);border-radius:14px;padding:10px 12px;border-left:6px solid var(--pend)}
+  .br .c{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .br .r{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:900;margin-top:2px}
+  .br .r .t{flex:1;min-width:0;overflow-wrap:anywhere}
+  .br .ic{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:15px;color:#fff;background:var(--pend)}
+  .br .pt{flex:none;padding:2px 10px;border-radius:999px;background:var(--ok);color:#06240f;font-size:16px}
+  .br .ri{font-size:14px;color:var(--muted);font-weight:700;margin-top:4px}
+  .br.ok,.br.si{border-left-color:var(--ok)}.br.ok .ic,.br.si .ic{background:var(--ok)}
+  .br.duda{border-left-color:#0ea5e9}.br.duda .ic{background:#0ea5e9}
+  .br.mal,.br.no{border-left-color:var(--ko)}.br.mal .ic,.br.no .ic{background:var(--ko)}.br.mal .t,.br.no .t{text-decoration:line-through;color:var(--muted)}
+  .br.vacia .t{color:var(--muted)}
 
   /* ===== animaciones ===== */
   #v > *{animation:subirM .4s cubic-bezier(.2,.9,.3,1.2) both}
@@ -204,26 +239,35 @@ function vista() {
         <p>🎙️ Respondan en voz alta</p><div class="grow"></div>${paso}`, tick: () => { const c = $('#cuenta'); if (c) c.textContent = seg(u.resumen[mt].tiempo); } };
     }
     case 'tutifruti': {
-      const u = S.tuti;
+      const u = S.tuti, nc = u.categorias.length;
       if (u.stage === 'ask') return { key: 'tf' + u.n, html: () => `
-        <div style="display:flex;align-items:center;gap:12px"><div class="letra" style="font-size:64px;margin:0">${esc(u.letra)}</div>
-          <p style="margin:0;text-align:left">Una palabra que empiece por <b style="color:var(--ink)">${esc(u.letra)}</b> en cada categoría</p></div>
-        <form onsubmit="event.preventDefault();basta()">${u.categorias.map((c, k) => `
-          <label style="display:block;text-align:left;font-weight:800;margin-top:8px">${esc(c)}
-          <input class="in tf" data-k="${k}" autocomplete="off" autocorrect="off" spellcheck="false" oninput="tuti(this)" style="margin-top:4px"></label>`).join('')}
-        <p id="bastaMsg" style="min-height:1.4em;margin:10px 0 0"></p>
-        <p id="faltan" style="margin:0;color:var(--ko)"></p>
-        <button class="btn" id="bBasta" style="margin-top:6px">✋ ¡Basta!</button></form>`,
+        <div class="bcab"><div class="lt">${esc(u.letra)}</div><div class="inf"><small>Bachillerato · letra ${u.n} de ${u.total}</small>
+          <b>Una palabra con <span style="color:var(--team)">${esc(u.letra)}</span> en cada categoría</b>
+          <div class="bprog"><i id="bProg" style="width:0"></i></div></div></div>
+        <div id="bastaMsg"></div>
+        <div class="bcats">${u.categorias.map((c, k) => `
+          <label class="bc" id="bc${k}"><div class="et"><span class="n">${k + 1}</span><span>${esc(c)}</span><span class="st"></span></div>
+          <input class="tf" data-k="${k}" enterkeyhint="${k < nc - 1 ? 'next' : 'done'}" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"
+            placeholder="Empieza con ${esc(u.letra)}…" oninput="tuti(this)" onkeydown="sigTuti(event,this)"></label>`).join('')}</div>
+        <div class="bpie"><button class="btn" id="bBasta" onclick="basta()">✋ ¡Basta!</button></div>`,
         after: () => { const i = document.querySelector('.tf'); if (i) i.focus(); },
-        tick: () => {
-          const m = $('#bastaMsg');
-          if (m) m.innerHTML = u.basta ? (u.basta === mt ? '¡Gritaron «Basta»! Pueden seguir corrigiendo' : `<b style="color:var(--ko)">¡${esc(equipoNombre(u.basta))} gritó «Basta»! Apúrense</b>`) : '';
-          const b = $('#bBasta'); if (b) b.disabled = !!u.basta;
-        } };
-      const r = u.resp ? u.resp[mt] : [], m = u.marcas ? u.marcas[mt] : [];
-      const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '—' };
-      return { key: 'tfr' + u.n + u.stage + JSON.stringify(m), html: () => `<h2>${u.stage === 'reveal' ? (u.gana[mt] ? '¡Bien! +' + u.gana[mt] + ' s' : 'Esta vez no') : 'Revisando respuestas… mira la tele'}</h2>
-        <div style="text-align:left">${u.categorias.map((c, k) => `<p style="margin:6px 0"><b style="color:var(--ink)">${esc(c)}:</b> ${esc(r[k]) || '—'} ${ICON[m[k]] || ''}${u.puntos ? ' · +' + u.puntos[k][mt] : ''}</p>`).join('')}</div>` };
+        tick: () => estadoTuti(u) };
+      const r = u.resp ? u.resp[mt] : [], m = u.marcas ? u.marcas[mt] : [], rev = u.stage === 'reveal';
+      const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '' };
+      const cab = rev
+        ? `<div class="res ${u.gana[mt] ? 'ok' : 'ko'}">${u.gana[mt] ? '¡Bien! +' + u.gana[mt] + ' s' : 'Esta vez no'}</div>
+           <p>${esc(equipoNombre(otro))}: +${u.gana[otro]} s</p>`
+        : `<h2>🔎 Revisando respuestas…</h2><p>El presentador puede aceptar o rechazar las que tienen «?». ¡Miren la tele!</p>`;
+      return { key: 'tfr' + u.n + u.stage + JSON.stringify(m), html: () => `
+        <div class="bcab"><div class="lt">${esc(u.letra)}</div><div class="inf"><small>Bachillerato · letra ${u.n} de ${u.total}</small>
+          <b>${rev ? 'Resultado' : 'Sus respuestas'}</b></div></div>
+        ${cab}
+        <div class="bres">${u.categorias.map((c, k) => {
+          const pts = u.puntos ? u.puntos[k][mt] : 0, ej = rev && u.ejemplos && u.ejemplos[k] ? u.ejemplos[k] : [];
+          return `<div class="br ${m[k]}"><div class="c">${esc(c)}</div>
+            <div class="r"><span class="t">${esc(r[k]) || 'Sin respuesta'}</span>${pts ? `<span class="pt">+${pts}</span>` : ''}${ICON[m[k]] ? `<span class="ic">${ICON[m[k]]}</span>` : ''}</div>
+            <div class="ri">${esc(equipoNombre(otro))}: ${esc(u.resp[otro][k]) || '—'}${ej.length ? ` · p. ej. ${ej.map(esc).join(', ')}` : ''}</div></div>`;
+        }).join('')}</div>` };
     }
     case 'rueda': {
       const r = S.rueda;
@@ -258,14 +302,42 @@ function botonLoSe(espera) {
     : `<button class="buzz" onclick="sock.emit('buzz');vibra(60)">¡Lo sé!</button>`;
 }
 function tickLoSe(espera) { const c = $('#bzc'); if (c) c.textContent = seg(espera); }
-// Tuti Fruti: cada casilla se envía mientras se escribe; «¡Basta!» manda todas y detiene la ronda
-function tuti(el) { sock.emit('tuti', { k: Number(el.dataset.k), texto: el.value }); }
+// Bachillerato: cada casilla se envía mientras se escribe; «¡Basta!» detiene la ronda (solo con todo lleno)
+const inicial = (t) => String(t || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0);
+function tuti(el) { sock.emit('tuti', { k: Number(el.dataset.k), texto: el.value }); estadoTuti(S.tuti); }
+// Enter pasa a la siguiente categoría (no grita «Basta» por accidente)
+function sigTuti(e, el) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const sig = document.querySelector(`.tf[data-k="${Number(el.dataset.k) + 1}"]`);
+  sig ? sig.focus() : el.blur();
+}
+// Estado de cada casilla: lista (empieza bien), no empieza por la letra, o ya la llenó un compañero desde otro celular
+function estadoTuti(u) {
+  if (!u || u.stage !== 'ask' || !me) return;
+  const mt = me.team, L = u.letra.toLowerCase(), eq = u.llenasK ? u.llenasK[mt] : [];
+  let listas = 0, malas = 0;
+  document.querySelectorAll('.tf').forEach((i) => {
+    const k = Number(i.dataset.k), v = i.value.trim(), c = $('#bc' + k), st = c.querySelector('.st');
+    let cls = '', txt = '';
+    if (v && inicial(v) !== L) { cls = 'mal'; txt = `No empieza con ${u.letra}`; malas++; }
+    else if (v) { cls = 'ok'; txt = '✔ Lista'; listas++; }
+    else if (eq[k]) { cls = 'eq'; txt = '✔ La llenó tu equipo'; listas++; }
+    c.className = 'bc ' + cls; st.textContent = txt;
+  });
+  const p = $('#bProg'); if (p) p.style.width = (100 * listas) / u.categorias.length + '%';
+  const faltan = u.categorias.length - listas, b = $('#bBasta');
+  if (b) {
+    b.disabled = !!u.basta || faltan > 0;
+    b.classList.toggle('listo', !u.basta && !faltan);
+    b.textContent = u.basta ? '✋ ¡Basta!' : faltan ? `Faltan ${faltan} para gritar «¡Basta!»` : malas ? '✋ ¡Basta! (revisen las marcadas en rojo)' : '✋ ¡Basta!';
+  }
+  const m = $('#bastaMsg');
+  if (m) m.innerHTML = !u.basta ? '' : u.basta === mt ? `<div class="baviso mio">✋ ¡Gritaron «Basta»! Pueden seguir corrigiendo</div>`
+    : `<div class="baviso">✋ ¡${esc(equipoNombre(u.basta))} gritó «Basta»! ¡Apúrense!</div>`;
+}
 function basta() {
-  const ins = [...document.querySelectorAll('.tf')];
-  ins.forEach((i) => i.value.trim() && tuti(i));
-  const vacia = ins.find((i) => !i.value.trim());
-  if (vacia) { vacia.focus(); const m = $('#faltan'); if (m) m.textContent = 'Llenen todas las categorías para gritar «Basta»'; return; }
-  const f = $('#faltan'); if (f) f.textContent = '';
+  document.querySelectorAll('.tf').forEach((i) => i.value.trim() && tuti(i));
   sock.emit('basta'); vibra(60);
 }
 function cambiar() { me = { ...me, team: me.team === 'A' ? 'B' : 'A' }; sock.emit('join', me); }
