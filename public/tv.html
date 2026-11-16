@@ -494,7 +494,7 @@ function render() {
     const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', letraaletra: '🔠', pistas: '🔍', musical: '🎵', todos: '🎤', cruzadas: '🔗', rueda: '🎡' };
     h = `<div style="text-align:center">${conTabla ? '' : `<div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div>`}<div class="big intro-titulo"${conTabla ? ' style="font-size:5vmin"' : ''}>${esc(S.intro.titulo)}</div>${conTabla ? '' : `<div class="sub intro-texto">${esc(S.intro.texto)}</div>`}${extra}
       <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
-  } else if (S.quiz && S.modo === 'presentador' && S.quiz.stage === 'ask') {
+  } else if (S.quiz && S.quiz.stage === 'ask') {
     const q = S.quiz;
     const aviso = q.buzz ? `<span class="${q.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[q.buzz.team].name)} responde!</span>` : q.espera > 0 ? `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(q.espera)}</span>` : '¡Ya pueden presionar «¡Lo sé!»!';
     h = `<div class="q"><div class="pista">${cabeceraQuiz(q)}</div>
@@ -503,24 +503,20 @@ function render() {
       <div class="aviso" style="margin-top:3vmin">${aviso}</div>
       <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${q.bloqueado[t] ? ' · falló' : ''}</span>`).join('')}</div></div>`;
   } else if (S.quiz) {
-    const q = S.quiz, rev = q.stage === 'reveal';
-    const quien = (k) => rev ? ['A', 'B'].filter((t) => q.resp[t] && q.resp[t].opt === k).map((t) => `<span class="chip ${t}" style="font-size:2.4vmin">${esc(S.teams[t].name)}</span>`).join(' ') : '';
+    const q = S.quiz; // respuesta revelada
     h = `<div class="q"><div class="pista">${cabeceraQuiz(q)}</div>
       <div class="qtxt">${esc(q.texto)}</div>
-      <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k} ${rev ? (k === q.correcta ? 'win' : 'dim') : ''}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span>${quien(k)}</div>`).join('')}</div>
-      ${rev ? `<div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${q.gana[t] ? '+' + q.gana[t] + ' s' : '—'}</span>`).join('')}</div>`
-            : `<div class="bar"><i style="width:${(q.rem / 150).toFixed(1)}%"></i></div>
-               <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${q.respondido[t] ? '✓' : '…'}</span>`).join('')}</div>`}
+      <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k} ${k === q.correcta ? 'win' : 'dim'}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
+      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${q.gana[t] ? '+' + q.gana[t] + ' s' : '—'}</span>`).join('')}</div>
     </div>`;
   } else if (S.phase === 'oculta') {
     const o = S.oculta;
     let aviso = '';
     if (o.ganador) aviso = `<span class="${o.ganador.team}" style="color:var(--team)">¡${esc(S.teams[o.ganador.team].name)} acierta! +${o.ganador.seg} s</span>`;
     else if (o.stage === 'reveal') aviso = 'Nadie la acertó';
-    else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[o.buzz.team].name) + ' responde!' : esc(S.teams[o.buzz.team].name) + ' responde… ' + seg(o.buzz.rem)}</span>`;
+    else if (o.buzz) aviso = `<span class="${o.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[o.buzz.team].name)} responde!</span>`;
     else if (o.espera > 0) aviso = `<span style="color:var(--muted)">🤔 Piensen… el botón se activa en ${seg(o.espera)}</span>`;
-    else if (S.modo === 'presentador' && !o.pista) aviso = '<span style="color:var(--muted)">🎙️ Escuchen la pista</span>';
-    else if (o.intento) aviso = `<span style="color:var(--ko)">«${esc(o.intento.texto)}» no es correcta</span>`;
+    else if (!o.pista) aviso = '<span style="color:var(--muted)">🎙️ Escuchen la pista</span>';
     h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total}${o.pista ? ' · ' + esc(o.pista) : ''}</div>
       <div class="tiles">${o.letras.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>
       <div class="aviso">${aviso}</div>
@@ -635,11 +631,10 @@ function render() {
     let aviso = '';
     if (p.ganador) aviso = `<span class="${p.ganador.team}" style="color:var(--team)">¡${esc(S.teams[p.ganador.team].name)} acierta! +${p.ganador.seg} s</span>`;
     else if (rev) aviso = p.kind === 'todos' && (p.bloqueado.A || p.bloqueado.B) ? '<span style="color:var(--ko)">Incorrecto: la canción se pierde</span>' : 'Nadie lo acertó';
-    else if (p.buzz) aviso = `<span class="${p.buzz.team}" style="color:var(--team)">${S.modo === 'presentador' ? '🔔 ¡' + esc(S.teams[p.buzz.team].name) + ' responde!' : esc(S.teams[p.buzz.team].name) + ' responde… ' + seg(p.buzz.rem)}</span>`;
-    else if (p.intento) aviso = `<span style="color:var(--ko)">«${esc(p.intento.texto)}» no es correcto</span>`;
+    else if (p.buzz) aviso = `<span class="${p.buzz.team}" style="color:var(--team)">🔔 ¡${esc(S.teams[p.buzz.team].name)} responde!</span>`;
     else if (p.espera > 0) aviso = `<span style="color:var(--muted)">🤔 Escuchen… el botón se activa en ${seg(p.espera)}</span>`;
     if (['musical', 'todos'].includes(p.kind) && p.stage === 'preparar') aviso = '<span style="color:var(--muted)">🎧 El presentador está preparando la canción…</span>';
-    if (['musical', 'todos'].includes(p.kind) && p.buzz && S.modo === 'presentador') aviso += '<div class="sub" style="margin:1vmin auto 0">⏸ ¡Pausa la música!</div>';
+    if (['musical', 'todos'].includes(p.kind) && p.buzz) aviso += '<div class="sub" style="margin:1vmin auto 0">⏸ ¡Pausa la música!</div>';
     let cuerpo = '';
     if (p.kind === 'anagrama') {
       const letras = rev ? [...p.respuesta.replace(/\s/g, '')] : [...p.revuelta];
