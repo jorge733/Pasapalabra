@@ -298,7 +298,7 @@ function enviarClave() {
   try { localStorage.setItem('letramania-clave', clave); } catch (e) {}
   sock.emit('soyHost', clave);
 }
-const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', unade4: 'Una de cuatro', deletrea: 'Deletrea', tutifruti: 'Tuti Fruti', quitaletras: 'El Quitaletras', vertical: 'La palabra vertical', memoria: 'La Memoria', letraaletra: 'Letra a letra', pistas: 'Pistas que despistan', musical: 'La pista musical', cruzadas: 'Palabras cruzadas', rueda: 'Rueda final', fin: 'Partida terminada' };
+const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', unade4: 'Una de cuatro', deletrea: 'Deletrea', tutifruti: 'Tuti Fruti', quitaletras: 'El Quitaletras', vertical: 'La palabra vertical', memoria: 'La Memoria', letraaletra: 'Letra a letra', pistas: 'Pistas que despistan', musical: 'La pista musical', todos: 'Todos contra todos', cruzadas: 'Palabras cruzadas', rueda: 'Rueda final', fin: 'Partida terminada' };
 let S = null, X = null, ultimaLectura = '';
 const cache = {}; // evita redibujar (y perder clics) si el HTML no cambió
 const pon = (sel, html) => { if (cache[sel] !== html) { cache[sel] = html; $(sel).innerHTML = html; } };
@@ -474,7 +474,7 @@ const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar',
 function renderLectura() {
   const card = $('#lectura');
   // el Tuti Fruti se revisa y La pista musical se pone desde aquí también en modo automático
-  const visible = S && X && (S.modo === 'presentador' || ['tutifruti', 'musical'].includes(S.phase)) && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'musical', 'cruzadas', 'rueda'].includes(S.phase);
+  const visible = S && X && (S.modo === 'presentador' || ['tutifruti', 'musical', 'todos'].includes(S.phase)) && ['quiz', 'vf', 'antes', 'cifra', 'oculta', 'anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'musical', 'todos', 'cruzadas', 'rueda'].includes(S.phase);
   card.classList.toggle('hidden', !visible);
   if (!visible) return;
   let html = '';
@@ -526,26 +526,31 @@ function renderLectura() {
       <div class="resp">Respuesta: ${X.unidad ? Number(X.respuesta).toLocaleString('es-CL') : X.respuesta} ${esc(X.unidad)}</div>
       <div class="estadoL">${X.stage === 'reveal' ? 'Mostrando el resultado en la tele…' : `Los equipos escriben su número · ${['A', 'B'].map((t) => team(t) + (X.respondido[t] ? ' ✓' : ' …')).join(' ')}`}</div>
       <div class="juicio">${X.stage === 'reveal' ? '' : btn('bNadie', 'nadie', 'Cerrar respuestas →', 'N')}</div>`;
-  } else if (X.tipo === 'p' && X.kind === 'musical') {
-    // La pista musical: el presentador busca la canción, la pone y la pausa cuando alguien presiona
-    const q = encodeURIComponent(X.item.titulo + ' ' + X.item.artista), auto = X.modo === 'auto';
+  } else if (X.tipo === 'p' && ['musical', 'todos'].includes(X.kind)) {
+    // La pista musical y Todos contra todos: el presentador busca la canción, la pone y la pausa cuando alguien presiona
+    const todos = X.kind === 'todos', auto = X.modo === 'auto';
+    const q = encodeURIComponent(X.item.titulo + ' ' + (X.item.artista || X.item.obra));
     let estado, botones = '';
     if (X.stage === 'preparar') {
       estado = 'Busca la canción y déjala lista. Cuando empiece a sonar, presiona «Ya suena».';
       botones = btn('bOk', 'empezar', '▶ Ya suena', 'C') + (X.reserva ? btn('bPaso', 'cambiar', '🔄 Otra canción', 'P') : '') + btn('bNadie', 'nadie', 'Saltar →', 'N');
-    } else if (X.stage === 'reveal') estado = 'Mostrando la respuesta en la tele… Puedes dejar sonar la canción.';
+    } else if (X.stage === 'reveal') estado = todos ? 'Mostrando la respuesta en la tele… Prepara la siguiente canción.' : 'Mostrando la respuesta en la tele… Puedes dejar sonar la canción.';
     else if (X.buzz) {
       estado = `🔔 ${team(X.buzz.team)} presionó. ⏸ Pausa la música.${auto ? ' Está escribiendo la respuesta…' : ' ¿Ha acertado?'}`;
       if (!auto) botones = btn('bOk', 'ok', '✔ Correcto', 'C') + btn('bKo', 'ko', '✘ Incorrecto', 'X');
+    } else if (todos) {
+      estado = 'Esperando a que un equipo presione. Si nadie presiona a tiempo, la canción se pierde.';
+      botones = btn('bPaso', 'paso', 'Pasapalabra →', 'P');
     } else {
       estado = (X.bloqueado.A || X.bloqueado.B ? '▶ Vuelve a poner la música. ' : '') + 'Las pistas salen solas en la tele (o presiona «Otra pista»).';
       botones = (X.numPistas < X.item.pistas.length ? btn('bPaso', 'pista', 'Otra pista', 'P') : '') + btn('bNadie', 'nadie', 'Nadie la sabe →', 'N');
     }
     html = `<div class="meta">${esc(X.titulo)} · canción ${X.n} de ${X.total}</div>
-      <div class="leer">🎵 ${esc(X.item.titulo)}</div><div class="meta" style="font-size:18px">${esc(X.item.artista)}</div>
+      <div class="leer">🎵 ${esc(X.item.titulo)}</div><div class="meta" style="font-size:18px">${esc(X.item.artista || '')}</div>
+      ${todos ? `<div class="resp">${X.item.obra ? '🎬 Película o serie' : '🎤 Intérprete'}: ${esc(X.item.obra || X.item.artista)}</div>` : ''}
       <div class="juicio sec" style="margin:8px 0">${[['Spotify', 'https://open.spotify.com/search/'], ['YouTube', 'https://www.youtube.com/results?search_query=']].map(([n, u]) =>
         `<a class="bPaso" style="color:#fff;text-decoration:none;text-align:center;font-weight:800;padding:12px;border-radius:12px" target="_blank" rel="noopener" href="${u}${q}">🔎 Buscar en ${n}</a>`).join('')}</div>
-      ${X.item.pistas.map((p, k) => `<div class="meta" style="opacity:${X.stage !== 'preparar' && k < X.numPistas ? 1 : .45}">Pista ${k + 1}: ${esc(p)}</div>`).join('')}
+      ${(X.item.pistas || []).map((p, k) => `<div class="meta" style="opacity:${X.stage !== 'preparar' && k < X.numPistas ? 1 : .45}">Pista ${k + 1}: ${esc(p)}</div>`).join('')}
       <div class="estadoL">${estado}</div><div class="juicio">${botones}</div>`;
   } else if (X.tipo === 'p') {
     let estado, botones = '';
@@ -617,9 +622,9 @@ function renderLectura() {
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
   let m = { c: 'ok', x: 'ko', p: 'paso', n: 'nadie' }[e.key.toLowerCase()];
-  if (X && X.tipo === 'p' && X.kind === 'musical' && X.stage === 'preparar') m = { c: 'empezar', p: 'cambiar', n: 'nadie' }[e.key.toLowerCase()];
-  else if (m === 'paso' && X && X.tipo === 'p') m = 'pista';
-  if (m && S && (S.modo === 'presentador' || S.phase === 'musical')) h('juzgar', m);
+  if (X && X.tipo === 'p' && ['musical', 'todos'].includes(X.kind) && X.stage === 'preparar') m = { c: 'empezar', p: 'cambiar', n: 'nadie' }[e.key.toLowerCase()];
+  else if (m === 'paso' && X && X.tipo === 'p' && X.kind !== 'todos') m = 'pista';
+  if (m && S && (S.modo === 'presentador' || ['musical', 'todos'].includes(S.phase))) h('juzgar', m);
 });
 </script>
 </body></html>

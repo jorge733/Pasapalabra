@@ -35,6 +35,8 @@ const CONFIG = {
   pistasCadaMs: 8000,      // Pistas que despistan: cada cuánto sale una pista nueva (son 5; el acierto vale 5, 4, 3, 2 o 1 s)
   canciones: 4,            // La pista musical: nº de canciones (las pone el presentador)
   musicalCadaMs: 12000,    //   cada cuánto sale una pista escrita mientras suena la canción (son 3; el acierto vale 5, 3 o 2 s)
+  todosContraTodos: 15,    // Todos contra todos: nº de canciones (como en el programa; una es de película o serie)
+  segTodos: 20,            //   segundos para presionar desde que suena la canción; si nadie presiona, se pierde
   queFueAntes: 5,          // ¿Qué fue antes?: nº de preguntas
   cifras: 4,               // Adivina la cifra: nº de preguntas
   segCifra: 25,            //   segundos para escribir el número
@@ -60,6 +62,7 @@ const CONFIG_KIDS = {
   segTurno: { letraaletra: 120, cruzadas: 100, memoria: 100, deletrea: 150, unade4: 60 },
   pistasCadaMs: 10000,
   musicalCadaMs: 15000,
+  segTodos: 30,
   segTuti: 120,
   segBasta: 15,
   quienSoyCadaMs: 13000,
@@ -241,6 +244,12 @@ const PRUEBAS = {
     auto: 'El presentador pone una canción. Presionen «¡Lo sé!» y escriban su nombre. Si nadie la adivina, van saliendo pistas. Solo con la música y la 1.ª pista se ganan 5 s; con la 2.ª, 3 s; con la 3.ª, 2 s.',
     presentador: 'El presentador pone una canción. Presionen «¡Lo sé!» y digan su nombre en voz alta. Si nadie la adivina, van saliendo pistas. Solo con la música y la 1.ª pista se ganan 5 s; con la 2.ª, 3 s; con la 3.ª, 2 s.',
   },
+  todos: {
+    titulo: 'Todos contra todos',
+    pasapalabra: true,
+    auto: 'El presentador pone 15 canciones. Presionen «¡Lo sé!» y escriban quién la canta (en una, de qué película o serie es). ¡Hay una sola oportunidad por canción: si fallan, se pierde! Cada acierto suma 2 segundos.',
+    presentador: 'El presentador pone 15 canciones. Presionen «¡Lo sé!» y digan quién la canta (en una, de qué película o serie es). ¡Hay una sola oportunidad por canción: si fallan, se pierde! Cada acierto suma 2 segundos.',
+  },
   cruzadas: {
     titulo: 'Palabras cruzadas',
     pasapalabra: true,
@@ -291,13 +300,14 @@ const PRUEBAS = {
 };
 const CLASICAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran'];
 // Pruebas del Pasapalabra chileno: primero las de la temporada 2026, luego otras de temporadas anteriores
-const CHILENAS = ['letraaletra', 'pistas', 'musical', 'memoria', 'cruzadas', 'deletrea', 'tutifruti', 'unade4', 'vertical', 'quitaletras'];
+const CHILENAS = ['letraaletra', 'pistas', 'musical', 'todos', 'memoria', 'cruzadas', 'deletrea', 'tutifruti', 'unade4', 'vertical', 'quitaletras'];
 const ORDEN = [...CLASICAS, ...CHILENAS]; // orden en que se juegan; la rueda va siempre al final
-const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'quitaletras', 'vertical', 'pistas', 'musical']; // pruebas de «presiona y responde»
+const PULSADOR = ['anagrama', 'quiensoy', 'refran', 'adivinanza', 'siglas', 'quitaletras', 'vertical', 'pistas', 'musical', 'todos']; // pruebas de «presiona y responde»
 const RAPIDA = ['quiz']; // pruebas con cuatro alternativas en que responden los dos equipos
-const PREMIO = { quiensoy: [12, 8, 5], pistas: [5, 4, 3, 2, 1], musical: [5, 3, 2], vertical: 5 }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
+const PREMIO = { quiensoy: [12, 8, 5], pistas: [5, 4, 3, 2, 1], musical: [5, 3, 2], todos: 2, vertical: 5 }; // segundos por acierto en las pruebas de pulsador (8 si no se indica)
 const PULSADOR_CORTO = ['vertical'];
 const CON_PISTAS = ['quiensoy', 'pistas', 'musical']; // pruebas de pulsador en que van saliendo pistas
+const MUSICALES = ['musical', 'todos']; // pruebas en que el presentador pone las canciones (también en modo automático)
 const TURNOS = ['letraaletra', 'cruzadas', 'memoria', 'deletrea', 'unade4']; // pruebas en que cada equipo juega solo contra el reloj
 const ELIGE_TEMA = ['cruzadas', 'memoria']; // pruebas por turnos en que el equipo elige entre dos temas
 const ELECCION = ['vf', 'antes']; // pruebas en que ambos equipos eligen una opción en el celular
@@ -419,6 +429,16 @@ function iniciarPrueba(k) {
     // se toman unas canciones de reserva por si el presentador no encuentra alguna y la cambia
     const todas = tomar('pistaMusical', 'pistaMusicalChile', cfg().canciones + 3);
     G.r = { kind: k, list: todas.slice(0, cfg().canciones), reserva: todas.slice(cfg().canciones), i: -1 };
+    siguientePulsador();
+  }
+  else if (k === 'todos') {
+    // como en el programa: una de las canciones es de una película o serie (en vez del intérprete, se dice la obra)
+    const n2 = cfg().todosContraTodos;
+    const todas = tomar('todosContraTodos', 'todosContraTodosChile', n2 - 1 + 3);
+    const obras = tomar('todosContraTodosObra', 'todosContraTodosObraChile', 2);
+    const list = todas.slice(0, n2 - 1);
+    list.splice(Math.floor(Math.random() * (list.length + 1)), 0, obras[0]);
+    G.r = { kind: k, list, reserva: todas.slice(n2 - 1), reservaObra: obras.slice(1), i: -1 };
     siguientePulsador();
   }
   else if (k === 'tutifruti') { G.r = { kind: k, list: rondasTuti(cfg().tutiFruti), i: -1 }; siguienteTuti(); }
@@ -603,6 +623,7 @@ function textoRespuesta(r) {
   if (r.kind === 'refran') return r.item.inicio.replace(/…$/, '') + ' ' + r.item.finales[0];
   if (r.kind === 'siglas') return `${r.item.sigla}: ${r.item.respuestas[0]}`;
   if (r.kind === 'musical') return `${r.item.titulo} (${r.item.artista})`;
+  if (r.kind === 'todos') return r.item.obra ? `${r.item.obra} («${r.item.titulo}»)` : `${r.item.artista} («${r.item.titulo}»)`;
   return r.item.respuestas[0];
 }
 function siguientePulsador() {
@@ -616,24 +637,27 @@ function siguientePulsador() {
   if (r.kind === 'anagrama') r.revuelta = revolver(r.item.palabra);
   if (r.kind === 'quitaletras') r.revuelta = revolver(r.item.palabra + r.item.sobra);
   r.espera = cfg().segPensar * 1000;
-  // La pista musical: el reloj no corre hasta que el presentador pone la canción
-  if (r.kind === 'musical') { r.stage = 'preparar'; r.espera = 0; }
+  // La pista musical y Todos contra todos: el reloj no corre hasta que el presentador pone la canción
+  if (MUSICALES.includes(r.kind)) { r.stage = 'preparar'; r.espera = 0; }
 }
-// La pista musical: el presentador avisa que ya suena la canción (o la cambia por otra si no la encuentra)
+// El presentador avisa que ya suena la canción (o la cambia por otra si no la encuentra)
 function empezarCancion() {
   const r = G.r;
-  r.stage = 'play'; r.rem = cadaPista(r); r.espera = cfg().segPensar * 1000;
+  r.stage = 'play'; r.rem = tiempoP(r); r.espera = cfg().segPensar * 1000;
   emitir('listo');
 }
 function cambiarCancion() {
   const r = G.r;
-  if (!r.reserva.length) return;
-  r.item = r.list[r.i] = r.reserva.shift();
+  // en Todos contra todos, la de película o serie se cambia por otra de película o serie
+  const reserva = r.item.obra && r.reservaObra ? r.reservaObra : r.reserva;
+  if (!reserva.length) return;
+  r.item = r.list[r.i] = reserva.shift();
   emitir();
 }
 // Tiempo de cada ronda de pulsador (en ¿Quién soy?, hasta la siguiente pista)
 function tiempoP(r) {
   if (CON_PISTAS.includes(r.kind)) return cadaPista(r);
+  if (r.kind === 'todos') return cfg().segTodos * 1000;
   return (PULSADOR_CORTO.includes(r.kind) ? cfg().segPulsadorCorto : cfg().segPulsador) * 1000;
 }
 // ¿Quién soy? y Pistas que despistan: cada cuánto sale una pista y cuántas hay
@@ -663,13 +687,15 @@ function acertarP(team) {
   G.teams[team].bonus += seg;
   r.ganador = { team, seg }; r.buzz = null;
   anotarFila(r, team);
-  r.stage = 'reveal'; r.rem = 5000;
+  r.stage = 'reveal'; r.rem = r.kind === 'todos' ? 3500 : 5000; // Todos contra todos es rápida: 15 canciones
   emitir('ok');
 }
 function fallarP(team) {
   const r = G.r;
   r.bloqueado[team] = true; r.buzz = null;
-  if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; anotarFila(r, 'nadie'); }
+  // Todos contra todos: una sola oportunidad por canción (como en el programa): si fallan, se pierde
+  if (r.kind === 'todos') { r.stage = 'reveal'; r.rem = 3500; }
+  else if (r.bloqueado.A && r.bloqueado.B) { r.stage = 'reveal'; r.rem = 5000; anotarFila(r, 'nadie'); }
   else {
     // el otro equipo tiene al menos unos segundos para presionar
     const quedan = (CON_PISTAS.includes(r.kind) ? (maxPistas(r) - r.pistas) * cadaPista(r) : 0) + r.rem;
@@ -677,7 +703,7 @@ function fallarP(team) {
   }
   emitir('fail');
 }
-function rendirP() { const r = G.r; r.buzz = null; r.stage = 'reveal'; r.rem = r.kind === 'vertical' ? 3500 : 5000; anotarFila(r, 'nadie'); emitir('reveal'); }
+function rendirP() { const r = G.r; r.buzz = null; r.stage = 'reveal'; r.rem = ['vertical', 'todos'].includes(r.kind) ? 3500 : 5000; anotarFila(r, 'nadie'); emitir('reveal'); }
 
 // ---- Pruebas por turnos (Letra a letra, Palabras cruzadas, La Memoria, Una de cuatro) ----
 // Como en el programa: juega un equipo y después el otro, cada uno con su propio reloj y su propio panel.
@@ -989,14 +1015,15 @@ function terminar() {
 function juzgar(res) {
   const r = G.r;
   if (!r || G.paused) return;
-  // La pista musical: el presentador pone la canción también en modo automático
-  if (G.phase === 'musical') {
+  // La pista musical y Todos contra todos: el presentador pone la canción también en modo automático
+  if (MUSICALES.includes(G.phase)) {
     if (r.stage === 'preparar') {
       if (res === 'empezar') return empezarCancion();
       if (res === 'cambiar') return cambiarCancion();
       if (res === 'nadie') return rendirP();
       return;
     }
+    if (res === 'paso' && r.stage === 'play' && !r.buzz) return rendirP(); // Todos contra todos: «Pasapalabra»
     if (!conPresentador() && !['nadie', 'pista'].includes(res)) return; // en automático corrige el juego
   } else if (!conPresentador()) return;
   if (RAPIDA.includes(G.phase) && r.stage === 'ask') {
@@ -1164,6 +1191,7 @@ function publico() {
       respuesta: rev ? textoRespuesta(r) : null };
     if (r.kind === 'anagrama') Object.assign(s.p, { revuelta: r.revuelta, pista: ver ? it.pista : null });
     if (CON_PISTAS.includes(r.kind)) Object.assign(s.p, { maxPistas: maxPistas(r), pistas: ver ? it.pistas.slice(0, rev ? maxPistas(r) : r.pistas) : null });
+    if (r.kind === 'todos') s.p.obra = !!it.obra; // esta canción es de una película o serie
     if (r.kind === 'musical') Object.assign(s.p, { valor: PREMIO.musical[r.pistas - 1], pistas: r.stage === 'preparar' ? [] : s.p.pistas });
     if (r.kind === 'refran') s.p.inicio = ver ? it.inicio : null;
     if (r.kind === 'adivinanza') s.p.texto = it.texto;
@@ -1243,7 +1271,7 @@ function secreto() {
     const tablero = r.kind === 'vertical' ? r.list.filter((f) => f.tablero === r.item.tablero) : null;
     return { tipo: 'p', kind: r.kind, titulo: PRUEBAS[r.kind].titulo, n: tablero ? tablero.indexOf(r.item) + 1 : r.i + 1, total: tablero ? tablero.length : r.list.length,
       stage: r.stage, buzz: r.buzz, bloqueado: r.bloqueado, item: r.item, revuelta: r.revuelta, numPistas: r.pistas, respuesta: textoRespuesta(r), modo: G.modo,
-      reserva: r.reserva ? r.reserva.length : 0,
+      reserva: r.reserva ? (r.item.obra && r.reservaObra ? r.reservaObra : r.reserva).length : 0, // canciones para cambiar la actual
       concepto: r.kind === 'vertical' ? r.tableros[r.item.tablero].concepto : null,
       tablero: tablero ? { num: r.item.tablero + 1, de: r.tableros.length } : null };
   }

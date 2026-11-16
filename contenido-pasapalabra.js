@@ -556,3 +556,86 @@ exports.pistaMusicalKids = [
   C('Hay un amigo en mí', 'Toy Story (Disney · Pixar)', ['Canción de una película de 1995', 'Es la canción de un vaquero y un astronauta de juguete', 'Habla de la amistad'], ['hay un amigo en mi', 'yo soy tu amigo fiel', 'you ve got a friend in me']),
   C('Un elefante se balanceaba', 'Canción tradicional', ['Canción infantil para contar', 'Cada vez se suma uno más', 'Se balanceaban sobre la tela de una araña'], ['un elefante se balanceaba', 'los elefantes']),
 ];
+
+// Todos contra todos — el presentador pone la canción y hay que decir quién la canta (el intérprete).
+// Como en el programa, en cada partida hay una de película o serie: ahí hay que decir la obra.
+const T = (titulo, artista, respuestas) => ({ titulo, artista, respuestas });
+const O = (titulo, obra, respuestas) => ({ titulo, obra, respuestas });
+exports.todosContraTodos = [
+  T('Hips Don\'t Lie', 'Shakira', ['shakira']),
+  T('Beat It', 'Michael Jackson', ['michael jackson']),
+  T('Like a Prayer', 'Madonna', ['madonna']),
+  T('Rolling in the Deep', 'Adele', ['adele']),
+  T('Uptown Funk', 'Mark Ronson y Bruno Mars', ['bruno mars', 'mark ronson']),
+  T('Bad Romance', 'Lady Gaga', ['lady gaga']),
+  T('Hotel California', 'Eagles', ['eagles', 'the eagles']),
+  T('Wonderwall', 'Oasis', ['oasis']),
+  T('Yellow Submarine', 'The Beatles', ['the beatles', 'beatles', 'los beatles']),
+  T('(I Can\'t Get No) Satisfaction', 'The Rolling Stones', ['the rolling stones', 'rolling stones', 'los rolling stones', 'los rolling']),
+  T('Corazón espinado', 'Santana y Maná', ['santana', 'carlos santana', 'mana']),
+  T('Persiana americana', 'Soda Stereo', ['soda stereo']),
+  T('La flaca', 'Jarabe de Palo', ['jarabe de palo']),
+  T('Mariposa traicionera', 'Maná', ['mana']),
+  T('Tusa', 'Karol G y Nicki Minaj', ['karol g', 'nicki minaj']),
+  T('Blinding Lights', 'The Weeknd', ['the weeknd', 'weeknd']),
+  T('Bad Guy', 'Billie Eilish', ['billie eilish']),
+  T('Suavemente', 'Elvis Crespo', ['elvis crespo']),
+  T('Danza Kuduro', 'Don Omar y Lucenzo', ['don omar', 'lucenzo']),
+  T('Tití me preguntó', 'Bad Bunny', ['bad bunny']),
+  T('Flowers', 'Miley Cyrus', ['miley cyrus']),
+  T('Shake It Off', 'Taylor Swift', ['taylor swift']),
+  T('Highway to Hell', 'AC/DC', ['ac/dc', 'acdc']),
+  T('La incondicional', 'Luis Miguel', ['luis miguel']),
+  T('Rata de dos patas', 'Paquita la del Barrio', ['paquita la del barrio', 'paquita']),
+  T('Despacito', 'Luis Fonsi y Daddy Yankee', ['luis fonsi', 'daddy yankee', 'fonsi']),
+];
+exports.todosContraTodosChile = [
+  T('Corazones rojos', 'Los Prisioneros', ['los prisioneros', 'prisioneros']),
+  T('Amor violento', 'Los Tres', ['los tres']),
+  T('Amárrame', 'Mon Laferte', ['mon laferte']),
+  T('Aquí', 'La Ley', ['la ley']),
+  T('Run Run se fue pa\'l norte', 'Violeta Parra', ['violeta parra']),
+  T('El cigarrito', 'Víctor Jara', ['victor jara']),
+  T('Sube a nacer conmigo hermano', 'Los Jaivas', ['los jaivas', 'jaivas']),
+  T('Arriba en la cordillera', 'Patricio Manns', ['patricio manns']),
+  T('Te vas', 'Américo', ['americo']),
+  T('Mágico', 'Joe Vasconcellos', ['joe vasconcellos']),
+  T('Al siguiente nivel', 'Javiera Mena', ['javiera mena']),
+  T('Muérdete la lengua', 'Francisca Valenzuela', ['francisca valenzuela']),
+  T('El hombre que yo amo', 'Myriam Hernández', ['myriam hernandez']),
+  T('Hambre', 'Gepe', ['gepe']),
+  T('Llueve sobre la ciudad', 'Los Bunkers', ['los bunkers', 'bunkers']),
+  T('Cuando respiro en tu boca', 'Lucybell', ['lucybell']),
+  T('El pueblo unido jamás será vencido', 'Quilapayún', ['quilapayun']),
+  T('Me enamoré', 'Los Vásquez', ['los vasquez']),
+  T('Dame luz', 'Nicole', ['nicole']),
+  T('Loca', 'Chico Trujillo', ['chico trujillo']),
+  T('Candombe para José', 'Illapu', ['illapu']),
+];
+exports.todosContraTodosKids = [
+  T('Baby Shark', 'Pinkfong', ['pinkfong']),
+  T('Waka Waka', 'Shakira', ['shakira']),
+  T('Happy', 'Pharrell Williams', ['pharrell williams', 'pharrell']),
+  T('Shake It Off', 'Taylor Swift', ['taylor swift']),
+  T('Despacito', 'Luis Fonsi y Daddy Yankee', ['luis fonsi', 'daddy yankee', 'fonsi']),
+];
+exports.todosContraTodosObra = [
+  O('My Heart Will Go On', 'Titanic', ['titanic']),
+  O('Eye of the Tiger', 'Rocky III', ['rocky', 'rocky 3', 'rocky iii']),
+  O('Ghostbusters', 'Los cazafantasmas', ['los cazafantasmas', 'cazafantasmas', 'ghostbusters']),
+  O('I\'ll Be There for You', 'Friends', ['friends']),
+  O('Stayin\' Alive', 'Fiebre de sábado por la noche', ['fiebre de sabado por la noche', 'saturday night fever']),
+  O('Shallow', 'Nace una estrella', ['nace una estrella', 'a star is born']),
+];
+exports.todosContraTodosObraChile = [
+  O('Mi muñeca me habló', '31 minutos', ['31 minutos', 'treinta y un minutos']),
+  O('Tangananica-Tanganana', '31 minutos', ['31 minutos', 'treinta y un minutos']),
+  O('Yo nunca vi televisión', '31 minutos', ['31 minutos', 'treinta y un minutos']),
+];
+exports.todosContraTodosObraKids = [
+  O('Hakuna Matata', 'El rey león', ['el rey leon', 'rey leon']),
+  O('Bajo el mar', 'La sirenita', ['la sirenita', 'sirenita']),
+  O('Libre soy', 'Frozen', ['frozen']),
+  O('Hay un amigo en mí', 'Toy Story', ['toy story']),
+  O('No se habla de Bruno', 'Encanto', ['encanto']),
+];

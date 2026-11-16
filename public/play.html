@@ -185,7 +185,7 @@ function vista() {
         <button class="btn" style="margin-top:12px">Enviar</button></form>`, after: () => $('#resp').focus() };
     }
     case 'anagrama': case 'quiensoy': case 'refran': case 'adivinanza': case 'siglas':
-    case 'quitaletras': case 'vertical': case 'pistas': case 'musical': {
+    case 'quitaletras': case 'vertical': case 'pistas': case 'musical': case 'todos': {
       const p = S.p, k = p.kind + p.n + (p.tablero ? 't' + p.tablero.num : '');
       const MODO = { normal: 'Escribe la palabra', azar: 'Escribe las letras en el orden de los números de la tele', reves: 'Escribe la palabra al revés, desde la última letra' };
       const ayuda = { deletrea: `${MODO[p.modo] || ''}. Definición: ${esc(p.definicion)}`,
@@ -202,7 +202,7 @@ function vista() {
       if (p.buzz) return { key: 'pb' + k + p.buzz.team, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(p.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
       if (p.stage === 'preparar') return { key: 'pq' + k, html: () => `<div class="grow"></div><h1>🎧</h1><h2>El presentador está poniendo la canción</h2><p>Cuando suene, ¡presionen «¡Lo sé!» si la conocen!</p><div class="grow"></div>` };
       if (p.bloqueado[mt]) return { key: 'pl' + k, html: () => `<div class="grow"></div><h2>Tu equipo falló esta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
-      return { key: 'pp' + k + (p.espera > 0), html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${p.kind === 'musical' ? '¿cómo se llama la canción?' : S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
+      return { key: 'pp' + k + (p.espera > 0), html: () => `<p>${esc(p.titulo)} · ${p.n}/${p.total} · ${p.kind === 'musical' ? '¿cómo se llama la canción?' : p.kind === 'todos' ? (p.obra ? '¿de qué película o serie es?' : '¿quién la canta?') : S.modo === 'presentador' ? 'escucha al presentador' : 'mira la tele'}</p>
         ${botonLoSe(p.espera)}`, tick: () => tickLoSe(p.espera) };
     }
     case 'letraaletra': case 'cruzadas': case 'memoria': case 'unade4': case 'deletrea': {
