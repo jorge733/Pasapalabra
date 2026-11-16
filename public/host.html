@@ -31,35 +31,145 @@
 <link rel="stylesheet" href="/style.css">
 <style>
   body{font-size:17px}
-  .wrap{max-width:760px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
-  h1{margin:0;font-weight:900}
-  .card{background:var(--panel);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
-  .card h3{margin:0;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.1em}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-  .grid button{padding:14px;font-weight:900;background:#4338ca}
-  .grid button.sel{outline:3px solid #fff;background:#7c3aed}
-  .grid button.warn{background:#b91c1c}.grid button.go{background:#15803d}
-  button:disabled{opacity:.35;cursor:default}
-  .names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .names input{padding:10px;border-radius:10px;border:3px solid var(--team);background:var(--bg);color:var(--ink);width:100%}
-  code{background:var(--bg);padding:2px 6px;border-radius:6px}
+  h1,h2,h3{margin:0}
   a{color:var(--B)}
-  .hint{margin:0;color:var(--muted);font-size:14px}
+  code{background:var(--bg);padding:2px 6px;border-radius:6px;font-size:.9em;word-break:break-all}
+  button:disabled{opacity:.35;cursor:default}
+  button:not(:disabled):active{transform:scale(.97)}
+  button:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .hint{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+  .meta{color:var(--muted);font-weight:800}
+
+  /* ---- barra superior fija: fase, reloj, marcador y pausa ---- */
+  .top{position:sticky;top:0;z-index:20;background:rgba(13,11,31,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--pend)}
+  .topIn{max-width:1240px;margin:0 auto;padding:10px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:10px 16px;align-items:center}
+  .brand{font-weight:900;font-size:20px;white-space:nowrap}
+  .brand small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .fase{min-width:0}
+  .fase b{display:block;font-size:18px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fase span{display:block;color:var(--muted);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topBtns{display:flex;gap:8px;align-items:center}
+  .reloj{font-variant-numeric:tabular-nums;font-weight:900;font-size:22px;padding:6px 12px;border-radius:12px;background:var(--panel);min-width:72px;text-align:center}
+  .reloj.urge{background:#7f1d1d}.reloj.pensar{background:#78350f}.reloj.parado{opacity:.6}
+  #bPausa{padding:10px 16px;font-weight:900;background:#4f46e5;white-space:nowrap}
+  #bPausa.on{background:#15803d}
+  .marcador{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .eq{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:12px;background:var(--panel);border-left:6px solid var(--team);min-width:0}
+  .eq.B{border-left:0;border-right:6px solid var(--team);flex-direction:row-reverse;text-align:right}
+  .eq .nom{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .eq .val{font-weight:900;font-size:20px;color:var(--team);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .eq .sub{display:block;font-size:12px;color:var(--muted);font-weight:800}
+  .eq.turno{background:color-mix(in srgb,var(--team) 22%,var(--panel));box-shadow:0 0 0 2px var(--team)}
+  .barra{grid-column:1/-1;height:5px;border-radius:9px;background:var(--pend);overflow:hidden;margin-top:-2px}
+  .barra i{display:block;height:100%;width:0;background:var(--ok);transition:width .45s linear}
+  .barra.urge i{background:var(--ko)}.barra.pensar i{background:var(--B)}
+  .pausaAviso{grid-column:1/-1;text-align:center;font-weight:900;background:#78350f;border-radius:10px;padding:4px}
+
+  /* ---- distribución ---- */
+  .layout{max-width:1240px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
+  .col{display:flex;flex-direction:column;gap:16px;min-width:0}
+  @media (min-width:1000px){ .layout{grid-template-columns:minmax(0,1fr) 360px;align-items:start} .side{position:sticky;top:calc(var(--topH,70px) + 16px)} }
+  .card{background:var(--panel);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .card h3{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.12em;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .card h3 em{font-style:normal;letter-spacing:0;text-transform:none;font-size:14px;color:var(--ink)}
+  .paso{display:flex;gap:10px;align-items:center}
+  .paso .num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--B);color:#111;font-weight:900}
+  .paso h2{font-size:20px;font-weight:900}
+
+  /* controles segmentados (modo, dificultad, temática) */
+  .seg{display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:4px;background:var(--bg);padding:4px;border-radius:14px}
+  .seg button{padding:12px 6px;font-weight:900;background:transparent;color:var(--muted);border-radius:10px}
+  .seg button.sel{background:#7c3aed;color:#fff;box-shadow:0 2px 10px rgba(124,58,237,.45)}
+  .ajuste{display:flex;flex-direction:column;gap:6px}
+
+  /* pruebas: interruptores */
+  .rondas{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+  .rondas button{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;background:var(--bg);color:var(--muted);font-weight:800;border:2px solid var(--pend)}
+  .rondas button .chk{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--pend);display:grid;place-items:center;font-size:14px;color:transparent}
+  .rondas button.sel{color:var(--ink);border-color:#7c3aed;background:rgba(124,58,237,.18)}
+  .rondas button.sel .chk{background:#7c3aed;border-color:#7c3aed;color:#fff}
+  .rondas button .cl{margin-left:auto}
+  .presets{display:flex;flex-wrap:wrap;gap:8px}
+  .presets button{padding:8px 12px;font-weight:800;font-size:14px;background:var(--pend)}
+
+  /* equipos y jugadores */
+  .equipos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .equipo{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .equipo input{padding:10px;border-radius:10px;border:3px solid var(--team);background:var(--bg);color:var(--ink);width:100%;font-weight:800}
+  .jugs{display:flex;flex-wrap:wrap;gap:6px}
+  .jugs span{background:var(--bg);border-left:4px solid var(--team);border-radius:8px;padding:3px 8px;font-weight:800;font-size:14px}
+  .vacio{color:var(--muted);font-size:14px;font-style:italic}
+
+  /* conexión */
+  .qr{display:flex;gap:14px;align-items:center}
+  .qr img{width:120px;height:120px;background:#fff;border-radius:10px;padding:6px;flex:none}
+  .links{display:flex;flex-direction:column;gap:6px;font-size:15px;min-width:0}
+  .copiar{padding:4px 10px;font-size:13px;font-weight:800;background:var(--pend);margin-left:6px}
+
+  /* controles en partida */
+  .ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ctrl button{padding:12px 8px;font-weight:900;background:#4338ca}
+  .peligro{padding:10px;font-weight:900;background:transparent;border:2px solid #b91c1c;color:#fca5a5}
+
+  /* recorrido de pruebas */
+  .ruta{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:340px;overflow:auto}
+  .ruta li{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:10px;color:var(--muted);font-weight:800;font-size:15px}
+  .ruta li .dot{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:var(--bg);color:var(--muted)}
+  .ruta li.hecha .dot{background:#14532d;color:var(--ok)}
+  .ruta li.actual{background:rgba(245,158,11,.15);color:var(--ink)}
+  .ruta li.actual .dot{background:var(--B);color:#111}
+  .ruta li .gan{margin-left:auto;font-size:13px;white-space:nowrap}
+  .ruta li .gan b.A{color:var(--A)}.ruta li .gan b.B{color:var(--B)}
+
+  /* botón de empezar fijo abajo en la sala de espera */
+  .arranque{position:sticky;bottom:0;z-index:15;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(13,11,31,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--pend)}
+  .arranque div{max-width:1240px;margin:0 auto;display:flex;gap:12px;align-items:center}
+  #bEmpezar{flex:1;padding:18px;font-size:20px;font-weight:900;background:#15803d;box-shadow:0 6px 24px rgba(21,128,61,.45)}
+  .arranque .resumen{color:var(--muted);font-weight:800;font-size:14px;max-width:260px}
+
+  /* tarjeta "ahora" (cuando no hay nada que leer) */
+  #ahora .grande{font-size:26px;font-weight:900;line-height:1.25}
+  #ahora .texto{font-size:20px;font-weight:700;line-height:1.4;background:var(--bg);border-radius:12px;padding:12px 14px}
+  .podio{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .podio div{background:var(--bg);border-radius:12px;padding:12px;border-top:5px solid var(--team)}
+  .podio b{font-size:20px}
 
   /* tarjeta de lectura */
-  #lectura{border:3px solid var(--B)}
-  .meta{color:var(--muted);font-weight:800}
+  #lectura{border:3px solid var(--B);box-shadow:0 0 0 6px rgba(245,158,11,.08)}
+  #lectura > h3{color:var(--B)}
   .leer{font-size:30px;font-weight:900;line-height:1.25}
   .letraG{font-size:64px;font-weight:900;line-height:1;color:var(--team)}
-  .resp{font-size:22px;font-weight:900;color:var(--ok)}
+  .resp{font-size:22px;font-weight:900;color:var(--ok);background:rgba(34,197,94,.1);border-left:5px solid var(--ok);border-radius:10px;padding:8px 12px}
   .ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .ops div{background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:800;font-size:19px}
   .ops div.ok{background:#14532d;outline:2px solid var(--ok)}
   .estadoL{font-size:20px;font-weight:900;padding:10px 14px;border-radius:10px;background:var(--bg)}
+  #lecturaBody{display:flex;flex-direction:column;gap:10px}
   .juicio{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .juicio:empty{display:none}
+  /* los botones para juzgar quedan siempre a mano aunque la pregunta sea larga */
+  #lectura .juicio:not(.sec){position:sticky;bottom:0;z-index:5;background:var(--panel);padding:10px 0 calc(4px + env(safe-area-inset-bottom));margin-bottom:-6px}
   .juicio button{padding:20px 10px;font-size:22px;font-weight:900}
   .bOk{background:#15803d}.bKo{background:#b91c1c}.bPaso{background:#4f46e5}.bNadie{background:#475569}
-  kbd{background:rgba(0,0,0,.35);border-radius:6px;padding:1px 6px;font-size:13px;margin-left:6px}
+  kbd{background:rgba(0,0,0,.35);border-radius:6px;padding:1px 6px;font-size:13px;margin-left:6px;font-family:inherit}
+  @media (hover:none){ kbd{display:none} }
+  .atajos{font-size:13px}
+
+  @media (max-width:640px){
+    .topIn{grid-template-columns:1fr auto;padding:8px 12px}
+    .brand{display:none}
+    .fase b{font-size:16px}
+    .reloj{font-size:18px;min-width:56px;padding:5px 8px}
+    #bPausa{padding:9px 12px}
+    .eq{padding:5px 10px}.eq .val{font-size:16px}.eq .sub{display:none}
+    .ruta{max-height:200px}
+    .layout{padding:12px}
+    .leer{font-size:25px}
+    .ops{grid-template-columns:1fr}
+    .juicio button{padding:16px 8px;font-size:20px}
+    .qr img{width:96px;height:96px}
+    .arranque .resumen{display:none}
+  }
 </style>
 </head><body>
 <div id="claveBox" class="hidden" style="position:fixed;inset:0;z-index:50;background:rgba(13,11,31,.96);display:grid;place-items:center;padding:16px">
@@ -70,65 +180,102 @@
     <button style="padding:14px;font-weight:900;background:#15803d;font-size:18px">Entrar</button>
   </form>
 </div>
-<div class="wrap">
-  <h1>Letra<span style="color:var(--B)">manía</span> · Presentador</h1>
 
-  <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="pensarH" class="estadoL hidden" style="background:#78350f"></div><div id="lecturaBody"></div></div>
+<header class="top">
+  <div class="topIn">
+    <div class="brand">Letra<span style="color:var(--B)">manía</span><small>Presentador</small></div>
+    <div class="fase"><b id="estado">Conectando…</b><span id="estadoSub"></span></div>
+    <div class="topBtns">
+      <div class="reloj hidden" id="reloj"></div>
+      <button id="bPausa" class="hidden" onclick="h('pausa')" title="Pausa"></button>
+    </div>
+    <div class="marcador" id="marcador"></div>
+    <div class="barra hidden" id="barra"><i></i></div>
+    <div class="pausaAviso hidden" id="pausaAviso">⏸ Partida en pausa — toca Reanudar para seguir</div>
+  </div>
+</header>
 
-  <div class="card"><h3>Estado</h3><div id="estado" style="font-weight:800;font-size:20px"></div><div id="jug" style="color:var(--muted)"></div></div>
+<main class="layout">
+  <div class="col main">
+    <!-- en partida -->
+    <div class="card hidden" id="lectura"><h3>🎙️ Para leer en voz alta</h3><div id="pensarH" class="estadoL hidden" style="background:#78350f"></div><div id="lecturaBody"></div></div>
+    <div class="card hidden" id="ahora"></div>
+    <div class="card hidden" id="juez"><h3>⚖️ Juez de la rueda</h3>
+      <div id="ultimo" style="font-size:18px;font-weight:800">—</div>
+      <button id="bBuena" style="padding:14px;font-weight:900;background:#15803d" onclick="h('darPorBuena')" disabled>✔ Dar por buena la última respuesta</button>
+      <p class="hint">Si alguien escribió una respuesta válida que el juego no reconoció (sinónimo, errata…), márcala aquí.</p>
+    </div>
 
-  <div class="card" id="cfg"><h3>Antes de empezar</h3>
-    <div class="meta">Modo de juego</div>
-    <div class="grid" id="modos">
-      <button data-m="presentador" onclick="h('modo','presentador')">🎙️ Con presentador</button>
-      <button data-m="auto" onclick="h('modo','auto')">📱 Automático</button>
+    <!-- sala de espera -->
+    <div class="card" id="cfgModo">
+      <div class="paso"><span class="num">1</span><h2>¿Cómo se juega?</h2></div>
+      <div class="seg" id="modos">
+        <button data-m="presentador" onclick="h('modo','presentador')">🎙️ Con presentador</button>
+        <button data-m="auto" onclick="h('modo','auto')">📱 Automático</button>
+      </div>
+      <p class="hint" id="modoHint"></p>
+      <div class="ajuste">
+        <div class="meta">Dificultad</div>
+        <div class="seg" id="difs">
+          <button data-d="kids" onclick="h('dificultad','kids')">🧒 Kids</button>
+          <button data-d="normal" onclick="h('dificultad','normal')">🙂 Normal</button>
+          <button data-d="dificil" onclick="h('dificultad','dificil')">🔥 Difícil</button>
+        </div>
+        <p class="hint" id="difHint"></p>
+      </div>
+      <div class="ajuste">
+        <div class="meta">Temática</div>
+        <div class="seg" id="temas">
+          <button data-t="mixto" onclick="h('tema','mixto')">🎲 Mixto</button>
+          <button data-t="chile" onclick="h('tema','chile')">🇨🇱 Chile</button>
+          <button data-t="general" onclick="h('tema','general')">🌍 General</button>
+        </div>
+      </div>
     </div>
-    <p class="hint" id="modoHint"></p>
-    <div class="meta">Pruebas antes de la rueda (toca para activar o quitar)</div>
-    <div class="grid" id="rondas"></div>
-    <div class="grid">
-      <button onclick="h('rondasGrupo','chilenas')">🇨🇱 Solo las del Pasapalabra chileno</button>
-      <button onclick="h('rondasGrupo','clasicas')">🎲 Solo las clásicas de Letramanía</button>
-      <button onclick="h('rondasGrupo','todas')">✔ Todas</button>
-    </div>
-    <p class="hint">Las marcadas con 🇨🇱 son pruebas del Pasapalabra de Chilevisión: Una de cuatro, Deletrea, Tuti Fruti, El Quitaletras, La palabra vertical y La Memoria.</p>
-    <div class="meta">Dificultad</div>
-    <div class="grid" id="difs">
-      <button data-d="kids" onclick="h('dificultad','kids')">🧒 Kids (7-12)</button>
-      <button data-d="normal" onclick="h('dificultad','normal')">🙂 Normal</button>
-      <button data-d="dificil" onclick="h('dificultad','dificil')">🔥 Difícil</button>
-    </div>
-    <p class="hint" id="difHint"></p>
-    <div class="meta">Temática</div>
-    <div class="grid" id="temas">
-      <button data-t="mixto" onclick="h('tema','mixto')">🎲 Mixto</button>
-      <button data-t="chile" onclick="h('tema','chile')">🇨🇱 Solo Chile</button>
-      <button data-t="general" onclick="h('tema','general')">🌍 General</button>
+
+    <div class="card" id="cfgRondas">
+      <div class="paso"><span class="num">2</span><h2>Pruebas antes de la Rueda</h2></div>
+      <div class="presets">
+        <button onclick="h('rondasGrupo','chilenas')">🇨🇱 Solo las del Pasapalabra chileno</button>
+        <button onclick="h('rondasGrupo','clasicas')">🎲 Solo las clásicas</button>
+        <button onclick="h('rondasGrupo','todas')">✔ Todas</button>
+      </div>
+      <div class="rondas" id="rondas"></div>
+      <p class="hint">Toca una prueba para activarla o quitarla. Las marcadas con 🇨🇱 son del Pasapalabra de Chilevisión. La Rueda Final se juega siempre al terminar.</p>
     </div>
   </div>
 
-  <div class="card"><h3>Controles</h3>
-    <div class="grid">
-      <button class="go" id="bEmpezar" onclick="h('empezar')">▶ Empezar partida</button>
-      <button id="bPausa" onclick="h('pausa')">⏸ Pausa</button>
-      <button id="bMusica" onclick="h('musica')">🎵 Música de fondo: Sí</button>
-      <button onclick="h('saltar')">⏭ Saltar a la siguiente prueba</button>
-      <button onclick="h('irRueda')">🔤 Ir directo a la Rueda</button>
-      <button class="warn" onclick="confirm('¿Empezar una partida nueva? Se pierde la actual.') && h('nueva')">↺ Nueva partida</button>
+  <aside class="col side">
+    <div class="card hidden" id="controles"><h3>Controles</h3>
+      <div class="ctrl">
+        <button onclick="h('saltar')">⏭ Siguiente prueba</button>
+        <button onclick="h('irRueda')">🔤 Ir a la Rueda</button>
+        <button id="bMusica" onclick="h('musica')" style="grid-column:1/-1"></button>
+      </div>
+      <button class="peligro" onclick="confirm('¿Empezar una partida nueva? Se pierde la actual.') && h('nueva')">↺ Nueva partida</button>
+      <p class="hint atajos" id="atajos">Atajos de teclado: <kbd>C</kbd> correcto · <kbd>X</kbd> incorrecto · <kbd>P</kbd> paso / otra pista · <kbd>N</kbd> nadie / siguiente</p>
     </div>
-  </div>
 
-  <div class="card" id="juez"><h3>Juez de la rueda</h3>
-    <div id="ultimo" style="font-size:18px;font-weight:800">—</div>
-    <button id="bBuena" style="padding:14px;font-weight:900;background:#15803d" onclick="h('darPorBuena')" disabled>✔ Dar por buena la última respuesta</button>
-    <p class="hint">Si alguien escribió una respuesta válida que el juego no reconoció (sinónimo, errata…), márcala aquí.</p>
-  </div>
+    <div class="card hidden" id="rutaCard"><h3>Recorrido <em id="rutaN"></em></h3><ol class="ruta" id="ruta"></ol></div>
 
-  <div class="card"><h3>Nombres de equipo</h3>
-    <div class="names"><input class="A" id="nA" onchange="h('nombre',{team:'A',name:this.value})"><input class="B" id="nB" onchange="h('nombre',{team:'B',name:this.value})"></div>
-  </div>
-  <div class="card"><h3>Enlaces</h3><div id="links"></div></div>
-</div>
+    <div class="card" id="equiposCard"><h3>Equipos <em id="nJug"></em></h3>
+      <div class="equipos">
+        <div class="equipo A"><input id="nA" aria-label="Nombre del equipo 1" onchange="h('nombre',{team:'A',name:this.value})"><div class="jugs" id="jA"></div></div>
+        <div class="equipo B"><input id="nB" aria-label="Nombre del equipo 2" onchange="h('nombre',{team:'B',name:this.value})"><div class="jugs" id="jB"></div></div>
+      </div>
+    </div>
+
+    <div class="card" id="conexion"><h3>Conectarse</h3>
+      <div class="qr"><img src="/qr.svg" alt="Código QR para unirse como jugador" id="qrImg"><div class="links" id="links"></div></div>
+    </div>
+  </aside>
+</main>
+
+<div class="arranque" id="arranque"><div>
+  <span class="resumen" id="resumen"></span>
+  <button id="bEmpezar" onclick="h('empezar')">▶ Empezar partida</button>
+</div></div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
@@ -139,6 +286,7 @@ const h = (c, a) => sock.emit('host', c, a);
 // Clave del presentador (solo si el juego está en internet con clave)
 let clave = ''; try { clave = localStorage.getItem('letramania-clave') || ''; } catch (e) {}
 sock.on('connect', () => sock.emit('soyHost', clave));
+sock.on('disconnect', () => { $('#estado').textContent = 'Sin conexión…'; $('#estadoSub').textContent = 'Reconectando con el juego'; });
 sock.on('claveIncorrecta', (habiaClave) => {
   $('#claveBox').classList.remove('hidden');
   $('#claveMsg').textContent = habiaClave ? 'Clave incorrecta. Inténtalo de nuevo.' : 'Escribe la clave del presentador para manejar la partida.';
@@ -152,38 +300,117 @@ function enviarClave() {
 }
 const FASES = { lobby: 'Sala de espera', intro: 'Presentación de la prueba', quiz: 'Respuesta rápida', vf: 'Verdadero o falso', antes: '¿Qué fue antes?', cifra: 'Adivina la cifra', adivinanza: 'Adivinanzas', siglas: 'Siglas', anagrama: 'Letras revueltas', oculta: 'Palabra oculta', quiensoy: '¿Quién soy?', refran: 'Completa el refrán', unade4: 'Una de cuatro', deletrea: 'Deletrea', tutifruti: 'Tuti Fruti', quitaletras: 'El Quitaletras', vertical: 'La palabra vertical', memoria: 'La Memoria', letraaletra: 'Letra a letra', pistas: 'Pistas que despistan', cruzadas: 'Palabras cruzadas', rueda: 'Rueda final', fin: 'Partida terminada' };
 let S = null, X = null, ultimaLectura = '';
+const cache = {}; // evita redibujar (y perder clics) si el HTML no cambió
+const pon = (sel, html) => { if (cache[sel] !== html) { cache[sel] = html; $(sel).innerHTML = html; } };
 
 sock.on('state', (s) => { S = s; render(); });
 sock.on('secreto', (x) => { X = x; renderLectura(); });
 
+function detalleFase(s) {
+  const d = [];
+  if (s.quiz) d.push(`${s.quiz.n} de ${s.quiz.total}`);
+  if (s.phase === 'oculta') d.push(`${s.oculta.n} de ${s.oculta.total}`);
+  if (s.vf) d.push(`${s.vf.n} de ${s.vf.total}`);
+  if (s.cifra) d.push(`${s.cifra.n} de ${s.cifra.total}`);
+  if (s.tuti) d.push(`letra ${s.tuti.n} de ${s.tuti.total}`);
+  if (s.turnos) d.push(`turno ${s.turnos.n}/2 de ${s.teams[s.turnos.turno].name}`);
+  if (s.p) d.push(s.p.tablero ? `tablero ${s.p.tablero.num}/${s.p.tablero.de} · fila ${s.p.n}/${s.p.total}` : `${s.p.n} de ${s.p.total}`);
+  if (s.phase === 'rueda') d.push(`turno de ${s.teams[s.rueda.turno].name}`);
+  return d.join(' · ');
+}
+
 function render() {
-  const s = S;
-  let e = FASES[s.phase] || s.phase;
-  if (s.quiz) e += ` (${s.quiz.n}/${s.quiz.total})`;
-  if (s.phase === 'oculta') e += ` (${s.oculta.n}/${s.oculta.total})`;
-  if (s.vf) e += ` (${s.vf.n}/${s.vf.total})`;
-  if (s.cifra) e += ` (${s.cifra.n}/${s.cifra.total})`;
-  if (s.tuti) e += ` (letra ${s.tuti.n}/${s.tuti.total})`;
-  if (s.turnos) e += ` · turno ${s.turnos.n}/2 de ${s.teams[s.turnos.turno].name}`;
-  if (s.p) e += s.p.tablero ? ` (tablero ${s.p.tablero.num}/${s.p.tablero.de}, fila ${s.p.n}/${s.p.total})` : ` (${s.p.n}/${s.p.total})`;
-  if (s.phase === 'intro') e = s.intro.titulo;
-  if (s.phase === 'rueda') e += ` · turno de ${s.teams[s.rueda.turno].name}`;
-  if (s.reloj) e += s.reloj.pensar ? ` · 🤔 ${Math.max(0, Math.ceil(s.reloj.rem / 1000))} s para pensar` : ` · ⏱ ${Math.max(0, Math.ceil(s.reloj.rem / 1000))} s${s.reloj.parado ? ' (en pausa)' : ''}`;
-  $('#estado').textContent = e + (s.paused ? ' · EN PAUSA' : '');
-  $('#jug').textContent = `${s.players.length} jugador(es): ` + s.players.map((p) => `${p.name} (${s.teams[p.team].name})`).join(', ');
-  $('#bEmpezar').disabled = s.phase !== 'lobby';
-  $('#bPausa').textContent = s.paused ? '▶ Reanudar' : '⏸ Pausa';
+  const s = S, lobby = s.phase === 'lobby', jugando = !lobby && s.phase !== 'fin';
+
+  // --- barra superior ---
+  const prueba = s.secuencia && s.paso >= 0 && s.paso < s.secuencia.length - 1 ? `Prueba ${s.paso + 1} de ${s.secuencia.length - 1}` : '';
+  $('#estado').textContent = s.phase === 'intro' ? (s.intro.prueba === 'rueda' ? '🔤 Rueda final' : (FASES[s.intro.prueba] || s.intro.titulo)) : (FASES[s.phase] || s.phase);
+  $('#estadoSub').textContent = lobby ? `${s.players.length} jugador${s.players.length === 1 ? '' : 'es'} conectado${s.players.length === 1 ? '' : 's'}`
+    : s.phase === 'intro' ? (s.intro.prueba === 'rueda' ? 'Presentación' : `${prueba} · presentación`) : [prueba, detalleFase(s)].filter(Boolean).join(' · ');
+  const rl = s.reloj, rel = $('#reloj'), barra = $('#barra');
+  rel.classList.toggle('hidden', !rl); barra.classList.toggle('hidden', !rl);
+  if (rl) {
+    const sg = seg(rl.rem), urge = !rl.pensar && sg <= 5;
+    rel.textContent = (rl.pensar ? '🤔 ' : '') + sg + ' s';
+    rel.className = 'reloj' + (rl.pensar ? ' pensar' : urge ? ' urge' : '') + (rl.parado ? ' parado' : '');
+    rel.title = rl.pensar ? 'Tiempo para pensar' : rl.parado ? 'Reloj detenido mientras responden' : 'Tiempo restante';
+    barra.className = 'barra' + (rl.pensar ? ' pensar' : urge ? ' urge' : '');
+    barra.firstChild.style.width = Math.max(0, Math.min(100, (rl.rem / (rl.total || 1)) * 100)) + '%';
+  }
+  const bp = $('#bPausa');
+  bp.classList.toggle('hidden', !jugando);
+  bp.classList.toggle('on', !!s.paused);
+  bp.innerHTML = s.paused ? '▶ <span class="txt">Reanudar</span>' : '❚❚ <span class="txt">Pausa</span>';
+  $('#pausaAviso').classList.toggle('hidden', !s.paused || !jugando);
+  $('#marcador').classList.toggle('hidden', lobby);
+  pon('#marcador', ['A', 'B'].map((t) => {
+    let val, sub = '';
+    if (s.phase === 'rueda') {
+      const E = s.rueda.eq[t];
+      val = `⏱ ${seg(E.tiempo)} s`;
+      sub = `✔ ${E.letras.filter((l) => l.estado === 'acierto').length} · ✘ ${E.letras.filter((l) => l.estado === 'fallo').length}`;
+    } else if (s.phase === 'fin' && s.fin) {
+      const r = s.fin.res.find((x) => x.team === t);
+      val = `✔ ${r.aciertos}`; sub = s.fin.ganador === t ? '🏆 ganador' : s.fin.ganador ? '' : 'empate';
+    } else {
+      val = `${s.tiempoBase + s.teams[t].bonus} s`;
+      sub = s.enPrueba && s.enPrueba[t] ? `+${s.enPrueba[t]} s en esta prueba` : `para la Rueda`;
+    }
+    const turno = (s.phase === 'rueda' && s.rueda.turno === t) || (s.turnos && s.turnos.turno === t);
+    return `<div class="eq ${t}${turno ? ' turno' : ''}"><span class="nom">${esc(s.teams[t].name)}<span class="sub">${sub}</span></span><span class="val">${val}</span></div>`;
+  }).join(''));
+
+  // --- qué se ve según la fase ---
+  for (const id of ['#cfgModo', '#cfgRondas', '#arranque', '#conexion']) $(id).classList.toggle('hidden', !lobby);
+  $('#controles').classList.toggle('hidden', lobby);
   $('#bMusica').textContent = s.musicaFondo ? '🎵 Música de fondo: Sí' : '🔇 Música de fondo: No';
-  $('#cfg').classList.toggle('hidden', s.phase !== 'lobby');
-  $('#rondas').innerHTML = s.catalogo.map((c, k) => `<button class="${s.rondas.includes(c.id) ? 'sel' : ''}" onclick="h('ronda','${c.id}')">${s.rondas.includes(c.id) ? '✔ ' : ''}${c.pasapalabra ? '🇨🇱 ' : ''}${esc(c.titulo)}</button>`).join('');
-  document.querySelectorAll('#difs button').forEach((b) => b.classList.toggle('sel', b.dataset.d === s.dificultad));
-  $('#difHint').textContent = { kids: 'Preguntas pensadas para niños de 7 a 12 años, con más tiempo para pensar y responder.', normal: 'Cultura general sencilla.', dificil: 'Historia, ciencia, geografía y literatura para expertos.' }[s.dificultad] || '';
-  document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
+  $('#atajos').classList.toggle('hidden', s.modo !== 'presentador');
+
+  // ajustes
   document.querySelectorAll('#modos button').forEach((b) => b.classList.toggle('sel', b.dataset.m === s.modo));
+  document.querySelectorAll('#difs button').forEach((b) => b.classList.toggle('sel', b.dataset.d === s.dificultad));
+  document.querySelectorAll('#temas button').forEach((b) => b.classList.toggle('sel', b.dataset.t === s.tema));
   $('#modoHint').textContent = s.modo === 'presentador'
     ? 'Tú lees las preguntas desde este panel; los jugadores presionan en el celular y responden en voz alta. Tú marcas Correcto / Incorrecto.'
     : 'Las preguntas salen en la tele y los jugadores escriben las respuestas en el celular. El juego corrige solo.';
-  for (const t of ['A', 'B']) if (document.activeElement !== $('#n' + t)) $('#n' + t).value = s.teams[t].name;
+  $('#difHint').textContent = { kids: 'Para niños de 7 a 12 años, con más tiempo para pensar y responder.', normal: 'Cultura general sencilla.', dificil: 'Historia, ciencia, geografía y literatura para expertos.' }[s.dificultad] || '';
+  pon('#rondas', s.catalogo.map((c) => {
+    const on = s.rondas.includes(c.id);
+    return `<button class="${on ? 'sel' : ''}" aria-pressed="${on}" onclick="h('ronda','${c.id}')"><span class="chk">✔</span>${esc(c.titulo)}${c.pasapalabra ? '<span class="cl" title="Pasapalabra chileno">🇨🇱</span>' : ''}</button>`;
+  }).join(''));
+  const nR = s.rondas.length;
+  $('#resumen').textContent = `${nR} prueba${nR === 1 ? '' : 's'} + Rueda · ${s.modo === 'presentador' ? 'con presentador' : 'automático'} · ${{ kids: 'kids', normal: 'normal', dificil: 'difícil' }[s.dificultad] || ''}`;
+  $('#bEmpezar').disabled = !lobby;
+  $('#bEmpezar').textContent = s.players.length ? '▶ Empezar partida' : '▶ Empezar partida (aún no hay jugadores)';
+
+  // equipos y jugadores
+  for (const t of ['A', 'B']) {
+    if (document.activeElement !== $('#n' + t)) $('#n' + t).value = s.teams[t].name;
+    const js = s.players.filter((p) => p.team === t);
+    pon('#j' + t, js.length ? js.map((p) => `<span class="${t}">${esc(p.name)}</span>`).join('') : '<span class="vacio" style="border:0;background:none;padding:0">Sin jugadores</span>');
+  }
+  $('#nJug').textContent = `${s.players.length} jugador${s.players.length === 1 ? '' : 'es'}`;
+  pon('#links', `<div>📺 Tele: <a href="/tv" target="_blank">${esc(s.base)}/tv</a></div>
+    <div>📱 Jugadores: <code>${esc(s.base)}/play</code><button class="copiar" onclick="copiar('${esc(s.base)}/play', this)">Copiar</button></div>
+    <p class="hint">Escaneen el código con el celular para unirse.</p>`);
+
+  // recorrido de pruebas
+  const conRuta = !lobby && s.secuencia && s.secuencia.length;
+  $('#rutaCard').classList.toggle('hidden', !conRuta);
+  if (conRuta) {
+    const titulo = (id) => id === 'rueda' ? 'Rueda final' : ((s.catalogo.find((c) => c.id === id) || {}).titulo || id);
+    const fin = s.phase === 'fin';
+    const nP = s.secuencia.length - 1;
+    $('#rutaN').textContent = fin ? 'terminada' : s.paso >= nP ? '¡Rueda final!' : `${s.paso + 1} de ${nP} + Rueda`;
+    pon('#ruta', s.secuencia.map((id, k) => {
+      const est = fin || k < s.paso ? 'hecha' : k === s.paso ? 'actual' : '';
+      const g = (s.acumulado || [])[k];
+      const gan = g ? `<span class="gan"><b class="A">+${g.A}</b> · <b class="B">+${g.B}</b></span>` : '';
+      return `<li class="${est}"${est === 'actual' ? ' id="rutaAct"' : ''}><span class="dot">${est === 'hecha' ? '✔' : k + 1}</span>${esc(titulo(id))}${gan}</li>`;
+    }).join(''));
+    const act = $('#rutaAct'), ol = $('#ruta');
+    if (act && ol.dataset.paso !== String(s.paso)) { ol.dataset.paso = s.paso; ol.scrollTop = act.offsetTop - ol.offsetTop - 40; }
+  }
 
   // juez (solo modo automático)
   $('#juez').classList.toggle('hidden', s.modo === 'presentador' || s.phase !== 'rueda');
@@ -192,9 +419,46 @@ function render() {
     $('#ultimo').innerHTML = `${esc(s.teams[u.team].name)} · letra ${u.letra}: escribió «${esc(u.dada)}» (esperada: ${esc(u.correcta)})${u.tipo === 'corregida' ? ' → dada por buena ✔' : ''}`;
     $('#bBuena').disabled = u.tipo !== 'fallo';
   } else { $('#ultimo').textContent = '—'; $('#bBuena').disabled = true; }
-  $('#links').innerHTML = `Tele: <a href="/tv" target="_blank">${esc(s.base)}/tv</a><br>Jugadores: <code>${esc(s.base)}/play</code>`;
+
   renderLectura();
+  renderAhora();
+  document.documentElement.style.setProperty('--topH', $('.top').offsetHeight + 'px');
+  if (jugando) mantenerPantalla();
 }
+
+// Tarjeta "Ahora": lo que pasa cuando no hay nada que leer (presentación, modo automático, final)
+function renderAhora() {
+  const s = S, card = $('#ahora');
+  const lecturaVisible = !$('#lectura').classList.contains('hidden');
+  let html = '';
+  if (s.phase === 'intro') {
+    html = `<h3>${s.modo === 'presentador' ? '🎙️ Presenta la prueba' : '📺 En la tele'}</h3><div class="grande">${esc(s.intro.titulo)}</div>
+      <div class="texto">${esc(s.intro.texto)}</div><p class="hint">La prueba empieza sola en unos segundos.</p>`;
+  } else if (s.phase === 'fin' && s.fin) {
+    const g = s.fin.ganador;
+    html = `<h3>🏁 Partida terminada</h3><div class="grande">${g ? `🏆 Gana ${esc(s.teams[g].name)}` : '🤝 ¡Empate!'}</div>
+      <div class="podio">${['A', 'B'].map((t) => { const r = s.fin.res.find((x) => x.team === t); return `<div class="${t}"><b>${esc(s.teams[t].name)}</b><div class="meta">✔ ${r.aciertos} aciertos · ✘ ${r.fallos} fallos · ⏱ ${seg(r.tiempo)} s</div></div>`; }).join('')}</div>
+      <button class="peligro" style="border-color:#15803d;color:#86efac" onclick="h('nueva')">↺ Jugar otra partida</button>`;
+  } else if (!lecturaVisible && s.phase !== 'lobby') {
+    html = `<h3>📺 Mira la tele</h3><div class="grande">${esc(FASES[s.phase] || s.phase)}</div>
+      <p class="hint">${s.modo === 'auto' ? 'Modo automático: las preguntas salen en la tele, los jugadores responden en el celular y el juego corrige solo. Usa los controles si necesitas pausar o saltar.' : 'Espera un momento…'}</p>`;
+  }
+  card.classList.toggle('hidden', !html);
+  pon('#ahora', html);
+}
+
+function copiar(txt, b) {
+  const ok = () => { b.textContent = '¡Copiado!'; setTimeout(() => (b.textContent = 'Copiar'), 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok, () => {}); else ok();
+}
+
+// Mantiene la pantalla del celular encendida mientras se juega
+let wake = null;
+async function mantenerPantalla() {
+  if (wake || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+  try { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => (wake = null)); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (S && !['lobby', 'fin'].includes(S.phase)) mantenerPantalla(); });
 
 const team = (t) => `<span class="chip ${t}">${esc(S.teams[t].name)}</span>`;
 const btn = (cls, res, txt, key) => `<button class="${cls}" onclick="h('juzgar','${res}')">${txt}<kbd>${key}</kbd></button>`;
@@ -296,7 +560,7 @@ function renderLectura() {
       html = `${head}<div class="meta">⏱ <span id="relojH"></span> s · quedan ${X.pendientes}</div>${leer}
         <div class="resp">Respuesta: ${esc(X.kind === 'unade4' ? X.item.opciones[X.item.correcta] : X.kind === 'deletrea' ? [...X.item.secuencia].join(' - ') : X.item.respuestas[0])}${otras.length && X.kind !== 'unade4' ? ` <span class="meta">(también: ${otras.map(esc).join(', ')})</span>` : ''}</div>
         <div class="juicio">${btn('bOk', 'ok', '✔ Correcto', 'C')}${btn('bKo', 'ko', '✘ Incorrecto', 'X')}${X.kind === 'deletrea' ? '' : btn('bPaso', 'paso', '⏭ Pasapalabra', 'P')}</div>
-        <div class="juicio">${btn('bNadie', 'nadie', 'Terminar el turno →', 'N')}</div>`;
+        <div class="juicio sec">${btn('bNadie', 'nadie', 'Terminar el turno →', 'N')}</div>`;
     } else html = `${head}<div class="estadoL">${X.stage === 'reveal' ? 'Mostrando el resultado en la tele…' : 'Fin del turno…'}</div>`;
   } else if (X.tipo === 'rueda') {
     if (X.stage !== 'play' || !X.letra) {

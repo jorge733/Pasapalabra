@@ -1145,6 +1145,7 @@ function publico() {
   } else if (G.phase === 'fin') s.fin = G.fin;
   s.reloj = reloj();
   s.acumulado = G.historial;
+  s.secuencia = G.secuencia; s.paso = G.paso; // para el recorrido de pruebas del panel del presentador
   if (G.enCurso) s.enPrueba = { A: G.teams.A.bonus - G.enCurso.A, B: G.teams.B.bonus - G.enCurso.B }; // lo ganado en la prueba en curso
   return s;
 }
