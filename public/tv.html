@@ -334,8 +334,11 @@ let bucleActual = null, tipoBucle = null, esperaBucle = null;
 function controlarBucle() {
   if (!sonidoActivo || !S) return;
   const PRUEBAS = ['quiz', 'vf', 'antes', 'anagrama', 'siglas', 'oculta', 'cifra', 'quiensoy', 'adivinanza', 'refran', 'unade4', 'deletrea', 'tutifruti', 'quitaletras', 'vertical', 'memoria', 'letraaletra', 'pistas', 'cruzadas'];
-  // la sala de espera va sin música de fondo, y en La pista musical suena la canción del presentador
-  const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) ? 'pregunta' : null;
+  // En La pista musical y Todos contra todos también suena la música de fondo, pero se apaga mientras
+  // suena la canción del presentador (etapa «play») para no taparla
+  const musicalSinCancion = ['musical', 'todos'].includes(S.phase) && S.p && S.p.stage !== 'play';
+  // la sala de espera va sin música de fondo
+  const quiero = S.paused || S.musicaFondo === false ? null : S.phase === 'rueda' ? 'rueda' : PRUEBAS.includes(S.phase) || musicalSinCancion ? 'pregunta' : null;
   if (quiero === tipoBucle) return;
   if (bucleActual) { const v = bucleActual; fundido(v, 0, 800, () => v.pause()); }
   bucleActual = null; tipoBucle = quiero;
