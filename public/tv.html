@@ -296,6 +296,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const seg = (ms) => Math.max(0, Math.ceil(ms / 1000));
 const LETRAS_OPC = ['A', 'B', 'C', 'D'];
+const EQ = () => (S && S.solo ? ['A'] : ['A', 'B']); // equipos que juegan (en el modo solitario, solo el A)
 
 // --- sonido sintetizado ---
 let ac = null;
@@ -469,7 +470,7 @@ function paso() {
 
 function score() {
   if (!S || S.phase === 'lobby') return '';
-  return ['A', 'B'].map((t) => `<div id="sc-${t}" class="t ${t}"><div class="n">${esc(S.teams[t].name)}</div><div class="v">+${S.teams[t].bonus} s</div></div>`).join('');
+  return EQ().map((t) => `<div id="sc-${t}" class="t ${t}"><div class="n">${esc(S.teams[t].name)}</div><div class="v">+${S.teams[t].bonus} s</div></div>`).join('');
 }
 
 let ultimoSeg = null, claveAnterior = null;
@@ -507,17 +508,18 @@ function render() {
     h = `<div class="lobby">
       <div><div class="qr"><img src="/qr.svg" alt="QR"></div><div class="url">${esc(S.base)}/play</div></div>
       <div><div class="big" style="text-align:left">Escanea el QR<br>para jugar</div>
-        <div class="sub" style="text-align:left;margin:2vmin 0 0">Elige equipo en tu celular. El presentador empieza la partida cuando estén todos.</div>
-        <div class="equipos">${['A', 'B'].map((t) => `<div class="equipo ${t}"><h3>${esc(S.teams[t].name)}</h3><ul>${lista(t)}</ul></div>`).join('')}</div>
+        <div class="sub" style="text-align:left;margin:2vmin 0 0">${S.solo ? '👤 Modo solitario: un jugador contra el reloj. El presentador empieza la partida cuando estés listo.' : 'Elige equipo en tu celular. El presentador empieza la partida cuando estén todos.'}</div>
+        <div class="equipos"${S.solo ? ' style="grid-template-columns:1fr"' : ''}>${EQ().map((t) => `<div class="equipo ${t}"><h3>${esc(S.teams[t].name)}</h3><ul>${lista(t)}</ul></div>`).join('')}</div>
       </div></div>`;
   } else if (S.intro) {
     const acu = S.acumulado || [], conTabla = S.intro.prueba === 'rueda' && acu.length > 0;
     let extra = S.intro.prueba === 'rueda'
-      ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0">${['A', 'B'].map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
+      ? `<div class="equipos" style="max-width:90vmin;margin:5vmin auto 0${S.solo ? ';grid-template-columns:1fr' : ''}">${EQ().map((t) => `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${esc(S.teams[t].name)}</h3><div class="big">${S.tiempoBase + S.teams[t].bonus} s</div></div>`).join('')}</div>` : '';
     // antes de la Rueda Final: lo que ganó cada equipo en cada prueba
-    if (conTabla) extra = `<table class="acu"><tr><th class="A">${esc(S.teams.A.name)}</th><th class="nom">Tiempo acumulado</th><th class="B">${esc(S.teams.B.name)}</th></tr>
-      ${acu.map((x) => `<tr><td class="A">${x.A}</td><td class="nom">${esc(x.titulo)}</td><td class="B">${x.B}</td></tr>`).join('')}
-      <tr class="tot"><td class="A">${S.tiempoBase + S.teams.A.bonus} s</td><td class="nom">Para la Rueda: ${S.tiempoBase} s + lo ganado</td><td class="B">${S.tiempoBase + S.teams.B.bonus} s</td></tr></table>`;
+    const colB = (x) => (S.solo ? '' : x); // en el modo solitario, sin la columna del segundo equipo
+    if (conTabla) extra = `<table class="acu"><tr><th class="A">${esc(S.teams.A.name)}</th><th class="nom">Tiempo acumulado</th>${colB(`<th class="B">${esc(S.teams.B.name)}</th>`)}</tr>
+      ${acu.map((x) => `<tr><td class="A">${x.A}</td><td class="nom">${esc(x.titulo)}</td>${colB(`<td class="B">${x.B}</td>`)}</tr>`).join('')}
+      <tr class="tot"><td class="A">${S.tiempoBase + S.teams.A.bonus} s</td><td class="nom">Para la Rueda: ${S.tiempoBase} s + lo ganado</td>${colB(`<td class="B">${S.tiempoBase + S.teams.B.bonus} s</td>`)}</tr></table>`;
     const ICONOS = { quiz: '⚡', vf: '✅', antes: '⏳', anagrama: '🔀', siglas: '🔤', oculta: '🕵️', cifra: '🔢', quiensoy: '🎭', adivinanza: '🧩', refran: '💬', unade4: '🎯', deletrea: '🔡', tutifruti: '🍓', quitaletras: '✂️', vertical: '⬇️', memoria: '🧠', letraaletra: '🔠', pistas: '🔍', musical: '🎵', todos: '🎤', cruzadas: '🔗', rueda: '🎡' };
     h = `<div style="text-align:center">${conTabla ? '' : `<div class="intro-icono">${ICONOS[S.intro.prueba] || '🎲'}</div>`}<div class="big intro-titulo"${conTabla ? ' style="font-size:5vmin"' : ''}>${esc(S.intro.titulo)}</div>${conTabla ? '' : `<div class="sub intro-texto">${esc(S.intro.texto)}</div>`}${extra}
       <div class="sub intro-cuenta" style="font-size:2.4vmin">Empieza en ${seg(S.rem)}…</div></div>`;
@@ -528,13 +530,13 @@ function render() {
       <div class="qtxt">${esc(q.texto)}</div>
       <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
       <div class="aviso" style="margin-top:3vmin">${aviso}</div>
-      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${q.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${q.bloqueado[t] ? ' · falló' : ''}</span>`).join('')}</div></div>`;
+      <div class="estado">${EQ().map((t) => `<span class="chip ${t} ${q.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${q.bloqueado[t] ? ' · falló' : ''}</span>`).join('')}</div></div>`;
   } else if (S.quiz) {
     const q = S.quiz; // respuesta revelada
     h = `<div class="q"><div class="pista">${cabeceraQuiz(q)}</div>
       <div class="qtxt">${esc(q.texto)}</div>
       <div class="opts">${q.opciones.map((o, k) => `<div class="opt o${k} ${k === q.correcta ? 'win' : 'dim'}"><span class="k">${LETRAS_OPC[k]}</span><span style="flex:1">${esc(o)}</span></div>`).join('')}</div>
-      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${q.gana[t] ? '+' + q.gana[t] + ' s' : '—'}</span>`).join('')}</div>
+      <div class="estado">${EQ().map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${q.gana[t] ? '+' + q.gana[t] + ' s' : '—'}</span>`).join('')}</div>
     </div>`;
   } else if (S.phase === 'oculta') {
     const o = S.oculta;
@@ -547,12 +549,12 @@ function render() {
     h = `<div style="width:100%"><div class="pista">Palabra ${o.n} de ${o.total}${o.pista ? ' · ' + esc(o.pista) : ''}</div>
       <div class="tiles">${o.letras.map((ch) => ch === ' ' ? '<div class="tile sp"></div>' : `<div class="tile ${ch ? 'on' : ''}">${esc(ch)}</div>`).join('')}</div>
       <div class="aviso">${aviso}</div>
-      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${o.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${o.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
+      <div class="estado">${EQ().map((t) => `<span class="chip ${t} ${o.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${o.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
   } else if (S.vf) {
     const v = S.vf, rev = v.stage === 'reveal';
     const chips = rev
-      ? ['A', 'B'].map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${v.gana[t] ? '+' + v.gana[t] + ' s' : v.resp[t] === null ? 'sin respuesta' : 'falló'}</span>`).join('')
-      : ['A', 'B'].map((t) => `<span class="chip ${t} ${v.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${v.respondido[t] ? '✓' : '…'}</span>`).join('');
+      ? EQ().map((t) => `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${v.gana[t] ? '+' + v.gana[t] + ' s' : v.resp[t] === null ? 'sin respuesta' : 'falló'}</span>`).join('')
+      : EQ().map((t) => `<span class="chip ${t} ${v.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${v.respondido[t] ? '✓' : '…'}</span>`).join('');
     let cuerpo;
     if (v.kind === 'antes') {
       cuerpo = `<div class="qtxt">${esc(v.texto)}</div>
@@ -576,7 +578,7 @@ function render() {
       cuerpo = `<div class="big">Turno de <span class="${u.turno}" style="color:var(--team)">${nom(u.turno)}</span></div><div class="sub">Elijan un tema en el celular</div>
         <div class="opts" style="max-width:110vmin;margin:4vmin auto">${u.temas.map((t, k) => `<div class="opt o${k + 1}"><span class="k">${k + 1}</span><span style="flex:1">${esc(t)}</span></div>`).join('')}</div>`;
     } else if (u.stage === 'reveal') {
-      cuerpo = `<div class="equipos" style="max-width:100vmin;margin:3vmin auto">${u.orden.map((t) => { const x = u.resumen[t] || { aciertos: 0, gana: 0 };
+      cuerpo = `<div class="equipos" style="max-width:100vmin;margin:3vmin auto${u.orden.length === 1 ? ';grid-template-columns:1fr' : ''}">${u.orden.map((t) => { const x = u.resumen[t] || { aciertos: 0, gana: 0 };
         return `<div class="equipo ${t}" style="min-height:0;text-align:center"><h3>${nom(t)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">+${x.gana} s</div></div>`; }).join('')}</div>`;
     } else if (u.stage === 'finTurno') {
       cuerpo = `<div class="big ${u.turno}" style="color:var(--team);margin-top:3vmin">${nom(u.turno)}</div><div class="big" style="margin:2vmin 0">${R.aciertos} ${R.aciertos === 1 ? 'acierto' : 'aciertos'} · +${R.gana} s</div>`
@@ -608,7 +610,7 @@ function render() {
         <div class="sub" style="margin:2vmin auto 0">${R.aciertos} aciertos · ${R.fallos} fallos</div>`;
     }
     const enPanel = ['play', 'memorizar', 'finTurno'].includes(u.stage); // el nombre del equipo ya va en su panel lateral
-    const cab = `${esc(u.titulo)} · turno ${u.n} de 2${u.stage === 'reveal' ? ' · resultado' : enPanel ? '' : ' · ' + nom(u.turno)}${u.kind === 'unade4' && u.tema && u.stage === 'play' ? ' · ' + esc(u.tema) : ''}`;
+    const cab = `${esc(u.titulo)}${u.orden.length > 1 ? ` · turno ${u.n} de ${u.orden.length}` : ""}${u.stage === 'reveal' ? ' · resultado' : enPanel ? '' : ' · ' + nom(u.turno)}${u.kind === 'unade4' && u.tema && u.stage === 'play' ? ' · ' + esc(u.tema) : ''}`;
     if (['play', 'memorizar', 'finTurno'].includes(u.stage)) {
       // como en la tele: el panel del equipo que juega va a su lado, con sus jugadores y un reloj circular
       const t = u.turno, rj = S.reloj, n = rj ? seg(rj.rem) : 0, pct = rj ? Math.round((100 * rj.rem) / rj.total) : 0;
@@ -617,7 +619,7 @@ function render() {
       const lado = `<aside class="tlado ${t}"><div class="tnom">${nom(t)}</div>${jug ? `<ul class="tjug">${jug}</ul>` : ''}
         ${rj ? `<div class="circulo ${t} ${n <= 5 && u.stage === 'play' ? 'bajo' : ''}" style="--p:${pct}">${n}</div>` : `<div class="tgana" style="font-size:5vmin">+${R.gana} s</div>`}
         <div class="tgana">✔ ${R.aciertos}${u.stage === 'play' && R.gana ? ` · +${R.gana} s` : ''}</div>
-        <div class="tgana ${otro}" style="color:var(--team);opacity:.8">${nom(otro)}: ${xo && xo.jugado ? '+' + xo.gana + ' s' : 'después'}</div></aside>`;
+        ${S.solo ? '' : `<div class="tgana ${otro}" style="color:var(--team);opacity:.8">${nom(otro)}: ${xo && xo.jugado ? '+' + xo.gana + ' s' : 'después'}</div>`}</aside>`;
       h = `<div class="tlayout ${t === 'B' ? 'der' : ''}">${lado}<section class="tcont q"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div></section></div>`;
     } else h = `<div class="q" style="width:100%"><div class="pista">${cab}</div>${cuerpo}<div class="aviso">${aviso}</div>${marcador}</div>`;
   } else if (S.tuti) {
@@ -639,28 +641,30 @@ function render() {
     };
     const filas = u.categorias.map((c, k) => {
       const ej = rev && u.ejemplos && u.ejemplos[k] && u.ejemplos[k].length ? `<small>p. ej. ${u.ejemplos[k].map(esc).join(', ')}</small>` : '';
-      return `<div class="bcat"><b><span class="k">${k + 1}</span>${esc(c)}</b>${ej}</div>${celda('A', k)}${celda('B', k)}`;
+      return `<div class="bcat"><b><span class="k">${k + 1}</span>${esc(c)}</b>${ej}</div>${EQ().map((t) => celda(t, k)).join('')}`;
     }).join('');
-    const total = rev && u.gana ? `<div></div>${['A', 'B'].map((t) => `<div class="btot ${t} ${top === t ? 'top' : ''}">+${u.gana[t]} s</div>`).join('')}` : '';
+    const total = rev && u.gana ? `<div></div>${EQ().map((t) => `<div class="btot ${t} ${top === t ? 'top' : ''}">+${u.gana[t]} s</div>`).join('')}` : '';
     const etapa = ask ? '' : rev ? ' · resultado' : ' · revisando respuestas';
     let banner;
     if (ask && u.basta) banner = `<span class="basta ${u.basta}">✋ ¡Basta! gritó ${esc(S.teams[u.basta].name)}</span>`;
     else if (ask) banner = 'Escriban en el celular una palabra por categoría';
+    else if (rev && S.solo) banner = u.gana && u.gana.A ? `<span class="A" style="color:var(--team)">¡+${u.gana.A} s para ${esc(S.teams.A.name)}!</span>` : 'Sin segundos en esta letra';
     else if (rev) banner = top ? `<span class="${top}" style="color:var(--team)">¡${esc(S.teams[top].name)} gana la letra!</span>` : (u.gana && u.gana.A ? '¡Empate en esta letra!' : 'Nadie suma en esta letra');
     else banner = '<span style="color:var(--muted)">🔎 El presentador revisa las respuestas…</span>';
-    const ley = ask
+    const ley = S.solo ? `<span>Cada respuesta válida: <b style="color:var(--ink)">3 s</b></span>${ask ? '' : '<span><i class="ic" style="background:#0ea5e9">?</i> fuera de la lista: vale salvo que el presentador la rechace</span>'}`
+      : ask
       ? `<span>Solo un equipo: <b style="color:var(--ink)">3 s</b></span><span>Distintas: <b style="color:var(--ink)">2 s</b></span><span>Iguales: <b style="color:var(--ink)">1 s</b></span>`
       : `<span><i class="ic" style="background:var(--ok)">✔</i> válida</span><span><i class="ic" style="background:#0ea5e9">?</i> fuera de la lista: vale salvo que el presentador la rechace</span><span><i class="ic" style="background:var(--ko)">✘</i> no vale</span><span>Solo uno 3 s · distintas 2 s · iguales 1 s</span>`;
     h = `<div class="q" style="width:auto"><div class="pista" style="margin-bottom:1.4vmin">Bachillerato · letra ${u.n} de ${u.total}${etapa}</div>
       <div class="bbanner">${banner}</div>
       <div class="bach"><div class="bletra"><div class="tile on">${esc(u.letra)}</div><small>Letra</small>
         <div class="rondas">${Array.from({ length: u.total }, (_, k) => `<i class="${k < u.n ? 'on' : ''}"></i>`).join('')}</div></div>
-        <div class="btab"><div></div>${cab('A')}${cab('B')}${filas}${total}</div></div>
+        <div class="btab"${S.solo ? ' style="grid-template-columns:minmax(26vmin,auto) minmax(0,1fr)"' : ''}><div></div>${EQ().map(cab).join('')}${filas}${total}</div></div>
       <div class="bley">${ley}</div></div>`;
   } else if (S.phase === 'cifra') {
     const c = S.cifra, rev = c.stage === 'reveal';
     const num = (x) => (c.unidad ? Number(x).toLocaleString('es-CL') : String(x)); // años sin punto de miles
-    const chips = ['A', 'B'].map((t) => rev
+    const chips = EQ().map((t) => rev
       ? `<span class="chip ${t} on">${esc(S.teams[t].name)}: ${c.resp[t] === null ? 'sin respuesta' : num(c.resp[t])}${c.gana[t] ? ' · +' + c.gana[t] + ' s' : ''}</span>`
       : `<span class="chip ${t} ${c.respondido[t] ? 'on' : ''}">${esc(S.teams[t].name)} ${c.respondido[t] ? '✓' : '…'}</span>`).join('');
     h = `<div class="q"><div class="pista">Adivina la cifra · ${c.n} de ${c.total}</div>
@@ -688,7 +692,7 @@ function render() {
       cuerpo = `<div class="circulo valor" style="--p:${valor * 20}">${valor}</div>
         ${ps.length > 1 ? `<div class="pprev">${ps.slice(0, -1).map((x, k) => `${k + 1}. ${esc(x)}`).join('<br>')}</div>` : ''}
         ${rev ? `<div class="big" style="color:var(--ok);margin-top:1.5vmin">${esc(p.respuesta.toUpperCase())}</div>` : ''}
-        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${actual ? `${ps.length}. ${esc(actual)}` : `🎙️ Escuchen la pista ${p.numPistas}`}</div><div class="mk B">${ep.B}</div></div>`;
+        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${actual ? `${ps.length}. ${esc(actual)}` : `🎙️ Escuchen la pista ${p.numPistas}`}</div><div class="mk B">${S.solo ? '' : ep.B}</div></div>`;
     } else if (p.kind === 'musical') {
       // mientras suena la canción: notas animadas; las pistas van en la barra con lo que lleva cada equipo
       const ps = p.pistas || [], actual = ps[ps.length - 1], ep = S.enPrueba || { A: 0, B: 0 }, suena = p.stage === 'play' && !p.buzz;
@@ -696,14 +700,14 @@ function render() {
         <div class="notas ${suena ? 'on' : ''}">🎵<span>🎶</span>🎵</div>
         ${ps.length > 1 && !rev ? `<div class="pprev">${ps.slice(0, -1).map((x, k) => `${k + 1}. ${esc(x)}`).join('<br>')}</div>` : ''}
         ${rev ? `<div class="big" style="color:var(--ok);margin-top:1.5vmin">${esc(p.respuesta)}</div>` : ''}
-        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${p.stage === 'preparar' ? '🎧 Atentos a la música…' : rev ? ps.map((x, k) => `${k + 1}. ${esc(x)}`).join(' · ') : actual ? `${ps.length}. ${esc(actual)}` : '🎵 Escuchen…'}</div><div class="mk B">${ep.B}</div></div>`;
+        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${p.stage === 'preparar' ? '🎧 Atentos a la música…' : rev ? ps.map((x, k) => `${k + 1}. ${esc(x)}`).join(' · ') : actual ? `${ps.length}. ${esc(actual)}` : '🎵 Escuchen…'}</div><div class="mk B">${S.solo ? '' : ep.B}</div></div>`;
     } else if (p.kind === 'todos') {
       // Todos contra todos: hay que decir quién la canta (o, en una, de qué película o serie es)
       const ep = S.enPrueba || { A: 0, B: 0 }, suena = p.stage === 'play' && !p.buzz;
       const pregunta = p.obra ? '🎬 ¿De qué película o serie es?' : '🎤 ¿Quién la canta?';
       cuerpo = `<div class="notas ${suena ? 'on' : ''}">🎵<span>🎶</span>🎵</div>
         ${rev ? `<div class="big" style="color:var(--ok);margin-top:1.5vmin">${esc(p.respuesta)}</div>` : ''}
-        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${p.stage === 'preparar' ? '🎧 Atentos a la música…' : pregunta}</div><div class="mk B">${ep.B}</div></div>`;
+        <div class="barraPista"><div class="mk A">${ep.A}</div><div class="txt">${p.stage === 'preparar' ? '🎧 Atentos a la música…' : pregunta}</div><div class="mk B">${S.solo ? '' : ep.B}</div></div>`;
     } else if (p.kind === 'quiensoy') {
       const dots = Array.from({ length: p.maxPistas || 3 }, (_, k) => k + 1).map((k) => `<span style="display:inline-block;width:3vmin;height:3vmin;border-radius:50%;margin:0 .6vmin;background:${k <= p.numPistas ? 'var(--B)' : 'var(--pend)'}"></span>`).join('');
       cuerpo = `<div style="text-align:center;margin:2vmin 0">${dots}</div>` + (p.pistas
@@ -750,7 +754,7 @@ function render() {
     const cab = tb ? `${esc(p.titulo)} · tablero ${tb.num} de ${tb.de}${p.memoria ? ' · ' + esc(p.memoria.tema) : ''}` : `${esc(p.titulo)} · ${p.n} de ${p.total}`;
     h = `<div style="width:100%"><div class="pista">${cab}</div>${cuerpo}
       <div class="aviso">${aviso}</div>
-      <div class="estado">${['A', 'B'].map((t) => `<span class="chip ${t} ${p.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${p.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
+      <div class="estado">${EQ().map((t) => `<span class="chip ${t} ${p.bloqueado[t] ? '' : 'on'}">${esc(S.teams[t].name)}${p.bloqueado[t] ? ' · bloqueado' : ''}</span>`).join('')}</div></div>`;
   } else if (S.phase === 'rueda') {
     const r = S.rueda, t = r.turno, T = r.eq[t];
     const n = T.letras.length, R = 44;
@@ -774,11 +778,12 @@ function render() {
       else if (u.tipo === 'paso') flash = `<div class="flash" style="--c:#6366f1">¡Paso!</div>`;
       else if (u.tipo === 'tiempo') flash = `<div class="flash" style="--c:var(--ko)">¡Se acabó el tiempo!</div>`;
     }
-    h = `<div class="rueda-wrap">${lado('A')}<div class="rueda ${t}">${letras}<div class="centro">${centro}</div>${flash}</div>${lado('B')}</div>`;
+    h = `<div class="rueda-wrap">${lado('A')}<div class="rueda ${t}">${letras}<div class="centro">${centro}</div>${flash}</div>${S.solo ? '<div></div>' : lado('B')}</div>`;
   } else if (S.phase === 'fin') {
     const f = S.fin;
-    h = `<div style="text-align:center"><div class="trofeo">🏆</div><div class="big fin-titulo">${f.ganador ? `<span class="${f.ganador}" style="color:var(--team)">¡Gana ${esc(S.teams[f.ganador].name)}!</span>` : '¡Empate!'}</div>
-      <div class="equipos" style="max-width:100vmin;margin:5vmin auto 0">${f.res.map((x) => `<div class="equipo ${x.team}" style="min-height:0;text-align:center">
+    const tituloFin = f.solo ? (f.ganador ? `<span class="A" style="color:var(--team)">¡Rueda completa!</span>` : `${f.res[0].aciertos} de ${f.total} letras`) : null;
+    h = `<div style="text-align:center"><div class="trofeo">${f.solo && !f.ganador ? '🎡' : '🏆'}</div><div class="big fin-titulo">${tituloFin ? tituloFin : f.ganador ? `<span class="${f.ganador}" style="color:var(--team)">¡Gana ${esc(S.teams[f.ganador].name)}!</span>` : '¡Empate!'}</div>
+      <div class="equipos" style="max-width:100vmin;margin:5vmin auto 0${f.solo ? ';grid-template-columns:1fr' : ''}">${f.res.map((x) => `<div class="equipo ${x.team}" style="min-height:0;text-align:center">
         <h3>${esc(S.teams[x.team].name)}</h3><div class="big">${x.aciertos} ${x.aciertos === 1 ? 'acierto' : 'aciertos'}</div><div class="sub">${x.fallos} ${x.fallos === 1 ? 'fallo' : 'fallos'} · ${seg(x.tiempo)} s restantes</div></div>`).join('')}</div></div>`;
   }
   // cada pantalla lleva una clave: si cambia (otra pregunta, otra prueba, otro turno) se anima su entrada

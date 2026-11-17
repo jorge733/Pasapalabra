@@ -151,6 +151,10 @@ function equipoNombre(t) { return S ? S.teams[t].name : t; }
 
 // Cada vista tiene una "clave": solo se redibuja entera cuando cambia, para no borrar lo que estás escribiendo.
 function vista() {
+  if (!me && S && S.solo) return { key: 'joinSolo', html: () => `
+    <h1>¡Bienvenido!</h1><p>Escribe tu nombre para jugar</p>
+    <input id="nombre" class="in" maxlength="16" placeholder="Tu nombre" autocomplete="off">
+    <button class="btn" style="margin-top:12px" onclick="join('A')">¡A jugar!</button>` };
   if (!me) return { key: 'join', html: () => `
     <h1>¡Bienvenido!</h1><p>Escribe tu nombre y elige equipo</p>
     <input id="nombre" class="in" maxlength="16" placeholder="Tu nombre" autocomplete="off">
@@ -158,9 +162,9 @@ function vista() {
   if (!S) return { key: 'cargando', html: () => '<p>Conectando…</p>' };
   const mt = me.team, otro = mt === 'A' ? 'B' : 'A';
   switch (S.phase) {
-    case 'lobby': return { key: 'lobby' + mt + S.teams[mt].name, html: () => `
-      <div class="grow"></div><h1>¡Estás dentro!</h1><p>Mira la tele. La partida empieza cuando el presentador lo diga.</p>
-      <div class="grow"></div><button class="btn sec" onclick="cambiar()">Cambiar de equipo</button>
+    case 'lobby': return { key: 'lobby' + mt + S.teams[mt].name + !!S.solo, html: () => `
+      <div class="grow"></div><h1>¡Estás dentro!</h1><p>${S.solo ? 'Modo solitario: juegas tú contra el reloj.' : 'Mira la tele.'} La partida empieza cuando el presentador lo diga.</p>
+      <div class="grow"></div>${S.solo ? '' : '<button class="btn sec" onclick="cambiar()">Cambiar de equipo</button>'}
       <button class="btn sec" onclick="salir()">Cambiar nombre</button>` };
     case 'intro': return { key: 'intro' + S.intro.titulo, html: () => `
       <div class="grow"></div><h1>${esc(S.intro.titulo)}</h1><p>${esc(S.intro.texto)}</p><div class="grow"></div>` };
@@ -169,7 +173,7 @@ function vista() {
       if (q.stage === 'reveal') return { key: 'pqr' + q.n, html: () => `<div class="grow"></div><div class="res ${q.gana[mt] ? 'ok' : 'ko'}">${q.gana[mt] ? '¡Correcto! +' + q.gana[mt] + ' s' : 'Sin puntos esta vez'}</div><div class="grow"></div>` };
       if (q.buzz && q.buzz.team === mt) return { key: 'pqm' + q.n, html: () => `<div class="grow"></div><h1>🔔 ¡Les toca!</h1><h2>Digan la respuesta en voz alta</h2><div class="grow"></div>` };
       if (q.buzz) return { key: 'pqo' + q.n, html: () => `<div class="grow"></div><h2>${esc(equipoNombre(q.buzz.team))} está respondiendo…</h2><div class="grow"></div>` };
-      if (q.bloqueado[mt]) return { key: 'pql' + q.n, html: () => `<div class="grow"></div><h2>Tu equipo falló esta pregunta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
+      if (q.bloqueado[mt]) return { key: 'pql' + q.n, html: () => `<div class="grow"></div><h2>${S.solo ? 'Fallaste' : 'Tu equipo falló'} esta pregunta</h2><p>Espera a la siguiente</p><div class="grow"></div>` };
       return { key: 'pqb' + q.n + (q.espera > 0), html: () => `<p>Pregunta ${q.n}/${q.total} · escucha al presentador</p>${botonLoSe(q.espera)}`, tick: () => tickLoSe(q.espera) };
     }
     case 'oculta': {
@@ -256,7 +260,7 @@ function vista() {
       const ICON = { ok: '✔', si: '✔', duda: '?', mal: '✘', no: '✘', vacia: '' };
       const cab = rev
         ? `<div class="res ${u.gana[mt] ? 'ok' : 'ko'}">${u.gana[mt] ? '¡Bien! +' + u.gana[mt] + ' s' : 'Esta vez no'}</div>
-           <p>${esc(equipoNombre(otro))}: +${u.gana[otro]} s</p>`
+           ${S.solo ? '' : `<p>${esc(equipoNombre(otro))}: +${u.gana[otro]} s</p>`}`
         : `<h2>🔎 Revisando respuestas…</h2><p>El presentador puede aceptar o rechazar las que tienen «?». ¡Miren la tele!</p>`;
       return { key: 'tfr' + u.n + u.stage + JSON.stringify(m), html: () => `
         <div class="bcab"><div class="lt">${esc(u.letra)}</div><div class="inf"><small>Bachillerato · letra ${u.n} de ${u.total}</small>
@@ -266,7 +270,7 @@ function vista() {
           const pts = u.puntos ? u.puntos[k][mt] : 0, ej = rev && u.ejemplos && u.ejemplos[k] ? u.ejemplos[k] : [];
           return `<div class="br ${m[k]}"><div class="c">${esc(c)}</div>
             <div class="r"><span class="t">${esc(r[k]) || 'Sin respuesta'}</span>${pts ? `<span class="pt">+${pts}</span>` : ''}${ICON[m[k]] ? `<span class="ic">${ICON[m[k]]}</span>` : ''}</div>
-            <div class="ri">${esc(equipoNombre(otro))}: ${esc(u.resp[otro][k]) || '—'}${ej.length ? ` · p. ej. ${ej.map(esc).join(', ')}` : ''}</div></div>`;
+            <div class="ri">${S.solo ? (ej.length ? `p. ej. ${ej.map(esc).join(', ')}` : '') : `${esc(equipoNombre(otro))}: ${esc(u.resp[otro][k]) || '—'}${ej.length ? ` · p. ej. ${ej.map(esc).join(', ')}` : ''}`}</div></div>`;
         }).join('')}</div>` };
     }
     case 'rueda': {
@@ -289,6 +293,8 @@ function vista() {
     }
     case 'fin': {
       const f = S.fin;
+      if (f.solo) { const x = f.res[0]; return { key: 'fin', html: () => `<div class="grow"></div><div class="res ${f.ganador ? 'ok' : ''}">${f.ganador ? '¡Rueda completa! 🎉' : '¡Buen juego!'}</div>
+        <p>${x.aciertos} de ${f.total} letras · ${x.fallos} ${x.fallos === 1 ? 'fallo' : 'fallos'}</p><div class="grow"></div>` }; }
       return { key: 'fin', html: () => `<div class="grow"></div><div class="res ${f.ganador === mt ? 'ok' : f.ganador ? 'ko' : ''}">${f.ganador === mt ? '¡Ganaron! 🎉' : f.ganador ? 'Gana ' + esc(equipoNombre(f.ganador)) : '¡Empate!'}</div>
         <p>${f.res.map((x) => esc(equipoNombre(x.team)) + ': ' + x.aciertos + (x.aciertos === 1 ? ' acierto' : ' aciertos')).join(' · ')}</p><div class="grow"></div>` };
     }

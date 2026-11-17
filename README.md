@@ -70,6 +70,16 @@ En **La pista musical** el juego no trae música: el panel del presentador muest
 
 El presentador elige en su panel qué pruebas se juegan antes de empezar. Si un equipo presiona y falla, el otro puede intentarlo.
 
+## Modo solitario
+
+Para jugar **una sola persona con el presentador**, elige **«👤 Solitario»** en *Modo de juego*, en el panel del presentador, antes de empezar. El jugador escanea el QR, escribe su nombre (sin elegir equipo) y el equipo toma su nombre. Las pruebas son las mismas, con estos cambios:
+
+- Si el jugador falla, la pregunta se pierde (no hay rebote al otro equipo).
+- En las pruebas por turnos juega un solo turno.
+- **Adivina la cifra:** exacto 12 s; a menos de un 10 % 8 s; a menos de un 25 % 5 s.
+- **Bachillerato:** cada respuesta válida suma 3 s, y «¡Basta!» cierra la ronda de inmediato.
+- **La Rueda Final:** una sola rueda con 100 s más lo ganado. Si falla o pasa, sigue con la siguiente letra pendiente; se gana completando la rueda entera sin fallos (el «bote»).
+
 ## Qué necesitas
 
 - Un computador (Windows, Mac o Linux) conectado a la **misma Wi-Fi** que la tele y los celulares.
